@@ -1,4 +1,8 @@
-# dependencies
+# ---------------------------------------------------------------
+# Dependencies
+# Never commit these. They're reinstalled from package.json,
+# they're enormous, and they differ per machine/OS.
+# ---------------------------------------------------------------
 /node_modules
 /.pnp
 .pnp.*
@@ -8,29 +12,57 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# ---------------------------------------------------------------
+# Next.js build output
+# Regenerated on every build. Vercel builds this itself.
+# ---------------------------------------------------------------
 /.next/
 /out/
-
-# production
 /build
+next-env.d.ts
 
-# misc
-.DS_Store
-*.pem
+# ---------------------------------------------------------------
+# Environment variables — the important one
+# These will hold your Sanity token, Mapbox key, and Stripe secret
+# key later. A committed Stripe secret key is a real incident, not
+# a small mistake. Keep this rule even before you have any secrets.
+# ---------------------------------------------------------------
+.env
+.env*.local
+.env.development
+.env.production
 
-# debug
+# ---------------------------------------------------------------
+# Testing / coverage
+# ---------------------------------------------------------------
+/coverage
+
+# ---------------------------------------------------------------
+# Vercel
+# Local link metadata created by the Vercel CLI.
+# ---------------------------------------------------------------
+.vercel
+
+# ---------------------------------------------------------------
+# TypeScript
+# ---------------------------------------------------------------
+*.tsbuildinfo
+
+# ---------------------------------------------------------------
+# Logs
+# ---------------------------------------------------------------
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
+.pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ---------------------------------------------------------------
+# OS / editor cruft
+# .DS_Store is the macOS one — it will show up in every folder
+# you open in Finder if you don't ignore it.
+# ---------------------------------------------------------------
+.DS_Store
+*.pem
+.idea/
+.vscode/*
+!.vscode/extensions.json

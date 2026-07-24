@@ -127,3 +127,63 @@
     @apply font-sans;
     }
 }
+
+
+@theme inline {
+  /* Fonts. Source variable names are set in app/layout.tsx and must
+     differ from these token names, or you get a circular reference. */
+  --font-sans: var(--font-karla);
+  --font-display: var(--font-fraunces);
+
+  /* Warm neutral ramp.
+     Overriding Tailwind's built-in neutral scale means every existing
+     neutral-* class in the components picks these up — no component
+     edits needed. Cool grays read gallery/magazine; these are warmed
+     toward bone and soil. */
+  --color-neutral-50: #faf8f4;
+  --color-neutral-100: #f2eee6;
+  --color-neutral-200: #e4ded2;
+  --color-neutral-300: #cfc7b8;
+  --color-neutral-400: #a29886;
+  --color-neutral-500: #7a7263;
+  --color-neutral-600: #5c554a;
+  --color-neutral-700: #443f37;
+  --color-neutral-800: #2c2823;
+  --color-neutral-900: #1c1915;
+}
+
+/* Fraunces axis defaults: slightly soft, wonk on.
+   Bump SOFT toward 100 for rounder terminals, drop WONK to 0 to
+   straighten out the quirky letterforms. */
+.font-display {
+  font-variation-settings: "SOFT" 40, "WONK" 1;
+  font-optical-sizing: auto;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+/* Marquee loop used by <Marquee /> in scroll-primitives.tsx */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-marquee {
+    animation: none;
+  }
+}
