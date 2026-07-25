@@ -12,17 +12,15 @@ export function Drops() {
     <section id="drops" className="scroll-mt-20 px-5 py-24 sm:px-8 sm:py-32">
       <div className="mx-auto max-w-7xl">
         <Reveal>
-          <SectionLabel number="01">Latest Drops</SectionLabel>
+          <SectionLabel number="01">LATEST DROPS</SectionLabel>
         </Reveal>
 
         <Reveal delay={0.05}>
           <h2 className="mt-8 max-w-[20ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-6xl">
-            Every harvest is its own thing. Here is what is on the shelf now.
+            Every harvest is unique
           </h2>
         </Reveal>
 
-        {/* Alternating full-width rows instead of a flat grid —
-            each one enters from the side its image sits on. */}
         <div className="mt-24 space-y-28 sm:space-y-40">
           {DROPS.map((drop, i) => (
             <DropRow key={drop.slug} drop={drop} index={i} flipped={i % 2 === 1} />

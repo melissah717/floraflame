@@ -83,9 +83,6 @@ export function Wholesale() {
                 {sent ? "Thanks — we'll be in touch" : "Send enquiry"}
               </Button>
  
-              <p className="pt-2 text-xs text-neutral-600">
-                Form is not wired up yet — hook this to an API route and Resend.
-              </p>
             </div>
           </Reveal>
         </div>

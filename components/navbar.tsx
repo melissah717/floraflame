@@ -83,7 +83,7 @@ export function Navbar() {
               key={id}
               onClick={() => scrollTo(id)}
               className={cn(
-                "px-4 py-2 text-lg transition-colors duration-200",
+                "px-4 py-2 text-md transition-colors duration-200",
                 active === id
                   ? // Active state is a weight bump only — 400 → 500.
                     // Subtle enough to read as emphasis, not a different label.

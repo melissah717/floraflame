@@ -67,7 +67,7 @@ export function About() {
           <Reveal delay={0.1}>
             <dl className="grid grid-cols-2 gap-x-6 gap-y-8 border-t border-neutral-200 pt-10 sm:grid-cols-3">
               {[
-                { k: "Founded", v: "0000" },
+                { k: "Founded", v: "2017" },
                 { k: "Based in", v: "Oakland, CA" },
                 { k: "Method", v: "Living Soil" },
               ].map(({ k, v }) => (
