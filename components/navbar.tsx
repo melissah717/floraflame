@@ -122,10 +122,13 @@ export function Navbar() {
 
         {/* Mobile */}
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="lg:hidden">
-            <Button variant="ghost" size="icon" aria-label="Open menu">
-              <Menu className="size-6" />
-            </Button>
+          {/* No asChild — SheetTrigger renders its own button and we style
+              it directly. Avoids the Radix/React 19 prop inference issue. */}
+          <SheetTrigger
+            aria-label="Open menu"
+            className="inline-flex size-10 items-center justify-center rounded-md transition-colors hover:bg-neutral-200 lg:hidden"
+          >
+            <Menu className="size-6" />
           </SheetTrigger>
           <SheetContent
             side="right"
