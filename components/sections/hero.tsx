@@ -195,8 +195,7 @@ export function Hero() {
       >
         <div className="mx-auto flex w-full max-w-7xl items-end justify-between gap-8">
           <p className="max-w-sm text-sm leading-relaxed text-neutral-500">
-            Placeholder intro line. A sentence or two about the farm, the
-            practice, and what makes the flower worth paying attention to.
+            Grown by people who actually give a fuck.
           </p>
           <span className="shrink-0 text-xs tracking-[0.04em] text-neutral-500">
             Scroll ↓
