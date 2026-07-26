@@ -130,10 +130,10 @@
 
 
 @theme inline {
-  /* Fonts. Source variable names are set in app/layout.tsx and must
+  /* Fonts. Source variable names are set in app/lsayout.tsx and must
      differ from these token names, or you get a circular reference. */
   --font-sans: var(--font-karla);
-  --font-display: var(--font-fraunces);
+  --font-display: var(--font-archivo);
 
   /* Warm neutral ramp.
      Overriding Tailwind's built-in neutral scale means every existing
@@ -156,8 +156,8 @@
    Bump SOFT toward 100 for rounder terminals, drop WONK to 0 to
    straighten out the quirky letterforms. */
 .font-display {
-  font-variation-settings: "SOFT" 40, "WONK" 1;
-  font-optical-sizing: auto;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 html {
