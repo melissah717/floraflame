@@ -34,7 +34,7 @@ export function SiteFooter() {
               {[
                 ["Drops", "/#drops"],
                 ["About", "/#about"],
-                ["Work With Us", "/#wholesale"],
+                ["Contact", "/#wholesale"],
                 ["Find Us", "/#find-us"],
                 ["Blog", "/blog"],
               ].map(([label, href]) => (
