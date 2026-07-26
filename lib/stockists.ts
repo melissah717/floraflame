@@ -169,6 +169,56 @@ export function resolveQuery(
   return null;
 }
 
+/**
+ * Resolve anything the local table doesn't know — zips, neighbourhoods,
+ * street addresses — via Mapbox Geocoding.
+ *
+ * resolveQuery() stays the fast path: it's instant, free, and covers the
+ * common searches ("SF", "Oakland"). This only runs when that misses, so a
+ * typical search never touches the network.
+ *
+ * bbox constrains results to California. Without it "Springfield" or a bare
+ * zip can resolve to another state, and the nearest-shop list becomes
+ * nonsense measured across the country.
+ */
+export async function geocodeQuery(
+  query: string
+): Promise<{ lat: number; lng: number; label: string } | null> {
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  if (!token || !query.trim()) return null;
+
+  const url =
+    `https://api.mapbox.com/search/geocode/v6/forward` +
+    `?q=${encodeURIComponent(query.trim())}` +
+    `&access_token=${token}` +
+    `&country=us` +
+    `&limit=1` +
+    `&bbox=-124.5,32.5,-114.1,42.1`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const hit = data?.features?.[0];
+    if (!hit?.geometry?.coordinates) return null;
+
+    const [lng, lat] = hit.geometry.coordinates;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+    // Prefer the tidy place name over the full postal address.
+    const label =
+      hit.properties?.name_preferred ||
+      hit.properties?.name ||
+      hit.properties?.place_formatted ||
+      query.trim();
+
+    return { lat, lng, label };
+  } catch {
+    return null;
+  }
+}
+
 /** Sorts by distance from an origin, attaching the computed miles. */
 export function sortByDistance(
   stockists: Stockist[],
@@ -177,6 +227,15 @@ export function sortByDistance(
   return stockists
     .map((s) => ({ ...s, miles: distanceMiles(origin, s) }))
     .sort((a, b) => a.miles - b.miles);
+}
+
+/**
+ * Stable identity for a shop. Name alone isn't unique — California Street
+ * Cannabis has four entries — so coordinates are folded in. Used to match
+ * a clicked list item to its map marker.
+ */
+export function stockistKey(s: Stockist): string {
+  return `${s.name}|${s.lat}|${s.lng}`;
 }
 
 /** Google Maps directions link — opens the native app on mobile. */

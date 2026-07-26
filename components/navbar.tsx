@@ -110,14 +110,6 @@ export function Navbar() {
           >
             Merch
           </span>
-
-          <Button
-            size="lg"
-            onClick={() => scrollTo("wholesale")}
-            className="ml-4 rounded-full bg-neutral-900 px-7 text-base font-normal text-neutral-50 hover:bg-neutral-700"
-          >
-            Get in touch
-          </Button>
         </div>
 
         {/* Mobile */}
