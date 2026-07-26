@@ -61,6 +61,9 @@ export function Drops() {
   const { scrollYProgress } = useScroll({
     target: trackRef,
     offset: ["start start", "end end"],
+    // Defer measurement to useEffect. By default Motion measures in the
+    // layout effect, before hydration attaches the ref.
+    layoutEffect: false,
   });
 
   const x = useTransform(scrollYProgress, [0, 1], [0, -distance]);
@@ -69,7 +72,15 @@ export function Drops() {
   // ---------- Mobile / reduced motion ----------
   if (!pinned) {
     return (
-      <section id="drops" className="scroll-mt-20 py-24 sm:py-32">
+      // ref MUST be attached here too. `pinned` is false on first render,
+      // so without this the ref is never attached to anything while
+      // useScroll is already watching it — which throws during prerender
+      // and fails the build.
+      <section
+        id="drops"
+        ref={trackRef}
+        className="scroll-mt-20 py-24 sm:py-32"
+      >
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <SectionLabel number="01">Latest Drops</SectionLabel>
           <h2 className="mt-6 max-w-[20ch] font-display text-4xl leading-[1.05] tracking-[-0.01em]">
@@ -114,10 +125,17 @@ export function Drops() {
         </div>
 
         <div className="mt-8 flex min-h-0 flex-1 items-stretch">
+          {/*
+            Left padding must match the header's left edge, which is centred
+            inside max-w-7xl (80rem). Header left edge sits at:
+              max(2rem, (100vw − 80rem) / 2 + 2rem)
+            Plain px-8 would start the row at the viewport edge instead, so
+            the first card and the "01" label wouldn't line up on wide screens.
+          */}
           <motion.div
             ref={rowRef}
             style={{ x }}
-            className="flex w-max gap-8 px-8 will-change-transform"
+            className="flex w-max gap-8 pl-[max(2rem,calc((100vw-80rem)/2+2rem))] pr-8 will-change-transform"
           >
             {DROPS.map((drop, i) => (
               <div

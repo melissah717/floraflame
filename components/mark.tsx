@@ -25,6 +25,7 @@ export function Mark({
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
+    layoutEffect: false,
   });
 
   const rotate = useTransform(scrollYProgress, [0, 1], [0, 180]);
