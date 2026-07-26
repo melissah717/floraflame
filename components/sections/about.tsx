@@ -43,16 +43,11 @@ export function About() {
   const { scrollYProgress: sectionProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "start start"],
-    // Defers measurement to useEffect. Without it Motion measures during
-    // the layout effect, before hydration attaches the ref — which is the
-    // "Target ref is defined but not hydrated" error.
-    layoutEffect: false,
   });
 
   const { scrollYProgress: imgProgress } = useScroll({
     target: imgRef,
     offset: ["start end", "end start"],
-    layoutEffect: false,
   });
 
   /**

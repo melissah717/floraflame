@@ -32,7 +32,6 @@ export function Parallax({
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
-    layoutEffect: false,
   });
 
   const y = useTransform(

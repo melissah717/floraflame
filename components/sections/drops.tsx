@@ -61,9 +61,6 @@ export function Drops() {
   const { scrollYProgress } = useScroll({
     target: trackRef,
     offset: ["start start", "end end"],
-    // Defer measurement to useEffect. By default Motion measures in the
-    // layout effect, before hydration attaches the ref.
-    layoutEffect: false,
   });
 
   const x = useTransform(scrollYProgress, [0, 1], [0, -distance]);
