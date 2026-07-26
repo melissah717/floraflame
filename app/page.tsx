@@ -17,8 +17,9 @@ export default function HomePage() {
         Sections with their own bg (marquee band, wholesale) override it.
       */}
       <div className="relative z-10 bg-neutral-50">
-        <Drops />
         <About />
+        <Drops />
+
         <Wholesale />
         <FindUs />
       </div>

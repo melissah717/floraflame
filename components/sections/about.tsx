@@ -13,7 +13,7 @@ export function About() {
         {/* Left column pins while the right scrolls — pure CSS sticky. */}
         <div className="lg:sticky lg:top-28 lg:h-fit">
           <Reveal>
-            <SectionLabel number="02">About Us</SectionLabel>
+            <SectionLabel number="01">About Us</SectionLabel>
           </Reveal>
 
           <Reveal delay={0.05}>

@@ -77,16 +77,28 @@ export function Hero() {
     damping: 38,
     mass: 0.15,
   });
-  // Wider travel so the movement actually reads.
-  const panelX = useTransform(smooth, [0, 1], ["-260%", "260%"]);
-  const panelSkew = useTransform(smooth, [0, 1], [3, -3]);
+  // Travel range. Cut right down for reduced-motion rather than removed.
+  const range = reduce ? 40 : 260;
+  const panelX = useTransform(smooth, [0, 1], [`-${range}%`, `${range}%`]);
+  const panelSkew = useTransform(smooth, [0, 1], reduce ? [0, 0] : [3, -3]);
 
+  /**
+   * pointermove, not mousemove — it covers mouse, pen AND touch/drag, so
+   * dragging a finger across a phone screen moves the panel too. mousemove
+   * simply never fires on touch devices, which is why it can look like the
+   * feature is broken when it's only absent.
+   *
+   * Reduced-motion users get a damped version rather than nothing: the
+   * intent of that setting is to avoid large or unexpected movement, not to
+   * strip interactivity, so the range is cut rather than switched off.
+   */
   useEffect(() => {
-    if (reduce) return;
-    const onMove = (e: MouseEvent) => pointer.set(e.clientX / window.innerWidth);
-    window.addEventListener("mousemove", onMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onMove);
-  }, [pointer, reduce]);
+    const onMove = (e: PointerEvent) => {
+      pointer.set(e.clientX / window.innerWidth);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, [pointer]);
 
   // --- scroll -----------------------------------------------------------
   const overlayOpacity = useTransform(
@@ -110,7 +122,7 @@ export function Hero() {
             because a single element can't take both an animated `x` and a
             style-driven `x`; the two would fight. */}
         <motion.div
-          style={reduce ? undefined : { x: panelX, skewX: panelSkew }}
+          style={{ x: panelX, skewX: panelSkew }}
           className="absolute left-1/2 top-1/2 z-0 aspect-square w-[56vw] max-w-[460px] -translate-x-1/2 -translate-y-1/2 will-change-transform sm:w-[28vw]"
         >
           {/* INNER — entrance. Slides in from off-screen left at 2.6s, which
