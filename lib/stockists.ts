@@ -1,0 +1,309 @@
+/**
+ * Stockist data + location helpers.
+ *
+ * SPREADSHEET SCHEMA — keep the column names identical to these field names
+ * and the Google Sheets CSV will map straight onto this type with no
+ * translation layer:
+ *
+ *   name | address | city | state | zip | lat | lng | status | phone | notes
+ *
+ * lat/lng are filled by scripts/geocode.mjs — leave them blank while
+ * entering data by hand.
+ */
+
+export type Stockist = {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  lat: number;
+  lng: number;
+  status: "carrying" | "restocking" | "paused";
+  phone?: string;
+  notes?: string;
+};
+
+/** Placeholder rows. Replace with the sheet fetch — see fetchStockists(). */
+export const STOCKISTS: Stockist[] = [
+  {
+    name: "Blue Fire",
+    address: "1975 W Olive Ave",
+    city: "Merced",
+    state: "CA",
+    zip: "95348",
+    lat: 37.3115,
+    lng: -120.4977,
+    status: "carrying",
+  },
+  {
+    name: "Flavors",
+    address: "2213 Patterson Rd",
+    city: "Riverbank",
+    state: "CA",
+    zip: "95367",
+    lat: 37.7361,
+    lng: -120.9355,
+    status: "carrying",
+  },
+  {
+    name: "Firehouse",
+    address: "1601 W Main St",
+    city: "Turlock",
+    state: "CA",
+    zip: "95380",
+    lat: 37.4947,
+    lng: -120.8666,
+    status: "carrying",
+  },
+  {
+    name: "Patient Care First",
+    address: "1442 Angie Ave",
+    city: "Modesto",
+    state: "CA",
+    zip: "95351",
+    lat: 37.6193,
+    lng: -121.0027,
+    status: "carrying",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Geography                                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * City centres for search. A lookup table, not a geocoding API — searches
+ * resolve instantly, cost nothing, and work offline. California-only is a
+ * small enough space to enumerate.
+ *
+ * Aliases matter more than you'd expect: people type "SF", not
+ * "San Francisco". Add entries as you see real searches fail.
+ */
+export const CITY_CENTERS: Record<string, { lat: number; lng: number }> = {
+  "san francisco": { lat: 37.7749, lng: -122.4194 },
+  sf: { lat: 37.7749, lng: -122.4194 },
+  "the city": { lat: 37.7749, lng: -122.4194 },
+  oakland: { lat: 37.8044, lng: -122.2712 },
+  berkeley: { lat: 37.8715, lng: -122.273 },
+  "san jose": { lat: 37.3382, lng: -121.8863 },
+  sacramento: { lat: 38.5816, lng: -121.4944 },
+  sac: { lat: 38.5816, lng: -121.4944 },
+  "los angeles": { lat: 34.0522, lng: -118.2437 },
+  la: { lat: 34.0522, lng: -118.2437 },
+  "long beach": { lat: 33.7701, lng: -118.1937 },
+  "san diego": { lat: 32.7157, lng: -117.1611 },
+  fresno: { lat: 36.7378, lng: -119.7871 },
+  modesto: { lat: 37.6391, lng: -120.9969 },
+  stockton: { lat: 37.9577, lng: -121.2908 },
+  merced: { lat: 37.3022, lng: -120.4829 },
+  turlock: { lat: 37.4947, lng: -120.8466 },
+  riverbank: { lat: 37.7361, lng: -120.9355 },
+  chico: { lat: 39.7285, lng: -121.8375 },
+  "santa cruz": { lat: 36.9741, lng: -122.0308 },
+  "santa rosa": { lat: 38.4404, lng: -122.7141 },
+  "palm springs": { lat: 33.8303, lng: -116.5453 },
+  bakersfield: { lat: 35.3733, lng: -119.0187 },
+  "san luis obispo": { lat: 35.2828, lng: -120.6596 },
+  slo: { lat: 35.2828, lng: -120.6596 },
+  eureka: { lat: 40.8021, lng: -124.1637 },
+  "south lake tahoe": { lat: 38.9399, lng: -119.9772 },
+  tahoe: { lat: 38.9399, lng: -119.9772 },
+};
+
+/**
+ * Great-circle distance in miles (haversine).
+ * Straight-line, not driving distance — fine for "which is nearest",
+ * not for an ETA.
+ */
+export function distanceMiles(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number }
+): number {
+  const R = 3958.8;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+/**
+ * Turns a free-text query into a coordinate to measure from.
+ * Order matters: named cities beat zip codes beat stockist-name matches,
+ * because "Oakland" should mean the city even if a shop is called Oakland
+ * Wellness.
+ */
+export function resolveQuery(
+  query: string,
+  stockists: Stockist[]
+): { lat: number; lng: number } | null {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+
+  if (CITY_CENTERS[q]) return CITY_CENTERS[q];
+
+  // Partial city match — "san fran" should still land
+  const cityKey = Object.keys(CITY_CENTERS).find(
+    (k) => k.startsWith(q) || q.startsWith(k)
+  );
+  if (cityKey) return CITY_CENTERS[cityKey];
+
+  // Zip
+  const byZip = stockists.find((s) => s.zip === q);
+  if (byZip) return { lat: byZip.lat, lng: byZip.lng };
+
+  // Stockist city, then name
+  const byCity = stockists.find((s) => s.city.toLowerCase().includes(q));
+  if (byCity) return { lat: byCity.lat, lng: byCity.lng };
+
+  const byName = stockists.find((s) => s.name.toLowerCase().includes(q));
+  if (byName) return { lat: byName.lat, lng: byName.lng };
+
+  return null;
+}
+
+/** Sorts by distance from an origin, attaching the computed miles. */
+export function sortByDistance(
+  stockists: Stockist[],
+  origin: { lat: number; lng: number }
+): (Stockist & { miles: number })[] {
+  return stockists
+    .map((s) => ({ ...s, miles: distanceMiles(origin, s) }))
+    .sort((a, b) => a.miles - b.miles);
+}
+
+/** Google Maps directions link — opens the native app on mobile. */
+export function directionsUrl(s: Stockist): string {
+  const dest = encodeURIComponent(
+    `${s.name}, ${s.address}, ${s.city}, ${s.state} ${s.zip}`
+  );
+  return `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Google Sheets                                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Parses one CSV line, respecting quoted fields.
+ *
+ * Google quotes any cell containing a comma — which is most addresses —
+ * so a naive line.split(",") shreds the data. This walks character by
+ * character and only treats commas outside quotes as separators.
+ */
+function parseCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (ch === '"') {
+      // A doubled quote inside a quoted field is an escaped quote.
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === "," && !inQuotes) {
+      out.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out.map((c) => c.trim());
+}
+
+/**
+ * Pull stockists from a published Google Sheet.
+ *
+ * SETUP
+ *   Sheet → File → Share → Publish to web → Sheet1 → CSV → copy the URL,
+ *   then put it in .env.local as STOCKISTS_CSV_URL.
+ *
+ * No API key, no service account, no OAuth. Publishing makes the sheet
+ * publicly readable — fine for shop names and addresses, which are public
+ * anyway. Don't put anything private in that sheet.
+ *
+ * Rows without usable coordinates are dropped rather than rendered, since
+ * a stockist with no lat/lng can't be sorted by distance or pinned. A row
+ * mid-edit shouldn't break the page.
+ */
+export async function fetchStockists(): Promise<Stockist[]> {
+  const url = process.env.STOCKISTS_CSV_URL;
+
+  // Fall back to the local sample so dev and previews still render if the
+  // env var is missing.
+  if (!url) {
+    console.warn("STOCKISTS_CSV_URL not set — using placeholder stockists.");
+    return STOCKISTS;
+  }
+
+  try {
+    const res = await fetch(url, { next: { revalidate: 3600 } });
+    if (!res.ok) throw new Error(`Sheet returned ${res.status}`);
+
+    // Strip BOM, normalise Windows line endings.
+    const csv = (await res.text()).replace(/^\uFEFF/, "").replace(/\r\n/g, "\n");
+    const lines = csv.trim().split("\n");
+    if (lines.length < 2) return STOCKISTS;
+
+    const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase());
+    const col = (row: string[], key: string) => {
+      const i = headers.indexOf(key);
+      return i === -1 ? "" : (row[i] ?? "").replace(/^"|"$/g, "").trim();
+    };
+
+    const parsed = lines.slice(1).map(parseCsvLine).map((row) => {
+      const lat = Number(col(row, "lat"));
+      const lng = Number(col(row, "lng"));
+      const rawStatus = col(row, "status").toLowerCase();
+
+      return {
+        name: col(row, "name"),
+        address: col(row, "address"),
+        city: col(row, "city"),
+        state: col(row, "state") || "CA",
+        zip: col(row, "zip"),
+        lat,
+        lng,
+        status: (["carrying", "restocking", "paused"].includes(rawStatus)
+          ? rawStatus
+          : "carrying") as Stockist["status"],
+        phone: col(row, "phone") || undefined,
+        notes: col(row, "notes") || undefined,
+      };
+    });
+
+    const usable = parsed.filter(
+      (s) =>
+        s.name &&
+        Number.isFinite(s.lat) &&
+        Number.isFinite(s.lng) &&
+        s.lat !== 0 &&
+        s.lng !== 0
+    );
+
+    const dropped = parsed.length - usable.length;
+    if (dropped) {
+      console.warn(`${dropped} stockist row(s) skipped — missing coordinates.`);
+    }
+
+    return usable.length ? usable : STOCKISTS;
+  } catch (err) {
+    // Never let a sheet outage take the page down.
+    console.error("Stockist sheet fetch failed:", err);
+    return STOCKISTS;
+  }
+}

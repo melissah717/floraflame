@@ -69,7 +69,7 @@ export function SiteFooter() {
 
         <div className="mt-16 flex flex-col gap-3 border-t border-neutral-200 pt-6 text-[11px] uppercase tracking-[0.18em] text-neutral-400 sm:flex-row sm:justify-between">
           <span>© {new Date().getFullYear()} Flora &amp; Flame</span>
-          <span>License # — placeholder · 21+ only</span>
+          <span>License # — C120000449-LIC · 21+ only</span>
         </div>
       </div>
     </footer>

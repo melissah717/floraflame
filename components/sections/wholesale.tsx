@@ -21,13 +21,13 @@ export function Wholesale() {
       <div className="mx-auto max-w-7xl">
         <Reveal>
           <SectionLabel number="03" tone="light">
-            Work With Us
+            Submit a Request
           </SectionLabel>
         </Reveal>
  
         <Reveal delay={0.05}>
           <h2 className="mt-8 max-w-[18ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-6xl">
-            For dispensaries and buyers who care where it came from.
+            Placeholder something here
           </h2>
         </Reveal>
  
