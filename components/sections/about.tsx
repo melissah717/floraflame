@@ -132,7 +132,7 @@ export function About() {
               className="absolute inset-0 will-change-transform"
             >
               <Image
-                src="/about.jpg"
+                src="/about.webp"
                 alt="Hand-tending plants in the Oakland grow room"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
