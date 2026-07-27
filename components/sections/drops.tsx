@@ -12,7 +12,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { STRAINS } from "@/lib/strains";
-import { SectionLabel } from "@/components/scroll-primitives";
+import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { cn } from "@/lib/utils";
 
 /**
@@ -150,12 +150,18 @@ export function Drops() {
       className="scroll-mt-20 overflow-hidden bg-neutral-900 py-24 text-neutral-50 sm:py-32"
     >
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <SectionLabel number="02" tone="light">
-          Latest Drops
-        </SectionLabel>
-        <h2 className="mt-6 max-w-[24ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl">
-          Every strain sits somewhere on the spectrum. Find it.
-        </h2>
+        <Reveal>
+          <SectionLabel number="02" tone="light">
+            Latest Drops
+          </SectionLabel>
+        </Reveal>
+        <Reveal delay={0.05}>
+          <ParallaxText speed={16}>
+            <h2 className="mt-6 max-w-[24ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl">
+              Every strain sits somewhere on the spectrum. Find it.
+            </h2>
+          </ParallaxText>
+        </Reveal>
       </div>
 
       {/* Stage */}
@@ -199,48 +205,48 @@ export function Drops() {
                 transition={{ duration: 0.3 }}
                 className="flex flex-col items-center lg:items-start"
               >
-                <span className="text-xs tracking-[0.08em] text-neutral-400">
+                <span className="text-sm tracking-[0.08em] text-neutral-400">
                   {active.category}
                 </span>
-                <h3 className="mt-3 font-display text-5xl leading-none sm:text-6xl">
+                <h3 className="mt-3 font-display text-6xl leading-none sm:text-7xl">
                   {active.name}
                 </h3>
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-5 lg:justify-start">
                   <div className="flex items-center gap-3">
                     <span
-                      className="h-2 w-2 rounded-full transition-colors duration-500"
+                      className="h-3 w-3 rounded-full transition-colors duration-500"
                       style={{ backgroundColor: color }}
                       aria-hidden
                     />
-                    <span className="text-sm tracking-[0.04em] text-neutral-300">
+                    <span className="text-base tracking-[0.04em] text-neutral-300">
                       {labelForHybrid(active.hybrid)}
                     </span>
                   </div>
 
-                  <div className="h-4 w-px bg-neutral-700" aria-hidden />
+                  <div className="h-5 w-px bg-neutral-700" aria-hidden />
 
                   <div
-                    className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-[background] duration-500"
+                    className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full transition-[background] duration-500"
                     style={{
                       background: `conic-gradient(${color} ${(Math.min(100, Math.max(0, active.thc)) / 100) * 360}deg, var(--color-neutral-700) 0deg)`,
                     }}
                   >
                     <div className="flex h-[calc(100%-4px)] w-[calc(100%-4px)] flex-col items-center justify-center gap-0.5 rounded-full bg-neutral-900">
-                      <span className="font-display text-sm leading-none tabular-nums">
+                      <span className="font-display text-lg leading-none tabular-nums">
                         {active.thc}%
                       </span>
-                      <span className="text-[9px] leading-none tracking-[0.12em] text-neutral-500">
+                      <span className="text-[10px] leading-none tracking-[0.12em] text-neutral-500">
                         THC
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5 lg:justify-start">
                   {active.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-neutral-700 px-2.5 py-1 text-[10px] tracking-[0.06em] text-neutral-400"
+                      className="rounded-full border border-neutral-700 px-3 py-1.5 text-xs tracking-[0.06em] text-neutral-400"
                     >
                       {tag}
                     </span>
@@ -249,9 +255,9 @@ export function Drops() {
                     type="button"
                     onClick={() => setDescriptionOpen((v) => !v)}
                     aria-expanded={descriptionOpen}
-                    className="flex items-center gap-1 rounded-full border border-neutral-700 px-2.5 py-1 text-[10px] tracking-[0.06em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50"
+                    className="flex items-center gap-1.5 rounded-full border border-neutral-700 px-3 py-1.5 text-xs tracking-[0.06em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50"
                   >
-                    <Info className="h-3 w-3" />
+                    <Info className="h-3.5 w-3.5" />
                     {descriptionOpen ? "Less" : "More"}
                   </button>
                 </div>
@@ -266,7 +272,7 @@ export function Drops() {
                       transition={{ duration: 0.25, ease: "easeOut" }}
                       className="overflow-hidden"
                     >
-                      <p className="mt-4 max-w-sm text-sm leading-relaxed text-neutral-400 lg:max-w-xl lg:text-base">
+                      <p className="mt-4 max-w-md text-base leading-relaxed text-neutral-400 lg:max-w-2xl lg:text-lg">
                         {active.description}
                       </p>
                     </motion.div>
@@ -275,11 +281,11 @@ export function Drops() {
               </motion.div>
             </AnimatePresence>
 
-            <div className="mt-8 flex w-full max-w-xs items-center justify-between text-xs tabular-nums text-neutral-400">
+            <div className="mt-8 flex w-full max-w-sm items-center justify-between text-sm tabular-nums text-neutral-400">
               <span>{100 - active.hybrid}% Indica</span>
               <span>{active.hybrid}% Sativa</span>
             </div>
-            <div className="mt-2 h-1 w-full max-w-xs overflow-hidden rounded-full bg-neutral-700">
+            <div className="mt-2 h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-neutral-700">
               <motion.div
                 className="h-full rounded-full"
                 style={{ backgroundColor: color }}

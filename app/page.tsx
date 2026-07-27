@@ -2,6 +2,7 @@ import { Hero } from "@/components/sections/hero";
 import { MarqueeBand } from "@/components/sections/marquee-band";
 import { Drops } from "@/components/sections/drops";
 import { About } from "@/components/sections/about";
+import { SectionTransition } from "@/components/sections/section-transition";
 import { Wholesale } from "@/components/sections/wholesale";
 import { FindUs } from "@/components/sections/find-us";
 
@@ -19,7 +20,7 @@ export default function HomePage() {
       <div className="relative z-10 bg-neutral-50">
         <About />
         <Drops />
-
+        <SectionTransition />
         <Wholesale />
         <FindUs />
       </div>
