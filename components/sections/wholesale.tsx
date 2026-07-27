@@ -1,10 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { WHOLESALE_IMAGE } from "@/lib/data";
 import { US_STATES } from "@/lib/us-states";
-import { Parallax, Reveal, SectionLabel } from "@/components/scroll-primitives";
+import { Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { Button } from "@/components/ui/button";
 
 // TODO: swap for the real business inbox once it exists.
@@ -124,39 +122,29 @@ export function Wholesale() {
     >
       <div className="mx-auto max-w-7xl">
         <Reveal>
-          <SectionLabel number="03" tone="light">
-            Submit a Request
-          </SectionLabel>
+          <div className="flex justify-center">
+            <SectionLabel number="03" tone="light">
+              Submit a Request
+            </SectionLabel>
+          </div>
         </Reveal>
 
         <Reveal delay={0.05}>
-          <h2 className="mt-8 max-w-[20ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-6xl">
+          <h2 className="mx-auto mt-8 max-w-[20ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-6xl">
             However we can help, start here.
           </h2>
         </Reveal>
 
-        <div className="mt-16 grid gap-12 lg:grid-cols-2 lg:gap-20">
+        <div className="mx-auto mt-16 max-w-2xl">
           <Reveal>
-            <Parallax speed={0.1} className="aspect-[4/3] bg-neutral-800">
-              <div className="relative h-[120%] w-full">
-                <Image
-                  src={WHOLESALE_IMAGE}
-                  alt=""
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </div>
-            </Parallax>
-
-            <p className="mt-8 text-lg leading-relaxed text-neutral-400">
+            <p className="text-lg leading-relaxed text-neutral-400">
               Questions about a drop, press, a collab, or getting Flora &amp;
               Flame on your shelf — this goes straight to our inbox.
             </p>
           </Reveal>
 
           <Reveal delay={0.08}>
-            <form onSubmit={onSubmit} noValidate className="space-y-6">
+            <form onSubmit={onSubmit} noValidate className="mt-8 space-y-6">
               <div className="grid gap-6 sm:grid-cols-2">
                 <Field
                   label="Name"

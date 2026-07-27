@@ -162,7 +162,6 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
 }
 
 /* Marquee loop used by <Marquee /> in scroll-primitives.tsx */
