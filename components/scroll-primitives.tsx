@@ -52,6 +52,42 @@ export function Parallax({
 }
 
 /* ------------------------------------------------------------------ */
+/* ParallaxText — a gentle, continuous vertical drift while the        */
+/* element is in view. Pixel-based (unlike Parallax's %-of-own-height) */
+/* since text blocks are short — a % offset would be imperceptible.    */
+/* Pair with Reveal for "fades in, then drifts": Reveal handles the    */
+/* one-time entrance, this handles the ongoing scroll-linked motion.   */
+/* ------------------------------------------------------------------ */
+export function ParallaxText({
+  children,
+  speed = 20,
+  className,
+}: {
+  children: ReactNode;
+  /** Max drift in px, in each direction (so total travel is speed * 2). Keep small — this is meant to be felt, not seen. */
+  speed?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], [speed, -speed]);
+
+  if (reduce) return <div className={className}>{children}</div>;
+
+  return (
+    <motion.div ref={ref} style={{ y }} className={cn("will-change-transform", className)}>
+      {children}
+    </motion.div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Reveal — fades + slides in on first viewport entry.                 */
 /* ------------------------------------------------------------------ */
 export function Reveal({

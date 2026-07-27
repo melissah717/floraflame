@@ -2,7 +2,7 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { US_STATES } from "@/lib/us-states";
-import { Reveal, SectionLabel } from "@/components/scroll-primitives";
+import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { Button } from "@/components/ui/button";
 
 // TODO: swap for the real business inbox once it exists.
@@ -129,9 +129,11 @@ export function Wholesale() {
         </Reveal>
 
         <Reveal delay={0.05}>
-          <h2 className="mx-auto mt-8 max-w-[20ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-6xl">
-            However we can help, start here.
-          </h2>
+          <ParallaxText speed={16}>
+            <h2 className="mx-auto mt-8 max-w-[20ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-6xl">
+              However we can help, start here.
+            </h2>
+          </ParallaxText>
         </Reveal>
 
         <div className="mx-auto mt-16 max-w-2xl">
