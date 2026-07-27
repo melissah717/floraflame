@@ -67,8 +67,9 @@ function validate(form: FormState): FormErrors {
 }
 
 /**
- * Dark section. Second contrast break — sits between the light About
- * and the light Find Us, so the page reads light / dark / light / dark / light.
+ * Light section — deliberately breaks the light/dark/light/dark/light
+ * rhythm the rest of the page uses, so this reads as a flat page of
+ * neutral-100 next to About's neutral-50 and Find Us's neutral-100.
  *
  * No backend on this site, so "sending" the request means handing it to the
  * visitor's own email client via a mailto: link — zero accounts, zero API
@@ -118,14 +119,12 @@ export function Wholesale() {
   return (
     <section
       id="wholesale"
-      className="scroll-mt-20 bg-neutral-900 px-5 py-24 text-neutral-50 sm:px-8 sm:py-32"
+      className="scroll-mt-20 bg-neutral-100 px-5 py-24 sm:px-8 sm:py-32"
     >
       <div className="mx-auto max-w-7xl">
         <Reveal>
           <div className="flex justify-center">
-            <SectionLabel number="03" tone="light">
-              Submit a Request
-            </SectionLabel>
+            <SectionLabel number="03">Submit a Request</SectionLabel>
           </div>
         </Reveal>
 
@@ -137,7 +136,7 @@ export function Wholesale() {
 
         <div className="mx-auto mt-16 max-w-2xl">
           <Reveal>
-            <p className="text-lg leading-relaxed text-neutral-400">
+            <p className="text-lg leading-relaxed text-neutral-500">
               Questions about a drop, press, a collab, or getting Flora &amp;
               Flame on your shelf — this goes straight to our inbox.
             </p>
@@ -209,11 +208,11 @@ export function Wholesale() {
               />
 
               <div>
-                <label className="text-xs tracking-[0.04em] text-neutral-400">
+                <label className="text-xs tracking-[0.04em] text-neutral-500">
                   Description
                 </label>
-                {/* Plain textarea — shadcn's has light-mode defaults that
-                    fight the dark section. Not worth the override here. */}
+                {/* Plain textarea — shadcn's defaults fight this section's
+                    custom underline styling. Not worth the override here. */}
                 <textarea
                   required
                   rows={5}
@@ -221,21 +220,21 @@ export function Wholesale() {
                   onChange={update("description")}
                   placeholder="What's going on?"
                   aria-invalid={Boolean(errors.description)}
-                  className={`mt-2 w-full resize-none border-0 border-b bg-transparent px-0 py-2 text-neutral-50 outline-none transition-colors placeholder:text-neutral-600 ${
+                  className={`mt-2 w-full resize-none border-0 border-b bg-transparent px-0 py-2 text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 ${
                     errors.description
-                      ? "border-red-500/70 focus:border-red-400"
-                      : "border-neutral-700 focus:border-neutral-300"
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-neutral-300 focus:border-neutral-900"
                   }`}
                 />
                 {errors.description && (
-                  <p className="mt-1 text-xs text-red-400">{errors.description}</p>
+                  <p className="mt-1 text-xs text-red-600">{errors.description}</p>
                 )}
               </div>
 
               <Button
                 type="submit"
                 size="lg"
-                className="mt-4 w-full rounded-full bg-neutral-50 py-6 text-base font-normal text-neutral-900 hover:bg-neutral-200 sm:w-auto sm:px-10"
+                className="mt-4 w-full rounded-full bg-neutral-900 py-6 text-base font-normal text-neutral-50 hover:bg-neutral-700 sm:w-auto sm:px-10"
               >
                 {sent ? "Opened your email client — send when ready" : "Send request"}
               </Button>
@@ -268,7 +267,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="text-xs tracking-[0.04em] text-neutral-400">
+      <label className="text-xs tracking-[0.04em] text-neutral-500">
         {label}
       </label>
       <input
@@ -277,11 +276,11 @@ function Field({
         value={value}
         onChange={onChange}
         aria-invalid={Boolean(error)}
-        className={`mt-2 w-full border-0 border-b bg-transparent px-0 py-2 text-neutral-50 outline-none transition-colors ${
-          error ? "border-red-500/70 focus:border-red-400" : "border-neutral-700 focus:border-neutral-300"
+        className={`mt-2 w-full border-0 border-b bg-transparent px-0 py-2 text-neutral-900 outline-none transition-colors ${
+          error ? "border-red-500 focus:border-red-500" : "border-neutral-300 focus:border-neutral-900"
         }`}
       />
-      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 }
@@ -305,7 +304,7 @@ function SelectField({
 }) {
   return (
     <div>
-      <label className="text-xs tracking-[0.04em] text-neutral-400">
+      <label className="text-xs tracking-[0.04em] text-neutral-500">
         {label}
       </label>
       <select
@@ -315,13 +314,13 @@ function SelectField({
         aria-invalid={Boolean(error)}
         style={{
           backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23a29886'%3E%3Cpath d='M5.5 7.5l4.5 5 4.5-5z'/%3E%3C/svg%3E\")",
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%237a7263'%3E%3Cpath d='M5.5 7.5l4.5 5 4.5-5z'/%3E%3C/svg%3E\")",
           backgroundSize: "14px",
           backgroundPosition: "right 2px center",
           backgroundRepeat: "no-repeat",
         }}
-        className={`mt-2 w-full appearance-none border-0 border-b bg-transparent px-0 py-2 pr-6 text-neutral-50 outline-none transition-colors [&>option]:bg-neutral-900 ${
-          error ? "border-red-500/70 focus:border-red-400" : "border-neutral-700 focus:border-neutral-300"
+        className={`mt-2 w-full appearance-none border-0 border-b bg-transparent px-0 py-2 pr-6 text-neutral-900 outline-none transition-colors ${
+          error ? "border-red-500 focus:border-red-500" : "border-neutral-300 focus:border-neutral-900"
         }`}
       >
         <option value="" disabled className="text-neutral-500">
@@ -333,7 +332,7 @@ function SelectField({
           </option>
         ))}
       </select>
-      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 }
