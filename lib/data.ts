@@ -16,4 +16,3 @@ export const HERO_IMAGES = [
 ];
 
 export const ABOUT_IMAGE = ph("ff-about", 1200, 1600);
-export const WHOLESALE_IMAGE = ph("ff-wholesale", 1400, 900);

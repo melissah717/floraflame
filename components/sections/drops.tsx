@@ -150,7 +150,7 @@ export function Drops() {
       className="scroll-mt-20 overflow-hidden bg-neutral-900 py-24 text-neutral-50 sm:py-32"
     >
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <SectionLabel number="01" tone="light">
+        <SectionLabel number="02" tone="light">
           Latest Drops
         </SectionLabel>
         <h2 className="mt-6 max-w-[24ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl">
