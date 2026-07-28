@@ -86,8 +86,8 @@ export function Navbar() {
                 "px-4 py-2 text-md transition-colors duration-200",
                 active === id
                   ? // Active state is a weight bump only — 400 → 500.
-                    // Subtle enough to read as emphasis, not a different label.
-                    "font-medium text-neutral-900"
+                  // Subtle enough to read as emphasis, not a different label.
+                  "font-medium text-neutral-900"
                   : "font-normal text-neutral-500 hover:text-neutral-900"
               )}
             >
