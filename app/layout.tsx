@@ -79,10 +79,9 @@ export const metadata: Metadata = {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/logo.png",
-  },
+  // Favicon/apple-touch-icon come from app/icon.png + app/apple-icon.png —
+  // Next's file convention picks those up automatically, no manual `icons`
+  // entry needed (and one here would just fight the convention).
 };
 
 export const viewport: Viewport = {
