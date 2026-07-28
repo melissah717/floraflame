@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://floraandflame.co/sitemap.xml",
+    sitemap: "https://floraflame.ca/sitemap.xml",
   };
 }

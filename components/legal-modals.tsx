@@ -56,7 +56,7 @@ export function PrivacyPolicyModal() {
 
           <LegalSection heading="Overview">
             Flora &amp; Flame LLC (&quot;Flora &amp; Flame,&quot; &quot;we,&quot;
-            &quot;us&quot;) operates floraandflame.co (the &quot;Site&quot;).
+            &quot;us&quot;) operates floraflame.ca (the &quot;Site&quot;).
             This policy explains what information we collect through the
             Site, how we use it, and the choices you have. This Site does
             not sell cannabis products directly — it&apos;s a marketing and
@@ -159,7 +159,7 @@ export function TermsModal() {
           </p>
 
           <LegalSection heading="Acceptance of terms">
-            By accessing or using floraandflame.co (the &quot;Site&quot;),
+            By accessing or using floraflame.ca (the &quot;Site&quot;),
             you agree to be bound by these Terms &amp; Conditions. If you
             don&apos;t agree, please don&apos;t use the Site.
           </LegalSection>

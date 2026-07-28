@@ -27,7 +27,7 @@ const karla = Karla({
   variable: "--font-karla",
 });
 
-const SITE_URL = "https://floraandflame.co";
+const SITE_URL = "https://floraflame.ca";
 const SITE_NAME = "Flora & Flame";
 const SITE_TITLE = "Flora & Flame — Living Soil Cannabis, Oakland CA";
 const SITE_DESCRIPTION =

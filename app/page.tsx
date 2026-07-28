@@ -15,8 +15,8 @@ const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Flora & Flame",
-  url: "https://floraandflame.co",
-  logo: "https://floraandflame.co/logo.png",
+  url: "https://floraflame.ca",
+  logo: "https://floraflame.ca/logo.png",
   description:
     "Small-batch, no-till living soil cannabis cultivator based in Oakland, California.",
   foundingDate: "2017",
