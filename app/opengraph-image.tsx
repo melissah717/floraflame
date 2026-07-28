@@ -1,20 +1,24 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 
-// Edge, not nodejs — fetch(new URL(..., import.meta.url)) for a bundled
-// local asset is an Edge Runtime capability; Node's native fetch throws
-// "not implemented" on file:// URLs. This pairing (edge + fetch) is also
-// what avoids the process.cwd()-based fs reads that silently 404 on
-// Vercel's serverless file tracer in production.
-export const runtime = "edge";
+// nodejs, not edge — @vercel/og ships a ~1.3MB WASM renderer, which alone
+// blows past Vercel's 1MB Edge Function size cap. Node serverless functions
+// have a much higher limit, so that's the fix — but Node's fetch() can't
+// read file:// URLs (unlike edge), so the local asset has to be read via
+// fs instead. Using fileURLToPath(import.meta.url) here — not
+// process.cwd() — keeps the path statically resolvable so Vercel's file
+// tracer actually bundles the asset (process.cwd()-based paths silently
+// 404 in production even though they work fine in local dev).
+export const runtime = "nodejs";
 export const alt = "Flora & Flame — Living Soil Cannabis, Oakland CA";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
-  const logoBuffer = await fetch(
-    new URL("./logo-og.png", import.meta.url)
-  ).then((res) => res.arrayBuffer());
-  const logoSrc = `data:image/png;base64,${Buffer.from(logoBuffer).toString("base64")}`;
+  const logoPath = fileURLToPath(new URL("./logo-og.png", import.meta.url));
+  const logoBuffer = await readFile(logoPath);
+  const logoSrc = `data:image/png;base64,${logoBuffer.toString("base64")}`;
 
   return new ImageResponse(
     (
