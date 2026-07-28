@@ -5,6 +5,7 @@ import { About } from "@/components/sections/about";
 import { SectionTransition } from "@/components/sections/section-transition";
 import { Wholesale } from "@/components/sections/wholesale";
 import { FindUs } from "@/components/sections/find-us";
+import { LivingSoil } from "@/components/sections/living-soil";
 
 export default function HomePage() {
   return (
@@ -19,6 +20,7 @@ export default function HomePage() {
       */}
       <div className="relative z-10 bg-neutral-50">
         <About />
+        <LivingSoil />
         <Drops />
         <SectionTransition />
         <Wholesale />

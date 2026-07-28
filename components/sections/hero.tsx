@@ -33,10 +33,14 @@ import { HERO_IMAGES } from "@/lib/data";
  */
 
 // Edit these. Short lines work best — this type is set enormous.
+/**
+ * Indents are % of the column. Keep them modest — the longest line plus
+ * its indent has to fit inside max-w-7xl or it clips.
+ */
 const LINES = [
-  { text: "Living soil.", indent: "18%" },
+  { text: "Living soil.", indent: "14%" },
   { text: "Slow grown.", indent: "0%" },
-  { text: "Oakland.", indent: "10%" },
+  { text: "Oakland.", indent: "8%" },
 ];
 
 /**
@@ -170,7 +174,14 @@ export function Hero() {
                       delay: 1.5 + i * 0.13,
                       ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="block text-[12vw] sm:text-[10vw] lg:text-[8vw]"
+                    /**
+                     * clamp(), not raw vw. The container is capped at
+                     * max-w-7xl (1280px) but vw keeps growing with the
+                     * viewport — so on a wide monitor the type outgrows
+                     * its own column and the last line gets clipped.
+                     * The 7rem ceiling keeps the longest line inside 1280px.
+                     */
+                    className="block text-[clamp(2.25rem,11vw,7rem)]"
                   >
                     {line.text}
                   </motion.span>
@@ -195,7 +206,7 @@ export function Hero() {
       >
         <div className="mx-auto flex w-full max-w-7xl items-end justify-between gap-8">
           <p className="max-w-sm text-sm leading-relaxed text-neutral-500">
-            Grown by people who actually give a fuck.
+            Grown by
           </p>
           <span className="shrink-0 text-xs tracking-[0.04em] text-neutral-500">
             Scroll ↓
