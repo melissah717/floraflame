@@ -1,6 +1,14 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import Image from "next/image";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+  type MotionValue,
+} from "motion/react";
 import { US_STATES } from "@/lib/us-states";
 import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { Button } from "@/components/ui/button";
@@ -66,6 +74,80 @@ function validate(form: FormState): FormErrors {
 }
 
 /**
+ * Decorative flowers flanking the form. Each one tracks the section's own
+ * scroll-through progress (0 = section just entering from below, 1 = fully
+ * scrolled past above) and windows its slide-in/slide-out around that, so
+ * they parallax on as the section arrives and drift off again as it leaves
+ * — never just appear/disappear.
+ *
+ * lg+ only: below that the form fills the width and there's no gutter for
+ * them to live in without overlapping it.
+ */
+const FLOWERS_LEFT = [
+  { top: "6%", size: 84, inAt: 0.02, rise: 26 },
+  { top: "40%", size: 130, inAt: 0.08, rise: -22 },
+  { top: "76%", size: 76, inAt: 0.14, rise: 30 },
+];
+const FLOWERS_RIGHT = [
+  { top: "12%", size: 108, inAt: 0.05, rise: -24 },
+  { top: "48%", size: 72, inAt: 0.11, rise: 32 },
+  { top: "80%", size: 100, inAt: 0.17, rise: -18 },
+];
+
+function FlowerDecor({
+  side,
+  top,
+  size,
+  inAt,
+  rise,
+  progress,
+}: {
+  side: "left" | "right";
+  top: string;
+  size: number;
+  /** Where in the section's 0–1 scroll-through this flower starts sliding in. */
+  inAt: number;
+  /** Extra vertical drift (px) while onscreen — gives each flower its own parallax speed. */
+  rise: number;
+  progress: MotionValue<number>;
+}) {
+  const inEnd = inAt + 0.16;
+  const outStart = 0.7 + inAt * 0.6;
+  const outEnd = outStart + 0.16;
+  const offscreen = side === "left" ? "-160%" : "160%";
+
+  const x = useTransform(
+    progress,
+    [0, inAt, inEnd, outStart, outEnd, 1],
+    [offscreen, offscreen, "0%", "0%", offscreen, offscreen]
+  );
+  const opacity = useTransform(
+    progress,
+    [inAt, inEnd, outStart, outEnd],
+    [0, 1, 1, 0]
+  );
+  const y = useTransform(progress, [0, 1], [rise, -rise]);
+
+  return (
+    <motion.div
+      aria-hidden
+      style={{
+        top,
+        [side]: "2%",
+        x,
+        y,
+        opacity,
+        width: size,
+        height: size,
+      }}
+      className="pointer-events-none absolute z-0 hidden will-change-transform lg:block"
+    >
+      <Image src="/Flower.svg" alt="" fill className="object-contain" />
+    </motion.div>
+  );
+}
+
+/**
  * Light section — deliberately breaks the light/dark/light/dark/light
  * rhythm the rest of the page uses, so this reads as a flat page of
  * neutral-100 next to About's neutral-50 and Find Us's neutral-100.
@@ -79,6 +161,13 @@ export function Wholesale() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
   const [sent, setSent] = useState(false);
+
+  const sectionRef = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress: flowerProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
 
   const update =
     (key: keyof FormState) =>
@@ -117,10 +206,22 @@ export function Wholesale() {
 
   return (
     <section
+      ref={sectionRef}
       id="wholesale"
-      className="scroll-mt-20 bg-neutral-100 px-5 py-24 sm:px-8 sm:py-32"
+      className="scroll-mt-20 relative overflow-hidden bg-neutral-100 px-5 py-24 sm:px-8 sm:py-32"
     >
-      <div className="mx-auto max-w-7xl">
+      {!reduce && (
+        <>
+          {FLOWERS_LEFT.map((f, i) => (
+            <FlowerDecor key={`left-${i}`} side="left" progress={flowerProgress} {...f} />
+          ))}
+          {FLOWERS_RIGHT.map((f, i) => (
+            <FlowerDecor key={`right-${i}`} side="right" progress={flowerProgress} {...f} />
+          ))}
+        </>
+      )}
+
+      <div className="relative z-10 mx-auto max-w-7xl">
         <Reveal>
           <div className="flex justify-center">
             <SectionLabel number="03">Submit a Request</SectionLabel>
