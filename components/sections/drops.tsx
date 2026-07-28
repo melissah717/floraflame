@@ -66,6 +66,18 @@ export function Drops() {
   const trackRef = useRef<HTMLDivElement>(null);
   const [trackWidth, setTrackWidth] = useState(0);
   const [descriptionOpen, setDescriptionOpen] = useState(false);
+  // Below `sm`, the active rail icon expands in place instead of popping up
+  // above the pile — there's no room for it to lift without overlapping the
+  // content above.
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 639px)");
+    setIsMobile(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
 
   const active = STRAINS.find((s) => s.slug === activeSlug) ?? STRAINS[0];
   const activeAnchor = anchorForSpectrum(active.spectrum);
@@ -149,7 +161,7 @@ export function Drops() {
   return (
     <section
       id="drops"
-      className="scroll-mt-20 overflow-hidden bg-neutral-900 py-24 text-neutral-50 sm:py-32"
+      className="scroll-mt-20 overflow-hidden bg-neutral-900 py-12 text-neutral-50 sm:py-24 lg:py-32"
     >
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <Reveal>
@@ -159,7 +171,7 @@ export function Drops() {
         </Reveal>
         <Reveal delay={0.05}>
           <ParallaxText speed={16}>
-            <h2 className="mt-6 max-w-[24ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl">
+            <h2 className="mt-4 max-w-[24ch] font-display text-3xl leading-[1.05] tracking-[-0.01em] sm:mt-6 sm:text-4xl lg:text-5xl">
               Every strain sits somewhere on the spectrum. Find it.
             </h2>
           </ParallaxText>
@@ -167,9 +179,9 @@ export function Drops() {
       </div>
 
       {/* Stage */}
-      <div className="mx-auto mt-16 max-w-7xl px-5 sm:px-8">
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,440px)_1fr] lg:gap-36 xl:gap-48">
-          <div className="relative mx-auto aspect-square w-full max-w-[380px]">
+      <div className="mx-auto mt-6 max-w-7xl px-5 sm:mt-16 sm:px-8">
+        <div className="grid items-center gap-4 lg:grid-cols-[minmax(0,440px)_1fr] lg:gap-36 xl:gap-48">
+          <div className="relative mx-auto aspect-square w-full max-w-[180px] sm:max-w-[280px] lg:max-w-[380px]">
             <div
               className="absolute inset-0 scale-90 rounded-full blur-3xl transition-colors duration-500"
               style={{ backgroundColor: color, opacity: 0.35 }}
@@ -188,7 +200,7 @@ export function Drops() {
                   src={active.image}
                   alt={active.name}
                   fill
-                  sizes="(max-width: 1024px) 80vw, 380px"
+                  sizes="(max-width: 640px) 180px, (max-width: 1024px) 280px, 380px"
                   draggable={false}
                   className="object-contain"
                   priority
@@ -207,30 +219,30 @@ export function Drops() {
                 transition={{ duration: 0.3 }}
                 className="flex flex-col items-center lg:items-start"
               >
-                <span className="text-sm tracking-[0.08em] text-neutral-400">
+                <span className="text-xs tracking-[0.08em] text-neutral-400 sm:text-sm">
                   {active.category}
                 </span>
-                <h3 className="mt-3 font-display text-6xl leading-none sm:text-7xl">
+                <h3 className="mt-1.5 flex items-center gap-2 font-display text-4xl leading-none sm:mt-3 sm:block sm:text-6xl lg:text-7xl">
                   {active.name}
                 </h3>
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-5 lg:justify-start">
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-5 sm:mt-8 lg:justify-start">
                   <div className="flex items-center gap-3">
                     <span
                       className="h-3 w-3 rounded-full transition-colors duration-500"
                       style={{ backgroundColor: color }}
                       aria-hidden
                     />
-                    <span className="text-base tracking-[0.04em] text-neutral-300">
+                    <span className="text-sm tracking-[0.04em] text-neutral-300 sm:text-base">
                       {active.spectrum}
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5 lg:justify-start">
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:mt-5 sm:gap-2.5 lg:justify-start">
                   {active.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-neutral-700 px-3 py-1.5 text-xs tracking-[0.06em] text-neutral-400"
+                      className="rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400 sm:px-3 sm:py-1.5 sm:text-xs"
                     >
                       {tag}
                     </span>
@@ -239,7 +251,7 @@ export function Drops() {
                     type="button"
                     onClick={() => setDescriptionOpen((v) => !v)}
                     aria-expanded={descriptionOpen}
-                    className="flex items-center gap-1.5 rounded-full border border-neutral-700 px-3 py-1.5 text-xs tracking-[0.06em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50"
+                    className="flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50 sm:px-3 sm:py-1.5 sm:text-xs"
                   >
                     <Info className="h-3.5 w-3.5" />
                     {descriptionOpen ? "Less" : "More"}
@@ -256,11 +268,11 @@ export function Drops() {
                       transition={{ duration: 0.25, ease: "easeOut" }}
                       className="overflow-hidden"
                     >
-                      <p className="mt-4 max-w-md text-base leading-relaxed text-neutral-400 lg:max-w-2xl lg:text-lg">
+                      <p className="mt-3 max-w-md text-sm leading-relaxed text-neutral-400 sm:mt-4 sm:text-base lg:max-w-2xl lg:text-lg">
                         {active.description}
                       </p>
                       {(active.genetics || active.terpenes || active.idealTime) && (
-                        <dl className="mt-5 flex max-w-md flex-col gap-2 text-sm lg:max-w-2xl">
+                        <dl className="mt-3 flex max-w-md flex-col gap-2 text-sm sm:mt-5 lg:max-w-2xl">
                           {active.genetics && (
                             <div className="flex flex-wrap items-baseline gap-x-2">
                               <dt className="tracking-[0.06em] text-neutral-500">
@@ -295,11 +307,14 @@ export function Drops() {
               </motion.div>
             </AnimatePresence>
 
-            <div className="mt-8 flex w-full max-w-sm items-center justify-between text-sm tracking-[0.06em] text-neutral-400">
+            {/* Hidden on mobile — the small dot next to the strain name above
+                covers this, and this bar's position collides with the rail's
+                popped-up active bubble once the section is compact. */}
+            <div className="mt-8 hidden w-full max-w-sm items-center justify-between text-sm tracking-[0.06em] text-neutral-400 sm:flex">
               <span>Indica</span>
               <span>Sativa</span>
             </div>
-            <div className="mt-2 h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-neutral-700">
+            <div className="mt-2 hidden h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-neutral-700 sm:block">
               <motion.div
                 className="h-full rounded-full"
                 style={{ backgroundColor: color }}
@@ -312,7 +327,7 @@ export function Drops() {
       </div>
 
       {/* Spectrum rail */}
-      <div className="mx-auto mt-20 max-w-7xl px-5 sm:px-8">
+      <div className="mx-auto mt-10 max-w-7xl px-5 sm:mt-20 sm:px-8">
         <div
           ref={trackRef}
           onDragStart={(e) => e.preventDefault()}
@@ -352,7 +367,7 @@ export function Drops() {
             const anchor = anchorForSpectrum(s.spectrum);
             return (
               <Fragment key={s.slug}>
-                {isActive && piled && (
+                {isActive && piled && !isMobile && (
                   <div
                     aria-hidden
                     className="pointer-events-none absolute bottom-1/2 w-px -translate-x-1/2 bg-neutral-700/60"
@@ -367,7 +382,9 @@ export function Drops() {
                     left: `${anchor}%`,
                     zIndex: isActive ? 30 : 10 + pileIndex,
                     transform: isActive
-                      ? `translate(-50%, calc(-50% - ${POP_LIFT_PX}px))`
+                      ? isMobile
+                        ? "translate(-50%, -50%)"
+                        : `translate(-50%, calc(-50% - ${POP_LIFT_PX}px))`
                       : `translate(calc(-50% + ${pileIndex * PILE_OFFSET_PX}px), calc(-50% - ${pileIndex * PILE_OFFSET_PX}px))`,
                     ...(isActive
                       ? ({ "--tw-ring-color": color } as Record<string, string>)
@@ -397,13 +414,13 @@ export function Drops() {
           })}
         </div>
 
-        <div className="mt-4 flex justify-between text-xs tracking-[0.08em] text-neutral-500">
+        <div className="mt-3 flex justify-between text-xs tracking-[0.08em] text-neutral-500 sm:mt-4">
           <span>INDICA</span>
           <span>HYBRID</span>
           <span>SATIVA</span>
         </div>
 
-        <div className="mt-6 flex justify-center gap-2">
+        <div className="mt-4 flex justify-center gap-2 sm:mt-6">
           <button
             type="button"
             onClick={() => step(-1)}
