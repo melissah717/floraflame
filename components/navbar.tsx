@@ -14,8 +14,8 @@ import {
 import { cn } from "@/lib/utils";
 
 const SECTIONS = [
-  { id: "drops", label: "Drops" },
   { id: "about", label: "About" },
+  { id: "drops", label: "Drops" },
   { id: "wholesale", label: "Contact" },
   { id: "find-us", label: "Find Us" },
 ];
@@ -113,8 +113,16 @@ export function Navbar() {
 
           <Button
             size="lg"
+            onClick={() => scrollTo("subscribe")}
+            className="ml-4 rounded-full border border-neutral-300 bg-transparent px-6 text-base font-normal text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+          >
+            Subscribe
+          </Button>
+
+          <Button
+            size="lg"
             onClick={() => scrollTo("wholesale")}
-            className="ml-4 rounded-full bg-neutral-900 px-7 text-base font-normal text-neutral-50 hover:bg-neutral-700"
+            className="ml-3 rounded-full bg-neutral-900 px-7 text-base font-normal text-neutral-50 hover:bg-neutral-700"
           >
             Get in touch
           </Button>
@@ -162,8 +170,18 @@ export function Navbar() {
                 </span>
               </Link>
 
+              <button
+                onClick={() => scrollTo("subscribe")}
+                className="flex items-baseline gap-4 border-b border-neutral-700 py-5 text-left"
+              >
+                <span className="text-xs tabular-nums text-neutral-500">06</span>
+                <span className="font-display text-3xl text-neutral-50">
+                  Subscribe
+                </span>
+              </button>
+
               <div className="flex items-baseline gap-4 py-5">
-                <span className="text-xs tabular-nums text-neutral-600">06</span>
+                <span className="text-xs tabular-nums text-neutral-600">07</span>
                 <span className="font-display text-3xl text-neutral-600">
                   Merch
                 </span>

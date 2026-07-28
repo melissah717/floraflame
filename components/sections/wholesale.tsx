@@ -5,8 +5,7 @@ import { US_STATES } from "@/lib/us-states";
 import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { Button } from "@/components/ui/button";
 
-// TODO: swap for the real business inbox once it exists.
-const REQUEST_TO_EMAIL = "email@email.com";
+const REQUEST_TO_EMAIL = "Matthew@floraandflame.co";
 
 const HELP_OPTIONS = [
   "Wholesale & retail partnership",
@@ -83,10 +82,10 @@ export function Wholesale() {
 
   const update =
     (key: keyof FormState) =>
-    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-      setForm((f) => ({ ...f, [key]: e.target.value }));
-      setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
-    };
+      (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        setForm((f) => ({ ...f, [key]: e.target.value }));
+        setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
+      };
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -131,7 +130,7 @@ export function Wholesale() {
         <Reveal delay={0.05}>
           <ParallaxText speed={16}>
             <h2 className="mx-auto mt-8 max-w-[20ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-6xl">
-              However we can help, start here.
+              Tell us what you need.
             </h2>
           </ParallaxText>
         </Reveal>
@@ -222,11 +221,10 @@ export function Wholesale() {
                   onChange={update("description")}
                   placeholder="What's going on?"
                   aria-invalid={Boolean(errors.description)}
-                  className={`mt-2 w-full resize-none border-0 border-b bg-transparent px-0 py-2 text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 ${
-                    errors.description
+                  className={`mt-2 w-full resize-none border-0 border-b bg-transparent px-0 py-2 text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 ${errors.description
                       ? "border-red-500 focus:border-red-500"
                       : "border-neutral-300 focus:border-neutral-900"
-                  }`}
+                    }`}
                 />
                 {errors.description && (
                   <p className="mt-1 text-xs text-red-600">{errors.description}</p>
@@ -278,9 +276,8 @@ function Field({
         value={value}
         onChange={onChange}
         aria-invalid={Boolean(error)}
-        className={`mt-2 w-full border-0 border-b bg-transparent px-0 py-2 text-neutral-900 outline-none transition-colors ${
-          error ? "border-red-500 focus:border-red-500" : "border-neutral-300 focus:border-neutral-900"
-        }`}
+        className={`mt-2 w-full border-0 border-b bg-transparent px-0 py-2 text-neutral-900 outline-none transition-colors ${error ? "border-red-500 focus:border-red-500" : "border-neutral-300 focus:border-neutral-900"
+          }`}
       />
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
@@ -321,9 +318,8 @@ function SelectField({
           backgroundPosition: "right 2px center",
           backgroundRepeat: "no-repeat",
         }}
-        className={`mt-2 w-full appearance-none border-0 border-b bg-transparent px-0 py-2 pr-6 text-neutral-900 outline-none transition-colors ${
-          error ? "border-red-500 focus:border-red-500" : "border-neutral-300 focus:border-neutral-900"
-        }`}
+        className={`mt-2 w-full appearance-none border-0 border-b bg-transparent px-0 py-2 pr-6 text-neutral-900 outline-none transition-colors ${error ? "border-red-500 focus:border-red-500" : "border-neutral-300 focus:border-neutral-900"
+          }`}
       >
         <option value="" disabled className="text-neutral-500">
           {placeholder}

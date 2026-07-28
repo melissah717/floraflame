@@ -11,7 +11,7 @@ import {
 } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
-import { STRAINS } from "@/lib/strains";
+import { SPECTRUM_POSITIONS, STRAINS, type SpectrumPosition } from "@/lib/strains";
 import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { cn } from "@/lib/utils";
 
@@ -41,15 +41,16 @@ function colorForHybrid(pct: number) {
   return `rgb(${r} ${g} ${b})`;
 }
 
-function labelForHybrid(pct: number) {
-  if (pct < 15) return "Indica";
-  if (pct < 40) return "Indica-Leaning Hybrid";
-  if (pct < 60) return "Balanced Hybrid";
-  if (pct < 85) return "Sativa-Leaning Hybrid";
-  return "Sativa";
+// Rail position is relative, not measured — each spectrum bucket gets an
+// evenly-spaced anchor, and strains sharing a bucket pile up at the same spot.
+function anchorForSpectrum(position: SpectrumPosition) {
+  const index = SPECTRUM_POSITIONS.indexOf(position);
+  return ((index + 0.5) / SPECTRUM_POSITIONS.length) * 100;
 }
 
-const SORTED = [...STRAINS].sort((a, b) => a.hybrid - b.hybrid);
+const SORTED = [...STRAINS].sort(
+  (a, b) => anchorForSpectrum(a.spectrum) - anchorForSpectrum(b.spectrum)
+);
 const RAIL_GRADIENT = `linear-gradient(90deg, rgb(${INDICA.join(" ")}), rgb(${HYBRID.join(" ")}), rgb(${SATIVA.join(" ")}))`;
 
 // Icons closer than this (in px) would visually overlap on the rail, so they
@@ -67,7 +68,8 @@ export function Drops() {
   const [descriptionOpen, setDescriptionOpen] = useState(false);
 
   const active = STRAINS.find((s) => s.slug === activeSlug) ?? STRAINS[0];
-  const color = colorForHybrid(active.hybrid);
+  const activeAnchor = anchorForSpectrum(active.spectrum);
+  const color = colorForHybrid(activeAnchor);
   const activeIndex = SORTED.findIndex((s) => s.slug === activeSlug);
 
   useEffect(() => {
@@ -88,7 +90,7 @@ export function Drops() {
     let pileIndex = 0;
     let clusterId = -1;
     for (const s of SORTED) {
-      const px = (s.hybrid / 100) * trackWidth;
+      const px = (anchorForSpectrum(s.spectrum) / 100) * trackWidth;
       const sameCluster = trackWidth > 0 && px - lastPx <= COLLISION_PX;
       pileIndex = sameCluster ? pileIndex + 1 : 0;
       if (!sameCluster) clusterId += 1;
@@ -121,7 +123,7 @@ export function Drops() {
     let nearest = SORTED[0];
     let best = Infinity;
     for (const s of SORTED) {
-      const d = Math.abs(s.hybrid - pct);
+      const d = Math.abs(anchorForSpectrum(s.spectrum) - pct);
       if (d < best) {
         best = d;
         nearest = s;
@@ -219,26 +221,8 @@ export function Drops() {
                       aria-hidden
                     />
                     <span className="text-base tracking-[0.04em] text-neutral-300">
-                      {labelForHybrid(active.hybrid)}
+                      {active.spectrum}
                     </span>
-                  </div>
-
-                  <div className="h-5 w-px bg-neutral-700" aria-hidden />
-
-                  <div
-                    className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full transition-[background] duration-500"
-                    style={{
-                      background: `conic-gradient(${color} ${(Math.min(100, Math.max(0, active.thc)) / 100) * 360}deg, var(--color-neutral-700) 0deg)`,
-                    }}
-                  >
-                    <div className="flex h-[calc(100%-4px)] w-[calc(100%-4px)] flex-col items-center justify-center gap-0.5 rounded-full bg-neutral-900">
-                      <span className="font-display text-lg leading-none tabular-nums">
-                        {active.thc}%
-                      </span>
-                      <span className="text-[10px] leading-none tracking-[0.12em] text-neutral-500">
-                        THC
-                      </span>
-                    </div>
                   </div>
                 </div>
 
@@ -275,21 +259,51 @@ export function Drops() {
                       <p className="mt-4 max-w-md text-base leading-relaxed text-neutral-400 lg:max-w-2xl lg:text-lg">
                         {active.description}
                       </p>
+                      {(active.genetics || active.terpenes || active.idealTime) && (
+                        <dl className="mt-5 flex max-w-md flex-col gap-2 text-sm lg:max-w-2xl">
+                          {active.genetics && (
+                            <div className="flex flex-wrap items-baseline gap-x-2">
+                              <dt className="tracking-[0.06em] text-neutral-500">
+                                Genetics
+                              </dt>
+                              <dd className="text-neutral-300">{active.genetics}</dd>
+                            </div>
+                          )}
+                          {active.terpenes && (
+                            <div className="flex flex-wrap items-baseline gap-x-2">
+                              <dt className="tracking-[0.06em] text-neutral-500">
+                                Terpenes
+                              </dt>
+                              <dd className="text-neutral-300">
+                                {active.terpenes.join(", ")}
+                              </dd>
+                            </div>
+                          )}
+                          {active.idealTime && (
+                            <div className="flex flex-wrap items-baseline gap-x-2">
+                              <dt className="tracking-[0.06em] text-neutral-500">
+                                Best time
+                              </dt>
+                              <dd className="text-neutral-300">{active.idealTime}</dd>
+                            </div>
+                          )}
+                        </dl>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
               </motion.div>
             </AnimatePresence>
 
-            <div className="mt-8 flex w-full max-w-sm items-center justify-between text-sm tabular-nums text-neutral-400">
-              <span>{100 - active.hybrid}% Indica</span>
-              <span>{active.hybrid}% Sativa</span>
+            <div className="mt-8 flex w-full max-w-sm items-center justify-between text-sm tracking-[0.06em] text-neutral-400">
+              <span>Indica</span>
+              <span>Sativa</span>
             </div>
             <div className="mt-2 h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-neutral-700">
               <motion.div
                 className="h-full rounded-full"
                 style={{ backgroundColor: color }}
-                animate={{ width: `${active.hybrid}%` }}
+                animate={{ width: `${activeAnchor}%` }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
               />
             </div>
@@ -309,8 +323,8 @@ export function Drops() {
           aria-label="Indica to sativa spectrum"
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-valuenow={active.hybrid}
-          aria-valuetext={`${active.name}, ${labelForHybrid(active.hybrid)}`}
+          aria-valuenow={activeAnchor}
+          aria-valuetext={`${active.name}, ${active.spectrum}`}
           onKeyDown={(e) => {
             if (e.key === "ArrowLeft") step(-1);
             if (e.key === "ArrowRight") step(1);
@@ -326,7 +340,7 @@ export function Drops() {
           <motion.div
             className="pointer-events-none absolute top-1/2 h-3 w-0.5 -translate-y-[calc(50%+12px)] rounded-full"
             style={{ backgroundColor: color, x: "-50%" }}
-            animate={{ left: `${active.hybrid}%` }}
+            animate={{ left: `${activeAnchor}%` }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             aria-hidden
           />
@@ -335,13 +349,14 @@ export function Drops() {
             const isActive = s.slug === activeSlug;
             const pileIndex = pileIndexBySlug.get(s.slug) ?? 0;
             const piled = inPileBySlug.get(s.slug) ?? false;
+            const anchor = anchorForSpectrum(s.spectrum);
             return (
               <Fragment key={s.slug}>
                 {isActive && piled && (
                   <div
                     aria-hidden
                     className="pointer-events-none absolute bottom-1/2 w-px -translate-x-1/2 bg-neutral-700/60"
-                    style={{ left: `${s.hybrid}%`, height: `${POP_LIFT_PX}px` }}
+                    style={{ left: `${anchor}%`, height: `${POP_LIFT_PX}px` }}
                   />
                 )}
                 <button
@@ -349,7 +364,7 @@ export function Drops() {
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={() => setActiveSlug(s.slug)}
                   style={{
-                    left: `${s.hybrid}%`,
+                    left: `${anchor}%`,
                     zIndex: isActive ? 30 : 10 + pileIndex,
                     transform: isActive
                       ? `translate(-50%, calc(-50% - ${POP_LIFT_PX}px))`
