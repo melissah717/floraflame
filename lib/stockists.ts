@@ -310,7 +310,13 @@ export async function fetchStockists(): Promise<Stockist[]> {
   }
 
   try {
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    // A stall here (not just an outright failure) can hang page generation
+    // past Next's prerender watchdog — the timeout guarantees the catch
+    // block below actually gets a chance to fall back to placeholder data.
+    const res = await fetch(url, {
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(8000),
+    });
     if (!res.ok) throw new Error(`Sheet returned ${res.status}`);
 
     // Strip BOM, normalise Windows line endings.
