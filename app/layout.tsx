@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Karla } from "next/font/google";
 import { AgeGate } from "@/components/age-gate";
 import { CookieConsent } from "@/components/cookie-consent";
@@ -27,10 +27,66 @@ const karla = Karla({
   variable: "--font-karla",
 });
 
+const SITE_URL = "https://floraandflame.co";
+const SITE_NAME = "Flora & Flame";
+const SITE_TITLE = "Flora & Flame — Living Soil Cannabis, Oakland CA";
+const SITE_DESCRIPTION =
+  "Small-batch, no-till living soil cannabis grown by hand in Oakland, California. Pesticide-free, hand-trimmed flower for licensed retailers statewide.";
+
 export const metadata: Metadata = {
-  title: "Flora & Flame — Living Soil Cannabis, Oakland CA",
-  description:
-    "Placeholder meta description. Living soil cannabis grown in Oakland, California.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "living soil cannabis",
+    "Oakland cannabis cultivator",
+    "no-till cannabis",
+    "craft cannabis California",
+    "small batch cannabis flower",
+    "California cannabis wholesale",
+  ],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  category: "business",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/logo.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1c1915",
 };
 
 export default function RootLayout({
