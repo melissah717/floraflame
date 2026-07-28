@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Marquee } from "@/components/scroll-primitives";
 import { NewsletterSignup } from "@/components/newsletter-signup";
+import { PrivacyPolicyModal, TermsModal } from "@/components/legal-modals";
 
 export function SiteFooter() {
   return (
@@ -90,8 +91,12 @@ export function SiteFooter() {
             .
           </p>
 
-          <div className="mt-6 flex flex-col gap-3 text-[11px] uppercase tracking-[0.18em] text-neutral-400 sm:flex-row sm:justify-between">
+          <div className="mt-6 flex flex-col gap-4 text-[11px] uppercase tracking-[0.18em] text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
             <span>© {new Date().getFullYear()} Flora &amp; Flame</span>
+            <div className="flex gap-5">
+              <PrivacyPolicyModal />
+              <TermsModal />
+            </div>
             <span>License # — C120000449-LIC · 21+ only</span>
           </div>
         </div>
