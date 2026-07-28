@@ -39,8 +39,8 @@ export function SectionTransition() {
 
   if (reduce) {
     return (
-      <div className="flex h-40 items-center justify-center bg-gradient-to-b from-neutral-900 to-neutral-100">
-        <p className="mix-blend-difference px-5 text-center font-display text-3xl text-neutral-50 sm:text-4xl">
+      <div className="flex h-24 items-center justify-center bg-gradient-to-b from-neutral-900 to-neutral-100">
+        <p className="mix-blend-difference px-5 text-center font-display text-2xl text-neutral-50 sm:text-3xl">
           Still have questions?
         </p>
       </div>
@@ -51,7 +51,7 @@ export function SectionTransition() {
     <motion.div
       ref={ref}
       style={{ backgroundColor }}
-      className="relative flex h-[40vh] items-center justify-center overflow-hidden sm:h-[55vh]"
+      className="relative flex h-[18vh] items-center justify-center overflow-hidden sm:h-[24vh]"
     >
       <motion.div
         aria-hidden

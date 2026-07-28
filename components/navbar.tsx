@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 const SECTIONS = [
   { id: "about", label: "About" },
+  { id: "drops", label: "Drops" },
   { id: "wholesale", label: "Contact" },
   { id: "find-us", label: "Find Us" },
 ];
@@ -85,8 +86,8 @@ export function Navbar() {
                 "px-4 py-2 text-md transition-colors duration-200",
                 active === id
                   ? // Active state is a weight bump only — 400 → 500.
-                    // Subtle enough to read as emphasis, not a different label.
-                    "font-medium text-neutral-900"
+                  // Subtle enough to read as emphasis, not a different label.
+                  "font-medium text-neutral-900"
                   : "font-normal text-neutral-500 hover:text-neutral-900"
               )}
             >
@@ -109,6 +110,22 @@ export function Navbar() {
           >
             Merch
           </span>
+
+          <Button
+            size="lg"
+            onClick={() => scrollTo("subscribe")}
+            className="ml-4 rounded-full border border-neutral-300 bg-transparent px-6 text-base font-normal text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+          >
+            Subscribe
+          </Button>
+
+          <Button
+            size="lg"
+            onClick={() => scrollTo("wholesale")}
+            className="ml-3 rounded-full bg-neutral-900 px-7 text-base font-normal text-neutral-50 hover:bg-neutral-700"
+          >
+            Get in touch
+          </Button>
         </div>
 
         {/* Mobile */}
@@ -153,8 +170,18 @@ export function Navbar() {
                 </span>
               </Link>
 
+              <button
+                onClick={() => scrollTo("subscribe")}
+                className="flex items-baseline gap-4 border-b border-neutral-700 py-5 text-left"
+              >
+                <span className="text-xs tabular-nums text-neutral-500">06</span>
+                <span className="font-display text-3xl text-neutral-50">
+                  Subscribe
+                </span>
+              </button>
+
               <div className="flex items-baseline gap-4 py-5">
-                <span className="text-xs tabular-nums text-neutral-600">06</span>
+                <span className="text-xs tabular-nums text-neutral-600">07</span>
                 <span className="font-display text-3xl text-neutral-600">
                   Merch
                 </span>

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Karla } from "next/font/google";
+import { AgeGate } from "@/components/age-gate";
+import { CookieConsent } from "@/components/cookie-consent";
 import { Preloader } from "@/components/preloader";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/footer";
@@ -39,6 +41,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${fraunces.variable} ${karla.variable}`}>
       <body className="bg-neutral-50 font-sans text-neutral-900 antialiased">
+        <AgeGate />
+        <CookieConsent />
         <Preloader />
         <Navbar />
         <main>{children}</main>
