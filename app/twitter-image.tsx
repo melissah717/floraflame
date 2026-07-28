@@ -1,15 +1,16 @@
 import { ImageResponse } from "next/og";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 
-export const runtime = "nodejs";
+// Edge, not nodejs — see opengraph-image.tsx for why.
+export const runtime = "edge";
 export const alt = "Flora & Flame — Living Soil Cannabis, Oakland CA";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
-  const logoData = await readFile(join(process.cwd(), "public", "logo.png"));
-  const logoSrc = `data:image/png;base64,${logoData.toString("base64")}`;
+  const logoBuffer = await fetch(
+    new URL("./logo-og.png", import.meta.url)
+  ).then((res) => res.arrayBuffer());
+  const logoSrc = `data:image/png;base64,${Buffer.from(logoBuffer).toString("base64")}`;
 
   return new ImageResponse(
     (
