@@ -15,20 +15,16 @@ import { Reveal, SectionLabel } from "@/components/scroll-primitives";
  * Full-bleed About with image-masked display type.
  *
  * SCROLL BUDGET — everything runs off one tracker whose range ends when the
- * section's top reaches 20% of the viewport. Windows are laid out in
- * sequence across that range so nothing plays before it's on screen:
+ * section's top reaches 20% of the viewport. Every window must FINISH at or
+ * before 1.0: progress caps there, so anything ending past it freezes
+ * mid-transition and never lands.
  *
- *   0.25 – 0.80   heading lines wipe up, staggered
- *   0.62 – 0.92   second photo slides in
- *   0.70 – 1.00   stats rise
+ *   0.25 – 0.79   heading lines slide up, staggered
+ *   0.55 – 1.00   second photo rises from below (long window = slow)
+ *   0.72 – 0.97   stats rise
  */
 
-/**
- * Spaces removed on purpose — THEWAY / NATURE / INTENDED sets as a solid
- * block, which is what gives the image something continuous to fill. A word
- * space punches a hole straight through the middle of the mask.
- */
-const HEADING = ["Theway", "Nature", "Intended"];
+const HEADING = ["The way", "Nature", "Intended"];
 
 const STATS = [
   { k: "Founded", v: "2017" },
@@ -48,8 +44,8 @@ const MASK_IMAGE = "/logo.png";
 const MASK_BASE = "#1c1915";
 
 /**
- * Logo height, in line-heights. This is the knob that decides whether black
- * shows through: width follows the aspect ratio, so for a squarish logo the
+ * Logo height, in line-heights. The knob that decides whether black shows
+ * through: width follows the aspect ratio, so for a squarish logo the
  * rendered width is roughly MASK_SCALE × line-height. Under ~8 leaves the
  * image narrower than the text block and the outer letters render solid.
  */
@@ -57,6 +53,14 @@ const MASK_SCALE = 10;
 
 /** Horizontal crop, once the image is wider than the block. */
 const MASK_X = "50%";
+
+/**
+ * Visual leading for the headline. The slots need a FULL line box (1.0) or
+ * overflow-hidden clips the letterforms, so the tightness is applied as a
+ * negative margin between slots instead of as a line-height.
+ */
+const LINE_HEIGHT = 1;
+const LINE_TIGHTEN = "-0.26em";
 
 /** Shared gutter. Keep in sync with the other full-bleed sections. */
 const GUTTER = "px-5 sm:px-8 lg:px-14";
@@ -87,12 +91,11 @@ export function About() {
   const imgY = useTransform(imgProgress, [0.45, 0.95], ["0%", "-100%"]);
 
   /**
-   * Second photo, in the sticky column. Slides in from the left behind a
-   * fixed frame — the frame clips, the photo travels. Starts at 0.62, just
-   * as the last heading line finishes at 0.80, so it reads as the next beat
-   * rather than a simultaneous event.
+   * Second photo. Long window (0.55 → 1.0) is what makes it feel slow — the
+   * same distance over more scroll. 102% so it starts fully clear of the
+   * frame; at exactly 100% a sub-pixel seam can show along the bottom edge.
    */
-  const photo2X = useTransform(sectionProgress, [0.62, 0.92], ["-1%", "0%"]);
+  const photo2Y = useTransform(sectionProgress, [0.55, 1], ["102%", "0%"]);
 
   return (
     // No overflow-hidden — an overflow-hidden ancestor silently disables
@@ -110,7 +113,7 @@ export function About() {
           </Reveal>
 
           <h2
-            className="mt-10 font-display uppercase leading-[0.74] tracking-[-0.065em]"
+            className="mt-10 font-display uppercase tracking-[-0.065em]"
             style={{ fontWeight: 900 }}
           >
             {HEADING.map((line, i) => (
@@ -126,16 +129,16 @@ export function About() {
           </h2>
 
           {/* Second photo — arrives after the heading resolves */}
-          <div className="mt-12 max-w-lg overflow-hidden">
+          <div className="mt-12 w-full overflow-hidden">
             <motion.div
-              style={reduce ? undefined : { x: photo2X }}
+              style={reduce ? undefined : { y: photo2Y }}
               className="relative aspect-[4/3] w-full will-change-transform"
             >
               <Image
                 src="/about2.webp"
                 alt="Living soil grown flower, close up"
                 fill
-                sizes="(max-width: 1024px) 100vw, 40vw"
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
               />
             </motion.div>
@@ -154,7 +157,7 @@ export function About() {
                 className="relative h-full w-full will-change-transform"
               >
                 <Image
-                  src="/about1.webp"
+                  src="/about.webp"
                   alt="Hand-tending plants in the Oakland grow room"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -223,8 +226,7 @@ export function About() {
  *
  *   Pᵢ = ( (MASK_SCALE − lines) / 2 + i ) / (MASK_SCALE − 1) × 100
  *
- * The first term centres the visible band, so the crop takes the middle of
- * the logo rather than the top. At MASK_SCALE 10, 3 lines: 38.9 / 50 / 61.1.
+ * At MASK_SCALE 10, 3 lines: 38.9 / 50 / 61.1.
  */
 function slicePosition(index: number, lines: number): number {
   if (MASK_SCALE <= lines) {
@@ -235,12 +237,17 @@ function slicePosition(index: number, lines: number): number {
 }
 
 /**
- * One line of image-filled type, revealed by a bottom-up wipe.
+ * One line of image-filled type, sliding up out of a slot.
  *
- * Clip-path rather than translate, deliberately: the background image is
- * painted relative to the element's own box, so moving the element drags the
- * image with it and the picture visibly slides mid-reveal. Clipping leaves
- * the element still and just uncovers it.
+ * TWO ELEMENTS: the outer span is the slot (overflow-hidden, doesn't move),
+ * the inner one carries the mask and translates. The background travels with
+ * the inner element — unavoidable, since a background is painted relative to
+ * its own element's box — but over one line-height of movement against an
+ * image ten line-heights tall, the shift is small and it settles correctly.
+ *
+ * The slot needs a FULL line box (line-height 1) or overflow-hidden clips
+ * the letterforms at rest. The tight visual leading is applied as a negative
+ * margin between slots instead, which doesn't affect the clipping box.
  */
 function MaskedLine({
   text,
@@ -255,20 +262,16 @@ function MaskedLine({
   progress: MotionValue<number>;
   disabled: boolean;
 }) {
-  const start = 0.25 + index * 0.18;
-  const end = start + 0.3;
+  const start = 0.25 + index * 0.14;
+  const end = start + 0.28; // last line ends at 0.79 — inside the range
 
-  const clipPath = useTransform(
-    progress,
-    [start, end],
-    ["inset(100% 0% 0% 0%)", "inset(0% 0% 0% 0%)"]
-  );
+  const y = useTransform(progress, [start, end], ["105%", "0%"]);
 
   const maskStyle: React.CSSProperties = {
     backgroundColor: MASK_BASE,
     backgroundImage: `url(${MASK_IMAGE})`,
-    // `auto` width is what stops the warping — only the height is set and
-    // the width follows the real aspect ratio.
+    // `auto` width stops the warping — only the height is set, and the
+    // width follows the real aspect ratio.
     backgroundSize: `auto ${MASK_SCALE * 100}%`,
     backgroundPosition: `${MASK_X} ${slicePosition(index, total)}%`,
     backgroundRepeat: "no-repeat",
@@ -276,28 +279,40 @@ function MaskedLine({
 
   const sizeClass = "text-[clamp(2.5rem,8.5vw,11rem)]";
 
-  if (disabled) {
-    return (
-      <span
-        style={maskStyle}
-        className={`block bg-clip-text text-transparent ${sizeClass}`}
-      >
-        {text}
-      </span>
-    );
-  }
-
   return (
-    <motion.span
-      style={{ ...maskStyle, clipPath, willChange: "clip-path" }}
-      className={`block bg-clip-text text-transparent ${sizeClass}`}
+    <span
+      className={`block overflow-hidden ${sizeClass}`}
+      style={{
+        lineHeight: LINE_HEIGHT,
+        marginBottom: index < total - 1 ? LINE_TIGHTEN : undefined,
+      }}
     >
-      {text}
-    </motion.span>
+      {disabled ? (
+        <span
+          style={maskStyle}
+          className="block bg-clip-text text-transparent"
+        >
+          {text}
+        </span>
+      ) : (
+        <motion.span
+          style={{ ...maskStyle, y, willChange: "transform" }}
+          className="block bg-clip-text text-transparent"
+        >
+          {text}
+        </motion.span>
+      )}
+    </span>
   );
 }
 
-/** One figure, on its own staggered slice of the section's scroll. */
+/**
+ * One figure, on its own staggered slice of the section's scroll.
+ *
+ * Windows must END at or before 1.0. At 0.78 + index*0.08 with a 0.2 window
+ * the second stat ran 0.86 → 1.06, and since progress caps at 1 it froze
+ * partway — permanently offset and half-transparent.
+ */
 function Stat({
   stat,
   index,
@@ -309,8 +324,8 @@ function Stat({
   progress: MotionValue<number>;
   disabled: boolean;
 }) {
-  const start = 0.7 + index * 0.1;
-  const end = start + 0.25;
+  const start = 0.72 + index * 0.07;
+  const end = start + 0.18; // second stat ends at 0.97
 
   const y = useTransform(progress, [start, end], [40, 0]);
   const opacity = useTransform(progress, [start, end], [0, 1]);
