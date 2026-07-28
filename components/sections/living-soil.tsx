@@ -80,10 +80,11 @@ export function LivingSoil() {
             <div className="flex items-center gap-3 text-xs tracking-[0.08em] text-neutral-500">
               <span className="tabular-nums">02</span>
               <span className="h-px w-8 bg-neutral-300" />
-              <span></span>
+              <span>The Method</span>
             </div>
             <p className="mt-5 text-base leading-relaxed text-neutral-500">
-              No-till. No synthetics. No pesticides. No shortcuts.
+              No-till. No synthetics. No pesticides. The whole method comes
+              down to one idea, and it isn&apos;t a shortcut.
             </p>
           </div>
 
@@ -154,7 +155,7 @@ export function LivingSoil() {
         </div>
 
         <p className="mt-32 max-w-4xl font-display sm:mt-44 text-3xl leading-[1.1] sm:text-5xl">
-          Richer flavor, fuller effects, and flower that tastes clean because
+          Richer, fuller flavor, and flower that tastes clean because
           nothing synthetic ever touched it.
         </p>
       </div>
@@ -300,20 +301,32 @@ function Letter({
   progress: MotionValue<number>;
   disabled: boolean;
 }) {
-  const start = 0.15 + (index / total) * 0.5;
-  const end = start + 0.3;
+  const start = 0.12 + (index / total) * 0.55;
+  // Short window per letter. A long one leaves half the word mid-flight at
+  // any moment, which reads as mush rather than a wave.
+  const end = start + 0.16;
 
-  const y = useTransform(progress, [start, end], ["110%", "0%"]);
-  const opacity = useTransform(progress, [start, end], [0, 1]);
+  /**
+   * NO OPACITY. The overflow-hidden slot is the entire effect: a letter is
+   * either behind the mask or it isn't. Fading as well produces grey
+   * half-present letters sitting on the background — visible partial states
+   * that make it look broken rather than deliberate.
+   *
+   * The three-stop mapping approximates an ease-out: most of the distance
+   * covered early, then a settle. Doing it here avoids importing an easing
+   * function and keeps the curve visible where the values are.
+   */
+  const y = useTransform(
+    progress,
+    [start, start + (end - start) * 0.45, end],
+    ["115%", "28%", "0%"]
+  );
 
   if (disabled) return <span className="inline-block">{char}</span>;
 
   return (
-    <span className="inline-block overflow-hidden align-bottom">
-      <motion.span
-        style={{ y, opacity }}
-        className="inline-block will-change-transform"
-      >
+    <span className="inline-block overflow-hidden align-bottom leading-[1.05]">
+      <motion.span style={{ y }} className="inline-block will-change-transform">
         {char}
       </motion.span>
     </span>
