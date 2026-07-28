@@ -127,10 +127,10 @@ export function PrivacyPolicyModal() {
           <LegalSection heading="Contact">
             Questions about this policy or your data can be sent to{" "}
             <a
-              href="mailto:privacy@floraandflame.co"
+              href="mailto:floraflameca@gmail.com"
               className="underline hover:text-neutral-900"
             >
-              privacy@floraandflame.co
+              floraflameca@gmail.com
             </a>
             .
           </LegalSection>
@@ -231,10 +231,10 @@ export function TermsModal() {
           <LegalSection heading="Contact">
             Questions about these Terms can be sent to{" "}
             <a
-              href="mailto:hello@floraandflame.co"
+              href="mailto:floraflameca@gmail.com"
               className="underline hover:text-neutral-900"
             >
-              hello@floraandflame.co
+              floraflameca@gmail.com
             </a>
             .
           </LegalSection>
