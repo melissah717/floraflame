@@ -17,7 +17,6 @@ export type Strain = {
   name: string;
   image: string;
   spectrum: SpectrumPosition;
-  category: string;
   /** Flavor/effect keywords, shown as chips. */
   tags: string[];
   /** One or two sentences, revealed on demand rather than shown up front. */
@@ -36,7 +35,6 @@ export const STRAINS: Strain[] = [
     name: "Crunch Berries",
     image: "/Crunch_Berries.png",
     spectrum: "Indica",
-    category: "Indoor · Living Soil",
     tags: ["Berry", "Dessert", "Relaxing"],
     description:
       "A dessert-leaning indica with a jammy berry nose and a slow, heavy-lidded body high built for the end of the day.",
@@ -49,7 +47,6 @@ export const STRAINS: Strain[] = [
     name: "Donny Burger",
     image: "/Donny_Burger.png",
     spectrum: "Indica-Leaning Hybrid",
-    category: "Indoor · Living Soil",
     tags: ["Savory", "Gassy", "Heavy"],
     description:
       "Burger lineage through and through — funky and savory, built for couch-lock rather than conversation.",
@@ -69,7 +66,6 @@ export const STRAINS: Strain[] = [
     name: "GG4",
     image: "/GG4.png",
     spectrum: "Indica",
-    category: "Indoor · Living Soil",
     tags: ["Diesel", "Earthy", "Potent"],
     description:
       "The strain that needs no introduction: sticky, diesel-heavy, and reliably one of the stronger jars on the shelf.",
@@ -82,7 +78,6 @@ export const STRAINS: Strain[] = [
     name: "Moonbow",
     image: "/Moonbow.png",
     spectrum: "Indica-Leaning Hybrid",
-    category: "Indoor · Living Soil",
     tags: ["Fruity", "Balanced", "Uplifting"],
     description:
       "A true middle-of-the-road hybrid — bright fruit up front, with a calm, even effect that doesn't tip too far either way.",
@@ -95,7 +90,6 @@ export const STRAINS: Strain[] = [
     name: "Jammerz",
     image: "/Jammerz.png",
     spectrum: "Sativa-Leaning Hybrid",
-    category: "Indoor · Living Soil",
     tags: ["Tropical", "Sweet", "Social"],
     description:
       "Sweet and tropical with just enough lift to keep a conversation going without losing the thread.",
@@ -105,7 +99,6 @@ export const STRAINS: Strain[] = [
     name: "Guavanade",
     image: "/Guavanade.png",
     spectrum: "Indica-Leaning Hybrid",
-    category: "Indoor · Living Soil",
     tags: ["Citrus", "Tart", "Energizing"],
     description:
       "Guava and lemonade in name and in nose — tart, juicy, and leaning toward the brighter, more energetic side of the shelf.",
@@ -118,7 +111,6 @@ export const STRAINS: Strain[] = [
     name: "Super Silver Haze",
     image: "/Super_Silver_Haze.png",
     spectrum: "Sativa",
-    category: "Indoor · Living Soil",
     tags: ["Haze", "Sativa", "Cerebral"],
     description:
       "A classic haze — sharp and cerebral, built for daytime, with the lineage to back up the name.",

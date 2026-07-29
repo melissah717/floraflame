@@ -74,7 +74,7 @@ function validate(form: FormState): FormErrors {
 }
 
 /**
- * Decorative flowers flanking the form. Each one tracks the section's own
+ * Decorative linework flanking the form. Each one tracks the section's own
  * scroll-through progress (0 = section just entering from below, 1 = fully
  * scrolled past above) and windows its slide-in/slide-out around that, so
  * they parallax on as the section arrives and drift off again as it leaves
@@ -83,18 +83,18 @@ function validate(form: FormState): FormErrors {
  * lg+ only: below that the form fills the width and there's no gutter for
  * them to live in without overlapping it.
  */
-const FLOWERS_LEFT = [
-  { top: "6%", size: 84, inAt: 0.02, rise: 26 },
-  { top: "40%", size: 130, inAt: 0.08, rise: -22 },
-  { top: "76%", size: 76, inAt: 0.14, rise: 30 },
+const FORM_DECORS_LEFT = [
+  { top: "6%", size: 140, inAt: 0.02, rise: 24 },
+  { top: "40%", size: 220, inAt: 0.08, rise: -20 },
+  { top: "76%", size: 120, inAt: 0.14, rise: 28 },
 ];
-const FLOWERS_RIGHT = [
-  { top: "12%", size: 108, inAt: 0.05, rise: -24 },
-  { top: "48%", size: 72, inAt: 0.11, rise: 32 },
-  { top: "80%", size: 100, inAt: 0.17, rise: -18 },
+const FORM_DECORS_RIGHT = [
+  { top: "12%", size: 180, inAt: 0.05, rise: -22 },
+  { top: "48%", size: 130, inAt: 0.11, rise: 30 },
+  { top: "80%", size: 170, inAt: 0.17, rise: -16 },
 ];
 
-function FlowerDecor({
+function FormDecor({
   side,
   top,
   size,
@@ -140,9 +140,17 @@ function FlowerDecor({
         width: size,
         height: size,
       }}
-      className="pointer-events-none absolute z-0 hidden will-change-transform lg:block"
+      className="pointer-events-none absolute z-0 hidden text-neutral-700/50 will-change-transform xl:block"
     >
-      <Image src="/Flower.svg" alt="" fill className="object-contain" />
+      <div className="flex h-full w-full items-center justify-center opacity-70">
+        <Image
+          src="/logo.png"
+          alt=""
+          width={240}
+          height={240}
+          className="h-full w-full object-contain"
+        />
+      </div>
     </motion.div>
   );
 }
@@ -208,15 +216,15 @@ export function Wholesale() {
     <section
       ref={sectionRef}
       id="wholesale"
-      className="scroll-mt-20 relative overflow-hidden bg-neutral-100 px-5 py-24 sm:px-8 sm:py-32"
+      className="scroll-mt-20 relative overflow-hidden bg-neutral-100 px-5 py-24 text-neutral-900 sm:px-8 sm:py-32"
     >
       {!reduce && (
         <>
-          {FLOWERS_LEFT.map((f, i) => (
-            <FlowerDecor key={`left-${i}`} side="left" progress={flowerProgress} {...f} />
+          {FORM_DECORS_LEFT.map((f, i) => (
+            <FormDecor key={`left-${i}`} side="left" progress={flowerProgress} {...f} />
           ))}
-          {FLOWERS_RIGHT.map((f, i) => (
-            <FlowerDecor key={`right-${i}`} side="right" progress={flowerProgress} {...f} />
+          {FORM_DECORS_RIGHT.map((f, i) => (
+            <FormDecor key={`right-${i}`} side="right" progress={flowerProgress} {...f} />
           ))}
         </>
       )}
@@ -230,9 +238,11 @@ export function Wholesale() {
 
         <Reveal delay={0.05}>
           <ParallaxText speed={16}>
-            <h2 className="mx-auto mt-8 max-w-[20ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-6xl">
-              Tell us what you need.
-            </h2>
+            <div className="mx-auto mt-4 flex justify-center">
+              <h2 className="max-w-[14ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] text-neutral-950 sm:text-5xl lg:text-6xl">
+                Tell us what you need.
+              </h2>
+            </div>
           </ParallaxText>
         </Reveal>
 

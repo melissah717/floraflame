@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,9 @@ const SECTIONS = [
 ];
 
 export function Navbar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string>("");
   const [open, setOpen] = useState(false);
@@ -53,6 +57,13 @@ export function Navbar() {
 
   const scrollTo = (id: string) => {
     setOpen(false);
+    // These ids only exist on the homepage — off it, go there first and
+    // let Next's built-in hash-scroll (every section already sets
+    // scroll-mt-* for this) land on the section once it's rendered.
+    if (!isHome) {
+      router.push(`/#${id}`);
+      return;
+    }
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -77,7 +88,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop */}
-        <div className="hidden items-center gap-1 lg:flex">
+        <div className="hidden items-center gap-1 xl:flex">
           {SECTIONS.map(({ id, label }) => (
             <button
               key={id}
@@ -102,14 +113,19 @@ export function Navbar() {
             Blog
           </Link>
 
-          {/* Disabled until the Stripe work lands. */}
-          <span
-            aria-disabled="true"
-            title="Coming soon"
-            className="cursor-not-allowed px-4 py-2 text-lg text-neutral-300"
+          <Link
+            href="/archive"
+            className="px-4 py-2 text-lg text-neutral-500 transition-colors duration-200 hover:text-neutral-900"
+          >
+            Archive
+          </Link>
+
+          <Link
+            href="/merch"
+            className="px-4 py-2 text-lg text-neutral-500 transition-colors duration-200 hover:text-neutral-900"
           >
             Merch
-          </span>
+          </Link>
 
           <Button
             size="lg"
@@ -134,7 +150,7 @@ export function Navbar() {
               it directly. Avoids the Radix/React 19 prop inference issue. */}
           <SheetTrigger
             aria-label="Open menu"
-            className="inline-flex size-10 items-center justify-center rounded-md transition-colors hover:bg-neutral-200 lg:hidden"
+            className="inline-flex size-10 items-center justify-center rounded-md transition-colors hover:bg-neutral-200 xl:hidden"
           >
             <Menu className="size-6" />
           </SheetTrigger>
@@ -170,23 +186,37 @@ export function Navbar() {
                 </span>
               </Link>
 
+              <Link
+                href="/archive"
+                onClick={() => setOpen(false)}
+                className="flex items-baseline gap-4 border-b border-neutral-700 py-5"
+              >
+                <span className="text-xs tabular-nums text-neutral-500">06</span>
+                <span className="font-display text-3xl text-neutral-50">
+                  Archive
+                </span>
+              </Link>
+
               <button
                 onClick={() => scrollTo("subscribe")}
                 className="flex items-baseline gap-4 border-b border-neutral-700 py-5 text-left"
               >
-                <span className="text-xs tabular-nums text-neutral-500">06</span>
+                <span className="text-xs tabular-nums text-neutral-500">07</span>
                 <span className="font-display text-3xl text-neutral-50">
                   Subscribe
                 </span>
               </button>
 
-              <div className="flex items-baseline gap-4 py-5">
-                <span className="text-xs tabular-nums text-neutral-600">07</span>
-                <span className="font-display text-3xl text-neutral-600">
+              <Link
+                href="/merch"
+                onClick={() => setOpen(false)}
+                className="flex items-baseline gap-4 py-5"
+              >
+                <span className="text-xs tabular-nums text-neutral-500">08</span>
+                <span className="font-display text-3xl text-neutral-50">
                   Merch
                 </span>
-                <span className="text-xs text-neutral-600">soon</span>
-              </div>
+              </Link>
             </div>
           </SheetContent>
         </Sheet>
