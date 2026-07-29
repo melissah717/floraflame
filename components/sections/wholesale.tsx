@@ -1,6 +1,14 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import Image from "next/image";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+  type MotionValue,
+} from "motion/react";
 import { US_STATES } from "@/lib/us-states";
 import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { Button } from "@/components/ui/button";
@@ -66,6 +74,88 @@ function validate(form: FormState): FormErrors {
 }
 
 /**
+ * Decorative linework flanking the form. Each one tracks the section's own
+ * scroll-through progress (0 = section just entering from below, 1 = fully
+ * scrolled past above) and windows its slide-in/slide-out around that, so
+ * they parallax on as the section arrives and drift off again as it leaves
+ * — never just appear/disappear.
+ *
+ * lg+ only: below that the form fills the width and there's no gutter for
+ * them to live in without overlapping it.
+ */
+const FORM_DECORS_LEFT = [
+  { top: "6%", size: 140, inAt: 0.02, rise: 24 },
+  { top: "40%", size: 220, inAt: 0.08, rise: -20 },
+  { top: "76%", size: 120, inAt: 0.14, rise: 28 },
+];
+const FORM_DECORS_RIGHT = [
+  { top: "12%", size: 180, inAt: 0.05, rise: -22 },
+  { top: "48%", size: 130, inAt: 0.11, rise: 30 },
+  { top: "80%", size: 170, inAt: 0.17, rise: -16 },
+];
+
+function FormDecor({
+  side,
+  top,
+  size,
+  inAt,
+  rise,
+  progress,
+}: {
+  side: "left" | "right";
+  top: string;
+  size: number;
+  /** Where in the section's 0–1 scroll-through this flower starts sliding in. */
+  inAt: number;
+  /** Extra vertical drift (px) while onscreen — gives each flower its own parallax speed. */
+  rise: number;
+  progress: MotionValue<number>;
+}) {
+  const inEnd = inAt + 0.16;
+  const outStart = 0.7 + inAt * 0.6;
+  const outEnd = outStart + 0.16;
+  const offscreen = side === "left" ? "-160%" : "160%";
+
+  const x = useTransform(
+    progress,
+    [0, inAt, inEnd, outStart, outEnd, 1],
+    [offscreen, offscreen, "0%", "0%", offscreen, offscreen]
+  );
+  const opacity = useTransform(
+    progress,
+    [inAt, inEnd, outStart, outEnd],
+    [0, 1, 1, 0]
+  );
+  const y = useTransform(progress, [0, 1], [rise, -rise]);
+
+  return (
+    <motion.div
+      aria-hidden
+      style={{
+        top,
+        [side]: "2%",
+        x,
+        y,
+        opacity,
+        width: size,
+        height: size,
+      }}
+      className="pointer-events-none absolute z-0 hidden text-neutral-700/50 will-change-transform xl:block"
+    >
+      <div className="flex h-full w-full items-center justify-center opacity-70">
+        <Image
+          src="/logo.png"
+          alt=""
+          width={240}
+          height={240}
+          className="h-full w-full object-contain"
+        />
+      </div>
+    </motion.div>
+  );
+}
+
+/**
  * Light section — deliberately breaks the light/dark/light/dark/light
  * rhythm the rest of the page uses, so this reads as a flat page of
  * neutral-100 next to About's neutral-50 and Find Us's neutral-100.
@@ -79,6 +169,13 @@ export function Wholesale() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
   const [sent, setSent] = useState(false);
+
+  const sectionRef = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress: flowerProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
 
   const update =
     (key: keyof FormState) =>
@@ -117,10 +214,22 @@ export function Wholesale() {
 
   return (
     <section
+      ref={sectionRef}
       id="wholesale"
-      className="scroll-mt-20 bg-neutral-100 px-5 py-24 sm:px-8 sm:py-32"
+      className="scroll-mt-20 relative overflow-hidden bg-neutral-100 px-5 py-24 text-neutral-900 sm:px-8 sm:py-32"
     >
-      <div className="mx-auto max-w-7xl">
+      {!reduce && (
+        <>
+          {FORM_DECORS_LEFT.map((f, i) => (
+            <FormDecor key={`left-${i}`} side="left" progress={flowerProgress} {...f} />
+          ))}
+          {FORM_DECORS_RIGHT.map((f, i) => (
+            <FormDecor key={`right-${i}`} side="right" progress={flowerProgress} {...f} />
+          ))}
+        </>
+      )}
+
+      <div className="relative z-10 mx-auto max-w-7xl">
         <Reveal>
           <div className="flex justify-center">
             <SectionLabel number="03">Submit a Request</SectionLabel>
@@ -129,9 +238,11 @@ export function Wholesale() {
 
         <Reveal delay={0.05}>
           <ParallaxText speed={16}>
-            <h2 className="mx-auto mt-8 max-w-[20ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-6xl">
-              Tell us what you need.
-            </h2>
+            <div className="mx-auto mt-4 flex justify-center">
+              <h2 className="max-w-[14ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] text-neutral-950 sm:text-5xl lg:text-6xl">
+                Tell us what you need.
+              </h2>
+            </div>
           </ParallaxText>
         </Reveal>
 
