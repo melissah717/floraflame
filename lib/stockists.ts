@@ -11,6 +11,8 @@
  * data by hand.
  */
 
+import { parseCsvLine } from "@/lib/csv";
+
 export type Stockist = {
   name: string;
   address: string;
@@ -245,40 +247,6 @@ export function directionsUrl(s: Stockist): string {
 /* ------------------------------------------------------------------ */
 /* Google Sheets                                                       */
 /* ------------------------------------------------------------------ */
-
-/**
- * Parses one CSV line, respecting quoted fields.
- *
- * Google quotes any cell containing a comma — which is most addresses — so
- * a naive line.split(",") shreds the data. This walks character by character
- * and only treats commas outside quotes as separators.
- */
-function parseCsvLine(line: string): string[] {
-  const out: string[] = [];
-  let cur = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-
-    if (ch === '"') {
-      // A doubled quote inside a quoted field is an escaped quote.
-      if (inQuotes && line[i + 1] === '"') {
-        cur += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (ch === "," && !inQuotes) {
-      out.push(cur);
-      cur = "";
-    } else {
-      cur += ch;
-    }
-  }
-  out.push(cur);
-  return out.map((c) => c.trim());
-}
 
 const LOG = "[stockists]";
 
