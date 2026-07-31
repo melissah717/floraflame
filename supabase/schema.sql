@@ -3,7 +3,7 @@
 -- A strain (e.g. "Crunch Berries") can have multiple rows over time as new
 -- batches come through the lab. `is_current` marks which batch is the one
 -- shown in the "Latest Drops" section on the homepage; everything else is
--- what the /archive page lists, grouped by year + quarter.
+-- what the /archive page lists, newest (by collected_at) first.
 --
 -- Run this whole file once in the Supabase SQL editor (Project -> SQL
 -- Editor -> New query) to create the table, lock it to public read-only
@@ -42,15 +42,16 @@ create table if not exists public.drop_batches (
   collected_at date,
   completed_at date,
 
-  -- Archive filtering
-  quarter text check (quarter in ('Q1', 'Q2', 'Q3', 'Q4')),
-  year integer,
-
   -- Which batch is "the" current drop for this strain on the homepage
   is_current boolean not null default false,
 
   created_at timestamptz not null default now()
 );
+
+-- If you already ran an earlier version of this file that had quarter/year
+-- columns, this drops them; harmless no-op on a fresh install.
+alter table public.drop_batches drop column if exists quarter;
+alter table public.drop_batches drop column if exists year;
 
 -- Anyone can read (the site fetches this with the public anon key);
 -- nobody can write through the app. Add/edit batches from the Supabase
@@ -72,7 +73,7 @@ create policy "Public can read drop batches"
 insert into public.drop_batches
   (slug, name, spectrum, image, tags, description, genetics, terpenes, ideal_time,
    thc_percent, lab_report_url, batch_number, produced_at, collected_at, completed_at,
-   quarter, year, is_current)
+   is_current)
 values
   (
     'crunch-berries', 'Crunch Berries', 'Indica',
@@ -84,7 +85,7 @@ values
     'Evenings',
     19.8, '/lab-reports/crunch_berries_lab.pdf', 'CB040326',
     '2026-03-23', '2026-04-03', '2026-04-08',
-    'Q2', 2026, true
+    true
   ),
   (
     'donny-burger', 'Donny Burger', 'Indica-Leaning Hybrid',
@@ -96,7 +97,7 @@ values
     'Before bed',
     30.3, '/lab-reports/donny_burger_lab.pdf', '041626DB',
     '2026-03-23', '2026-04-16', '2026-04-20',
-    'Q2', 2026, true
+    true
   ),
   (
     'gg4', 'GG4', 'Indica',
@@ -108,7 +109,7 @@ values
     'Before bed, weekends',
     23.0, '/lab-reports/gorilla_glue_lab.pdf', 'GG040326',
     null, '2026-04-02', '2026-04-08',
-    'Q2', 2026, true
+    true
   ),
   (
     'moonbow', 'Moonbow', 'Indica-Leaning Hybrid',
@@ -120,7 +121,7 @@ values
     'Evening',
     32.8, '/lab-reports/moonbow_lab.pdf', 'MB5132026',
     null, '2026-05-13', '2026-05-18',
-    'Q2', 2026, true
+    true
   ),
   (
     'jammerz', 'Jammerz', 'Sativa-Leaning Hybrid',
@@ -130,7 +131,7 @@ values
     null, null, null,
     34.1, '/lab-reports/jammerz_lab.pdf', 'MZ5132026',
     null, '2026-05-13', '2026-05-18',
-    'Q2', 2026, true
+    true
   ),
   (
     'guavanade', 'Guavanade', 'Indica-Leaning Hybrid',
@@ -142,7 +143,7 @@ values
     'Evening, after work',
     18.1, '/lab-reports/guavanade_lab.pdf', 'GN040326',
     '2026-03-23', '2026-04-03', '2026-04-08',
-    'Q2', 2026, true
+    true
   ),
   (
     'super-silver-haze', 'Super Silver Haze', 'Sativa',
@@ -154,5 +155,5 @@ values
     'Mornings',
     25.0, '/lab-reports/super_silver_haze_lab.pdf', 'SSH040326',
     '2026-03-23', '2026-04-03', '2026-04-08',
-    'Q2', 2026, true
+    true
   );

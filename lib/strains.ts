@@ -35,8 +35,6 @@ export type Strain = {
   labReport?: string;
   /** METRC/COA batch code, e.g. "CB040326". */
   batchNumber?: string;
-  quarter?: "Q1" | "Q2" | "Q3" | "Q4";
-  year?: number;
 };
 
 /**
@@ -73,8 +71,6 @@ type DropBatchRow = {
   thc_percent: number | string | null;
   lab_report_url: string | null;
   batch_number: string | null;
-  quarter: string | null;
-  year: number | null;
 };
 
 function isSpectrumPosition(value: string): value is SpectrumPosition {
@@ -100,13 +96,11 @@ function rowToStrain(row: DropBatchRow): Strain | null {
     thc: row.thc_percent != null ? `${Number(row.thc_percent).toFixed(1)}%` : undefined,
     labReport: row.lab_report_url ?? undefined,
     batchNumber: row.batch_number ?? undefined,
-    quarter: row.quarter && ["Q1", "Q2", "Q3", "Q4"].includes(row.quarter) ? (row.quarter as Strain["quarter"]) : undefined,
-    year: row.year ?? undefined,
   };
 }
 
 const SELECT_COLUMNS =
-  "slug, name, image, spectrum, tags, description, genetics, terpenes, ideal_time, thc_percent, lab_report_url, batch_number, quarter, year";
+  "slug, name, image, spectrum, tags, description, genetics, terpenes, ideal_time, thc_percent, lab_report_url, batch_number";
 
 /** The batches shown in the homepage's "Latest Drops" section. */
 export async function getCurrentDrops(): Promise<Strain[]> {
@@ -135,8 +129,7 @@ export async function getArchiveBatches(): Promise<Strain[]> {
   const { data, error } = await supabase
     .from("drop_batches")
     .select(SELECT_COLUMNS)
-    .order("year", { ascending: false })
-    .order("quarter", { ascending: false })
+    .order("collected_at", { ascending: false, nullsFirst: false })
     .order("name", { ascending: true });
 
   if (error) {
