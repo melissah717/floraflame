@@ -6,6 +6,12 @@ import { SectionTransition } from "@/components/sections/section-transition";
 import { Wholesale } from "@/components/sections/wholesale";
 import { FindUs } from "@/components/sections/find-us";
 import { LivingSoil } from "@/components/sections/living-soil";
+import { getCurrentDrops } from "@/lib/strains";
+
+// Re-checks Supabase for new/updated drops every hour rather than only at
+// build time, without giving up static generation for the rest of the
+// page the way force-dynamic would.
+export const revalidate = 3600;
 
 // Organization schema, not LocalBusiness — Flora & Flame sells wholesale to
 // licensed retailers rather than operating its own public storefront, so
@@ -28,7 +34,9 @@ const ORGANIZATION_JSON_LD = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const strains = await getCurrentDrops();
+
   return (
     <>
       <script
@@ -47,7 +55,7 @@ export default function HomePage() {
       <div className="relative z-10 bg-neutral-50">
         <About />
         <LivingSoil />
-        <Drops />
+        <Drops strains={strains} />
         <SectionTransition />
         <Wholesale />
         <FindUs />

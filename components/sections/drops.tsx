@@ -4,14 +4,15 @@ import Image from "next/image";
 import {
   Fragment,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronLeft, ChevronRight, Info } from "lucide-react";
-import { SPECTRUM_POSITIONS, STRAINS, type SpectrumPosition } from "@/lib/strains";
+import { ChevronLeft, ChevronRight, FileText, Info } from "lucide-react";
+import { SPECTRUM_POSITIONS, type SpectrumPosition, type Strain } from "@/lib/strains";
 import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { cn } from "@/lib/utils";
 
@@ -205,9 +206,12 @@ function anchorForSpectrum(position: SpectrumPosition) {
   return ((index + 0.5) / SPECTRUM_POSITIONS.length) * 100;
 }
 
-const SORTED = [...STRAINS].sort(
-  (a, b) => anchorForSpectrum(a.spectrum) - anchorForSpectrum(b.spectrum)
-);
+function sortBySpectrum(strains: Strain[]) {
+  return [...strains].sort(
+    (a, b) => anchorForSpectrum(a.spectrum) - anchorForSpectrum(b.spectrum)
+  );
+}
+
 const RAIL_GRADIENT = `linear-gradient(90deg, rgb(${INDICA.join(" ")}), rgb(${HYBRID.join(" ")}), rgb(${SATIVA.join(" ")}))`;
 
 // Icons closer than this (in px) would visually overlap on the rail, so they
@@ -216,9 +220,116 @@ const COLLISION_PX = 40;
 const PILE_OFFSET_PX = 5;
 const POP_LIFT_PX = 64;
 
-export function Drops() {
+/**
+ * Name, tags, and (optionally) the expanded description/dl block for one
+ * strain. Pulled out of the animated stage so the exact same markup can
+ * be rendered a second time, invisibly, purely to measure how tall each
+ * strain's content naturally is — see the min-height reservation in
+ * Drops() below.
+ */
+function StrainInfo({
+  strain,
+  color,
+  showDescription,
+  onToggleDescription,
+}: {
+  strain: Strain;
+  color: string;
+  showDescription: boolean;
+  onToggleDescription: () => void;
+}) {
+  return (
+    <>
+      <h3 className="flex items-center gap-2 font-display text-4xl leading-none sm:block sm:text-6xl lg:text-7xl">
+        {strain.name}
+      </h3>
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-5 sm:mt-8 lg:justify-start">
+        <div className="flex items-center gap-3">
+          <span
+            className="h-3 w-3 rounded-full transition-colors duration-500"
+            style={{ backgroundColor: color }}
+            aria-hidden
+          />
+          <span className="text-sm tracking-[0.04em] text-neutral-300 sm:text-base">
+            {strain.spectrum}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:mt-5 sm:gap-2.5 lg:justify-start">
+        {strain.tags.map((tag) => (
+          <span
+            key={tag}
+            className="rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400 sm:px-3 sm:py-1.5 sm:text-xs"
+          >
+            {tag}
+          </span>
+        ))}
+        <button
+          type="button"
+          onClick={onToggleDescription}
+          aria-expanded={showDescription}
+          className="flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50 sm:px-3 sm:py-1.5 sm:text-xs"
+        >
+          <Info className="h-3.5 w-3.5" />
+          {showDescription ? "Less" : "More"}
+        </button>
+        {strain.labReport && (
+          <a
+            href={strain.labReport}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50 sm:px-3 sm:py-1.5 sm:text-xs"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            Lab Report
+          </a>
+        )}
+      </div>
+
+      {showDescription && (
+        <div>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-neutral-50 sm:mt-4 sm:text-base lg:max-w-2xl lg:text-lg">
+            {strain.description}
+          </p>
+          {(strain.thc || strain.genetics || strain.terpenes || strain.idealTime) && (
+            <dl className="mt-3 flex max-w-md flex-col gap-2 text-sm sm:mt-5 lg:max-w-2xl">
+              {strain.thc && (
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <dt className="tracking-[0.06em] text-neutral-500">THC</dt>
+                  <dd className="text-neutral-300">{strain.thc}</dd>
+                </div>
+              )}
+              {strain.genetics && (
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <dt className="tracking-[0.06em] text-neutral-500">Genetics</dt>
+                  <dd className="text-neutral-300">{strain.genetics}</dd>
+                </div>
+              )}
+              {strain.terpenes && (
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <dt className="tracking-[0.06em] text-neutral-500">Terpenes</dt>
+                  <dd className="text-neutral-300">{strain.terpenes.join(", ")}</dd>
+                </div>
+              )}
+              {strain.idealTime && (
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <dt className="tracking-[0.06em] text-neutral-500">Best time</dt>
+                  <dd className="text-neutral-300">{strain.idealTime}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+export function Drops({ strains }: { strains: Strain[] }) {
+  const SORTED = useMemo(() => sortBySpectrum(strains), [strains]);
   const [activeSlug, setActiveSlug] = useState(
-    SORTED[Math.floor(SORTED.length / 2)].slug
+    () => SORTED[Math.floor(SORTED.length / 2)]?.slug ?? ""
   );
   const trackRef = useRef<HTMLDivElement>(null);
   const [trackWidth, setTrackWidth] = useState(0);
@@ -228,6 +339,42 @@ export function Drops() {
   // content above.
   const [isMobile, setIsMobile] = useState(false);
 
+  // Reserves enough height for the longest strain's content in the current
+  // toggle state, so switching strains never resizes the section — only
+  // deliberately opening/closing the description does. Measured from
+  // invisible copies of every strain rather than hardcoded, so it stays
+  // correct as strain copy changes.
+  const infoColumnRef = useRef<HTMLDivElement>(null);
+  const collapsedMeasureRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const expandedMeasureRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [collapsedMinH, setCollapsedMinH] = useState<number>();
+  const [expandedMinH, setExpandedMinH] = useState<number>();
+
+  const remeasure = () => {
+    const collapsedMax = Math.max(
+      0,
+      ...collapsedMeasureRefs.current.map((el) => el?.getBoundingClientRect().height ?? 0)
+    );
+    const expandedMax = Math.max(
+      0,
+      ...expandedMeasureRefs.current.map((el) => el?.getBoundingClientRect().height ?? 0)
+    );
+    if (collapsedMax > 0) setCollapsedMinH(collapsedMax);
+    if (expandedMax > 0) setExpandedMinH(expandedMax);
+  };
+
+  useLayoutEffect(() => {
+    remeasure();
+  }, []);
+
+  useEffect(() => {
+    const el = infoColumnRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => remeasure());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   useEffect(() => {
     const mql = window.matchMedia("(max-width: 639px)");
     setIsMobile(mql.matches);
@@ -236,7 +383,7 @@ export function Drops() {
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  const active = STRAINS.find((s) => s.slug === activeSlug) ?? STRAINS[0];
+  const active = strains.find((s) => s.slug === activeSlug) ?? strains[0];
   const activeAnchor = anchorForSpectrum(active.spectrum);
   const color = colorForHybrid(activeAnchor);
   const activeIndex = SORTED.findIndex((s) => s.slug === activeSlug);
@@ -381,7 +528,7 @@ export function Drops() {
             </AnimatePresence>
           </div>
 
-          <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+          <div ref={infoColumnRef} className="relative flex flex-col items-center text-center lg:items-start lg:text-left">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active.slug}
@@ -389,92 +536,49 @@ export function Drops() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.3 }}
+                style={{ minHeight: descriptionOpen ? expandedMinH : collapsedMinH }}
                 className="flex flex-col items-center lg:items-start"
               >
-                <h3 className="flex items-center gap-2 font-display text-4xl leading-none sm:block sm:text-6xl lg:text-7xl">
-                  {active.name}
-                </h3>
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-5 sm:mt-8 lg:justify-start">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="h-3 w-3 rounded-full transition-colors duration-500"
-                      style={{ backgroundColor: color }}
-                      aria-hidden
-                    />
-                    <span className="text-sm tracking-[0.04em] text-neutral-300 sm:text-base">
-                      {active.spectrum}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:mt-5 sm:gap-2.5 lg:justify-start">
-                  {active.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400 sm:px-3 sm:py-1.5 sm:text-xs"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => setDescriptionOpen((v) => !v)}
-                    aria-expanded={descriptionOpen}
-                    className="flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50 sm:px-3 sm:py-1.5 sm:text-xs"
-                  >
-                    <Info className="h-3.5 w-3.5" />
-                    {descriptionOpen ? "Less" : "More"}
-                  </button>
-                </div>
-
-                <AnimatePresence initial={false}>
-                  {descriptionOpen && (
-                    <motion.div
-                      key="description"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25, ease: "easeOut" }}
-                      className="overflow-hidden"
-                    >
-                      <p className="mt-3 max-w-md text-sm leading-relaxed text-neutral-50 sm:mt-4 sm:text-base lg:max-w-2xl lg:text-lg">
-                        {active.description}
-                      </p>
-                      {(active.genetics || active.terpenes || active.idealTime) && (
-                        <dl className="mt-3 flex max-w-md flex-col gap-2 text-sm sm:mt-5 lg:max-w-2xl">
-                          {active.genetics && (
-                            <div className="flex flex-wrap items-baseline gap-x-2">
-                              <dt className="tracking-[0.06em] text-neutral-500">
-                                Genetics
-                              </dt>
-                              <dd className="text-neutral-300">{active.genetics}</dd>
-                            </div>
-                          )}
-                          {active.terpenes && (
-                            <div className="flex flex-wrap items-baseline gap-x-2">
-                              <dt className="tracking-[0.06em] text-neutral-500">
-                                Terpenes
-                              </dt>
-                              <dd className="text-neutral-300">
-                                {active.terpenes.join(", ")}
-                              </dd>
-                            </div>
-                          )}
-                          {active.idealTime && (
-                            <div className="flex flex-wrap items-baseline gap-x-2">
-                              <dt className="tracking-[0.06em] text-neutral-500">
-                                Best time
-                              </dt>
-                              <dd className="text-neutral-300">{active.idealTime}</dd>
-                            </div>
-                          )}
-                        </dl>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <StrainInfo
+                  strain={active}
+                  color={color}
+                  showDescription={descriptionOpen}
+                  onToggleDescription={() => setDescriptionOpen((v) => !v)}
+                />
               </motion.div>
             </AnimatePresence>
+
+            {/* Invisible — exists only so ResizeObserver + the layout effect
+                above can measure every strain's natural height (collapsed
+                and expanded) and lock the stage to the tallest, so switching
+                strains never resizes the section. */}
+            <div
+              aria-hidden
+              className="pointer-events-none invisible absolute inset-x-0 top-0 flex flex-col items-center lg:items-start"
+            >
+              {strains.map((s, i) => (
+                <div
+                  key={`collapsed-${s.slug}`}
+                  ref={(el) => {
+                    collapsedMeasureRefs.current[i] = el;
+                  }}
+                  className="flex flex-col items-center lg:items-start"
+                >
+                  <StrainInfo strain={s} color={color} showDescription={false} onToggleDescription={() => {}} />
+                </div>
+              ))}
+              {strains.map((s, i) => (
+                <div
+                  key={`expanded-${s.slug}`}
+                  ref={(el) => {
+                    expandedMeasureRefs.current[i] = el;
+                  }}
+                  className="flex flex-col items-center lg:items-start"
+                >
+                  <StrainInfo strain={s} color={color} showDescription onToggleDescription={() => {}} />
+                </div>
+              ))}
+            </div>
 
             {/* Hidden on mobile — the small dot next to the strain name above
                 covers this, and this bar's position collides with the rail's
@@ -529,7 +633,7 @@ export function Drops() {
             aria-hidden
           />
 
-          {STRAINS.map((s) => {
+          {strains.map((s) => {
             const isActive = s.slug === activeSlug;
             const pileIndex = pileIndexBySlug.get(s.slug) ?? 0;
             const piled = inPileBySlug.get(s.slug) ?? false;

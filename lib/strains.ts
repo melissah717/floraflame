@@ -1,3 +1,5 @@
+import { supabase } from "@/lib/supabase";
+
 /**
  * Where a strain sits on the indica → sativa spectrum, relative to the
  * others — not a lab-measured ratio, just a qualitative bucket.
@@ -27,9 +29,23 @@ export type Strain = {
   terpenes?: string[];
   /** When it's best used, e.g. "Evening" or "Before bed". */
   idealTime?: string;
+  /** Total THC from the COA, e.g. "19.8%". */
+  thc?: string;
+  /** Path to the strain's COA PDF. Not all batches have one on file yet. */
+  labReport?: string;
+  /** METRC/COA batch code, e.g. "CB040326". */
+  batchNumber?: string;
+  quarter?: "Q1" | "Q2" | "Q3" | "Q4";
+  year?: number;
 };
 
-export const STRAINS: Strain[] = [
+/**
+ * Placeholder rows. Only used when the Supabase fetch fails — see
+ * fetchDropBatches below. Deliberately small (not the full 7-strain set)
+ * so an outage is visually obvious rather than looking identical to a
+ * real, fully-populated Drops section.
+ */
+const FALLBACK_STRAINS: Strain[] = [
   {
     slug: "crunch-berries",
     name: "Crunch Berries",
@@ -38,84 +54,95 @@ export const STRAINS: Strain[] = [
     tags: ["Berry", "Dessert", "Relaxing"],
     description:
       "A dessert-leaning indica with a jammy berry nose and a slow, heavy-lidded body high built for the end of the day.",
-    genetics: "Gassius Clay x Billy Kimber x Sweet Retreat",
-    terpenes: ["Pinene", "Caryophyllene", "Myrcene", "Humulene", "Limonene"],
     idealTime: "Evenings",
   },
-  {
-    slug: "donny-burger",
-    name: "Donny Burger",
-    image: "/Donny_Burger.png",
-    spectrum: "Indica-Leaning Hybrid",
-    tags: ["Savory", "Gassy", "Heavy"],
-    description:
-      "Burger lineage through and through — funky and savory, built for couch-lock rather than conversation.",
-    genetics: "GMO x Han Solo Burger",
-    terpenes: [
-      "Pinene",
-      "Caryophyllene",
-      "Limonene",
-      "Myrcene",
-      "Humulene",
-      "Linalool",
-    ],
-    idealTime: "Before bed",
-  },
-  {
-    slug: "gg4",
-    name: "GG4",
-    image: "/GG4.png",
-    spectrum: "Indica",
-    tags: ["Diesel", "Earthy", "Potent"],
-    description:
-      "The strain that needs no introduction: sticky, diesel-heavy, and reliably one of the stronger jars on the shelf.",
-    genetics: "Chem's Sister x Sour Dubb x Chocolate Diesel",
-    terpenes: ["Caryophyllene", "Myrcene", "Limonene", "Pinene", "Humulene"],
-    idealTime: "Before bed, weekends",
-  },
-  {
-    slug: "moonbow",
-    name: "Moonbow",
-    image: "/Moonbow.png",
-    spectrum: "Indica-Leaning Hybrid",
-    tags: ["Fruity", "Balanced", "Uplifting"],
-    description:
-      "A true middle-of-the-road hybrid — bright fruit up front, with a calm, even effect that doesn't tip too far either way.",
-    genetics: "Zkittlez x Do-Si-Dos",
-    terpenes: ["Caryophyllene", "Limonene", "Myrcene", "Linalool"],
-    idealTime: "Evening",
-  },
-  {
-    slug: "jammerz",
-    name: "Jammerz",
-    image: "/Jammerz.png",
-    spectrum: "Sativa-Leaning Hybrid",
-    tags: ["Tropical", "Sweet", "Social"],
-    description:
-      "Sweet and tropical with just enough lift to keep a conversation going without losing the thread.",
-  },
-  {
-    slug: "guavanade",
-    name: "Guavanade",
-    image: "/Guavanade.png",
-    spectrum: "Indica-Leaning Hybrid",
-    tags: ["Citrus", "Tart", "Energizing"],
-    description:
-      "Guava and lemonade in name and in nose — tart, juicy, and leaning toward the brighter, more energetic side of the shelf.",
-    genetics: "Gelonade x Sherb BX",
-    terpenes: ["Limonene", "Terpinolene", "Caryophyllene", "Linalool"],
-    idealTime: "Evening, after work",
-  },
-  {
-    slug: "super-silver-haze",
-    name: "Super Silver Haze",
-    image: "/Super_Silver_Haze.png",
-    spectrum: "Sativa",
-    tags: ["Haze", "Sativa", "Cerebral"],
-    description:
-      "A classic haze — sharp and cerebral, built for daytime, with the lineage to back up the name.",
-    genetics: "Skunk x Northern Lights x Haze",
-    terpenes: ["Myrcene", "Caryophyllene", "Limonene", "Pinene"],
-    idealTime: "Mornings",
-  },
 ];
+
+const LOG = "[strains]";
+
+type DropBatchRow = {
+  slug: string;
+  name: string;
+  image: string;
+  spectrum: string;
+  tags: string[] | null;
+  description: string;
+  genetics: string | null;
+  terpenes: string[] | null;
+  ideal_time: string | null;
+  thc_percent: number | string | null;
+  lab_report_url: string | null;
+  batch_number: string | null;
+  quarter: string | null;
+  year: number | null;
+};
+
+function isSpectrumPosition(value: string): value is SpectrumPosition {
+  return (SPECTRUM_POSITIONS as readonly string[]).includes(value);
+}
+
+function rowToStrain(row: DropBatchRow): Strain | null {
+  if (!isSpectrumPosition(row.spectrum)) {
+    console.error(`${LOG} Unknown spectrum "${row.spectrum}" on "${row.slug}" — skipped.`);
+    return null;
+  }
+
+  return {
+    slug: row.slug,
+    name: row.name,
+    image: row.image,
+    spectrum: row.spectrum,
+    tags: row.tags ?? [],
+    description: row.description,
+    genetics: row.genetics ?? undefined,
+    terpenes: row.terpenes ?? undefined,
+    idealTime: row.ideal_time ?? undefined,
+    thc: row.thc_percent != null ? `${Number(row.thc_percent).toFixed(1)}%` : undefined,
+    labReport: row.lab_report_url ?? undefined,
+    batchNumber: row.batch_number ?? undefined,
+    quarter: row.quarter && ["Q1", "Q2", "Q3", "Q4"].includes(row.quarter) ? (row.quarter as Strain["quarter"]) : undefined,
+    year: row.year ?? undefined,
+  };
+}
+
+const SELECT_COLUMNS =
+  "slug, name, image, spectrum, tags, description, genetics, terpenes, ideal_time, thc_percent, lab_report_url, batch_number, quarter, year";
+
+/** The batches shown in the homepage's "Latest Drops" section. */
+export async function getCurrentDrops(): Promise<Strain[]> {
+  const { data, error } = await supabase
+    .from("drop_batches")
+    .select(SELECT_COLUMNS)
+    .eq("is_current", true)
+    .order("name", { ascending: true });
+
+  if (error) {
+    console.error(`${LOG} getCurrentDrops failed:`, error.message);
+    return FALLBACK_STRAINS;
+  }
+  if (!data || data.length === 0) {
+    console.warn(`${LOG} No rows with is_current = true — using placeholders.`);
+    return FALLBACK_STRAINS;
+  }
+
+  const strains = data.map(rowToStrain).filter((s): s is Strain => s !== null);
+  console.log(`${LOG} Loaded ${strains.length} current drop(s).`);
+  return strains;
+}
+
+/** Every batch on file, newest first — for the /archive page. */
+export async function getArchiveBatches(): Promise<Strain[]> {
+  const { data, error } = await supabase
+    .from("drop_batches")
+    .select(SELECT_COLUMNS)
+    .order("year", { ascending: false })
+    .order("quarter", { ascending: false })
+    .order("name", { ascending: true });
+
+  if (error) {
+    console.error(`${LOG} getArchiveBatches failed:`, error.message);
+    return [];
+  }
+
+  return (data ?? []).map(rowToStrain).filter((s): s is Strain => s !== null);
+}
