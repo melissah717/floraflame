@@ -8,7 +8,12 @@ import { ComingSoonBanner } from "@/components/coming-soon-banner";
 import type { Strain } from "@/lib/strains";
 
 export function ArchiveClient({ batches }: { batches: Strain[] }) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const currentBatches = batches.filter((b) => b.isCurrent);
+
+  const [activeIndex, setActiveIndex] = useState(() => {
+    const firstCurrent = batches.findIndex((b) => b.isCurrent);
+    return firstCurrent === -1 ? 0 : firstCurrent;
+  });
 
   if (batches.length === 0) {
     return (
@@ -37,9 +42,17 @@ export function ArchiveClient({ batches }: { batches: Strain[] }) {
 
         <div className="mt-5 flex flex-col gap-2">
           <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-            <h2 className="font-display text-2xl tracking-[-0.01em] text-neutral-900">
-              {active.name}
-            </h2>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h2 className="font-display text-2xl tracking-[-0.01em] text-neutral-900">
+                {active.name}
+              </h2>
+              {active.isCurrent && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-50">
+                  <span className="h-1.5 w-1.5 rounded-full bg-lime-400" aria-hidden />
+                  In rotation
+                </span>
+              )}
+            </div>
             <span className="text-sm tracking-[0.04em] text-neutral-500">
               {active.spectrum}
               {active.thc ? ` · ${active.thc} THC` : ""}
@@ -78,36 +91,79 @@ export function ArchiveClient({ batches }: { batches: Strain[] }) {
       </div>
 
       {/* Thumbnails */}
-      <div>
-        <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 sm:gap-4">
-          {batches.map((batch, i) => {
-            const isActive = i === activeIndex;
-            return (
-              <button
-                key={`${batch.slug}-${batch.batchNumber}`}
-                type="button"
-                onClick={() => setActiveIndex(i)}
-                aria-pressed={isActive}
-                aria-label={batch.name}
-                className={cn(
-                  "relative aspect-square overflow-hidden rounded-lg bg-neutral-100 transition-all",
-                  isActive
-                    ? "ring-2 ring-neutral-900 ring-offset-2"
-                    : "opacity-70 hover:opacity-100"
-                )}
-              >
-                <Image
-                  src={batch.image}
-                  alt=""
-                  fill
-                  sizes="120px"
-                  className="object-contain"
+      <div className="flex flex-col gap-8">
+        {currentBatches.length > 0 && (
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+              Now in rotation — {currentBatches.length}
+            </p>
+            <div className="mt-3 grid grid-cols-6 gap-2 sm:grid-cols-8 sm:gap-3">
+              {currentBatches.map((batch) => (
+                <Thumbnail
+                  key={`current-${batch.slug}-${batch.batchNumber}`}
+                  batch={batch}
+                  isActive={active.slug === batch.slug && active.batchNumber === batch.batchNumber}
+                  onSelect={() =>
+                    setActiveIndex(
+                      batches.findIndex(
+                        (b) => b.slug === batch.slug && b.batchNumber === batch.batchNumber
+                      )
+                    )
+                  }
                 />
-              </button>
-            );
-          })}
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+            Full archive — {batches.length}
+          </p>
+          <div className="mt-3 grid grid-cols-6 gap-2 sm:grid-cols-8 sm:gap-3">
+            {batches.map((batch, i) => (
+              <Thumbnail
+                key={`${batch.slug}-${batch.batchNumber}`}
+                batch={batch}
+                isActive={i === activeIndex}
+                onSelect={() => setActiveIndex(i)}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function Thumbnail({
+  batch,
+  isActive,
+  onSelect,
+}: {
+  batch: Strain;
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={isActive}
+      aria-label={batch.name}
+      title={batch.name}
+      className={cn(
+        "relative aspect-square overflow-hidden rounded-lg bg-neutral-100 transition-all",
+        isActive ? "ring-2 ring-neutral-900 ring-offset-2" : "opacity-70 hover:opacity-100"
+      )}
+    >
+      <Image src={batch.image} alt="" fill sizes="80px" className="object-contain" />
+      {batch.isCurrent && (
+        <span
+          aria-hidden
+          className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-lime-400 ring-2 ring-neutral-50"
+        />
+      )}
+    </button>
   );
 }

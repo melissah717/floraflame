@@ -617,7 +617,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
             if (e.key === "ArrowLeft") step(-1);
             if (e.key === "ArrowRight") step(1);
           }}
-          className="relative h-16 cursor-grab touch-none select-none focus-visible:outline-none active:cursor-grabbing sm:h-20"
+          className="relative h-16 cursor-grab touch-none select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-neutral-50 active:cursor-grabbing sm:h-20"
         >
           <div
             className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full opacity-50"

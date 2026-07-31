@@ -43,7 +43,7 @@ export default async function BlogPostPage({
           <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden rounded-2xl">
             <Image
               src={post.heroImage}
-              alt=""
+              alt={post.title}
               fill
               sizes="(max-width: 768px) 100vw, 768px"
               priority
@@ -65,7 +65,7 @@ export default async function BlogPostPage({
               <div className="relative mx-auto mt-4 aspect-[16/9] w-[88%] overflow-hidden rounded-2xl">
                 <Image
                   src={p.image}
-                  alt=""
+                  alt={p.title || post.title}
                   fill
                   sizes="(max-width: 768px) 88vw, 676px"
                   className="object-cover"

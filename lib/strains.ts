@@ -19,6 +19,8 @@ export type Strain = {
   name: string;
   image: string;
   spectrum: SpectrumPosition;
+  /** True if this batch is part of the current rotation (shown on the homepage). */
+  isCurrent: boolean;
   /** Flavor/effect keywords, shown as chips. */
   tags: string[];
   /** One or two sentences, revealed on demand rather than shown up front. */
@@ -49,6 +51,7 @@ const FALLBACK_STRAINS: Strain[] = [
     name: "Crunch Berries",
     image: "/Crunch_Berries.png",
     spectrum: "Indica",
+    isCurrent: true,
     tags: ["Berry", "Dessert", "Relaxing"],
     description:
       "A dessert-leaning indica with a jammy berry nose and a slow, heavy-lidded body high built for the end of the day.",
@@ -63,6 +66,7 @@ type DropBatchRow = {
   name: string;
   image: string;
   spectrum: string;
+  is_current: boolean | null;
   tags: string[] | null;
   description: string;
   genetics: string | null;
@@ -88,6 +92,7 @@ function rowToStrain(row: DropBatchRow): Strain | null {
     name: row.name,
     image: row.image,
     spectrum: row.spectrum,
+    isCurrent: row.is_current ?? false,
     tags: row.tags ?? [],
     description: row.description,
     genetics: row.genetics ?? undefined,
@@ -100,7 +105,7 @@ function rowToStrain(row: DropBatchRow): Strain | null {
 }
 
 const SELECT_COLUMNS =
-  "slug, name, image, spectrum, tags, description, genetics, terpenes, ideal_time, thc_percent, lab_report_url, batch_number";
+  "slug, name, image, spectrum, is_current, tags, description, genetics, terpenes, ideal_time, thc_percent, lab_report_url, batch_number";
 
 /** The batches shown in the homepage's "Latest Drops" section. */
 export async function getCurrentDrops(): Promise<Strain[]> {

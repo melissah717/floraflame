@@ -320,25 +320,29 @@ export function Wholesale() {
               />
 
               <div>
-                <label className="text-xs tracking-[0.04em] text-neutral-500">
+                <label htmlFor="field-description" className="text-xs tracking-[0.04em] text-neutral-500">
                   Description
                 </label>
                 {/* Plain textarea — shadcn's defaults fight this section's
                     custom underline styling. Not worth the override here. */}
                 <textarea
+                  id="field-description"
                   required
                   rows={5}
                   value={form.description}
                   onChange={update("description")}
                   placeholder="What's going on?"
                   aria-invalid={Boolean(errors.description)}
+                  aria-describedby={errors.description ? "field-description-error" : undefined}
                   className={`mt-2 w-full resize-none border-0 border-b bg-transparent px-0 py-2 text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 ${errors.description
                       ? "border-red-500 focus:border-red-500"
                       : "border-neutral-300 focus:border-neutral-900"
                     }`}
                 />
                 {errors.description && (
-                  <p className="mt-1 text-xs text-red-600">{errors.description}</p>
+                  <p id="field-description-error" className="mt-1 text-xs text-red-600">
+                    {errors.description}
+                  </p>
                 )}
               </div>
 
@@ -361,6 +365,11 @@ export function Wholesale() {
   );
 }
 
+/** Deterministic id from a static label string — safe across server/client renders. */
+function idFor(label: string) {
+  return `field-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`;
+}
+
 function Field({
   label,
   type = "text",
@@ -376,21 +385,29 @@ function Field({
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   error?: string;
 }) {
+  const id = idFor(label);
+  const errorId = `${id}-error`;
   return (
     <div>
-      <label className="text-xs tracking-[0.04em] text-neutral-500">
+      <label htmlFor={id} className="text-xs tracking-[0.04em] text-neutral-500">
         {label}
       </label>
       <input
+        id={id}
         type={type}
         required={required}
         value={value}
         onChange={onChange}
         aria-invalid={Boolean(error)}
+        aria-describedby={error ? errorId : undefined}
         className={`mt-2 w-full border-0 border-b bg-transparent px-0 py-2 text-neutral-900 outline-none transition-colors ${error ? "border-red-500 focus:border-red-500" : "border-neutral-300 focus:border-neutral-900"
           }`}
       />
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && (
+        <p id={errorId} className="mt-1 text-xs text-red-600">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -412,16 +429,20 @@ function SelectField({
   placeholder: string;
   error?: string;
 }) {
+  const id = idFor(label);
+  const errorId = `${id}-error`;
   return (
     <div>
-      <label className="text-xs tracking-[0.04em] text-neutral-500">
+      <label htmlFor={id} className="text-xs tracking-[0.04em] text-neutral-500">
         {label}
       </label>
       <select
+        id={id}
         required={required}
         value={value}
         onChange={onChange}
         aria-invalid={Boolean(error)}
+        aria-describedby={error ? errorId : undefined}
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%237a7263'%3E%3Cpath d='M5.5 7.5l4.5 5 4.5-5z'/%3E%3C/svg%3E\")",
@@ -441,7 +462,11 @@ function SelectField({
           </option>
         ))}
       </select>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && (
+        <p id={errorId} className="mt-1 text-xs text-red-600">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

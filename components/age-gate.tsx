@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 
@@ -38,25 +38,33 @@ const LOGO_ITEM: Variants = {
  * remembered in localStorage, so returning visitors clear it near-instantly
  * on mount rather than seeing it every visit.
  */
+type GateStatus = "checking" | "verified" | "unverified";
+
 export function AgeGate() {
-  const [verified, setVerified] = useState(false);
+  const [status, setStatus] = useState<GateStatus>("checking");
+  const confirmRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (window.localStorage.getItem(STORAGE_KEY) === "true") {
-      setVerified(true);
-    }
+    setStatus(window.localStorage.getItem(STORAGE_KEY) === "true" ? "verified" : "unverified");
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = verified ? "" : "hidden";
+    document.body.style.overflow = status === "verified" ? "" : "hidden";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [verified]);
+  }, [status]);
+
+  // Only once we know the gate is actually going to show — otherwise a
+  // returning visitor (status "verified") would get their focus yanked
+  // to this button for the one tick before the localStorage check lands.
+  useEffect(() => {
+    if (status === "unverified") confirmRef.current?.focus();
+  }, [status]);
 
   const confirm = () => {
     window.localStorage.setItem(STORAGE_KEY, "true");
-    setVerified(true);
+    setStatus("verified");
     // Lets CookieConsent (mounted alongside this, but hidden until the age
     // gate clears) know it can check localStorage and show itself.
     window.dispatchEvent(new Event("ff:age-verified"));
@@ -68,8 +76,12 @@ export function AgeGate() {
 
   return (
     <AnimatePresence>
-      {!verified && (
+      {status === "unverified" && (
         <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="age-gate-heading"
+          aria-describedby="age-gate-description"
           exit={{ y: "-100%" }}
           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
           className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-neutral-900 p-6 text-center text-neutral-50 sm:p-10"
@@ -92,6 +104,7 @@ export function AgeGate() {
             </motion.div>
 
             <motion.p
+              id="age-gate-heading"
               variants={ITEM}
               className="mt-6 max-w-md font-display text-3xl leading-snug sm:text-4xl"
             >
@@ -99,6 +112,7 @@ export function AgeGate() {
             </motion.p>
 
             <motion.p
+              id="age-gate-description"
               variants={ITEM}
               className="mt-4 max-w-sm text-sm leading-relaxed text-neutral-400"
             >
@@ -111,6 +125,7 @@ export function AgeGate() {
               className="mt-10 flex flex-wrap items-center justify-center gap-3"
             >
               <button
+                ref={confirmRef}
                 type="button"
                 onClick={confirm}
                 className="rounded-full bg-neutral-50 px-8 py-3 text-sm text-neutral-900 transition-colors hover:scale-[1.03] hover:bg-neutral-200 active:scale-[0.98]"
