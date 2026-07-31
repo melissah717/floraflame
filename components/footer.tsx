@@ -6,8 +6,10 @@ import { PrivacyPolicyModal, TermsModal } from "@/components/legal-modals";
 export function SiteFooter() {
   return (
     <footer className="border-t border-neutral-200">
-      {/* Marquee strip — same trick as the reference site. */}
-      <div className="border-b border-neutral-200 py-6">
+      {/* Marquee strip — same trick as the reference site. Purely decorative
+          repeated branding (already conveyed via the logo/copyright below),
+          so it's hidden from screen readers rather than read out 6 times. */}
+      <div aria-hidden="true" className="border-b border-neutral-200 py-6">
         <Marquee duration={40}>
           {Array.from({ length: 6 }).map((_, i) => (
             <span

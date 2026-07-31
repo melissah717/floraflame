@@ -96,11 +96,17 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${fraunces.variable} ${karla.variable}`}>
       <body className="bg-neutral-50 font-sans text-neutral-900 antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:rounded-full focus:bg-neutral-900 focus:px-5 focus:py-3 focus:text-sm focus:text-neutral-50"
+        >
+          Skip to main content
+        </a>
         <AgeGate />
         <CookieConsent />
         <Preloader />
         <Navbar />
-        <main>{children}</main>
+        <main id="main-content">{children}</main>
         <SiteFooter />
       </body>
     </html>

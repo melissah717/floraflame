@@ -209,6 +209,7 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
                   setNoMatch(false);
                 }}
                 placeholder="City or zip — try SF, Oakland, 95351"
+                aria-label="Search by city or zip"
                 className="w-full border-0 border-b border-neutral-300 bg-transparent px-0 py-3 text-base outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-900"
               />
               <button

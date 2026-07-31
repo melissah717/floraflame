@@ -49,7 +49,7 @@ export function NewsletterSignup() {
   };
 
   return (
-    <div className="mt-6 max-w-sm">
+    <div className="mt-6 max-w-sm" role="status" aria-live="polite">
       <AnimatePresence mode="wait" initial={false}>
         {status === "success" ? (
           <motion.div
@@ -92,6 +92,7 @@ export function NewsletterSignup() {
                 placeholder="you@email.com"
                 aria-label="Email address"
                 aria-invalid={status === "error"}
+                aria-describedby="newsletter-status-text"
                 disabled={status === "loading"}
                 className="min-w-0 flex-1 border-0 bg-transparent py-1 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 disabled:opacity-50"
               />
@@ -110,6 +111,7 @@ export function NewsletterSignup() {
             </div>
 
             <p
+              id="newsletter-status-text"
               className={cn(
                 "mt-2 pl-5 text-xs",
                 status === "error" ? "text-red-600" : "text-neutral-400"

@@ -19,6 +19,8 @@ export type Strain = {
   name: string;
   image: string;
   spectrum: SpectrumPosition;
+  /** True if this batch is part of the current rotation (shown on the homepage). */
+  isCurrent: boolean;
   /** Flavor/effect keywords, shown as chips. */
   tags: string[];
   /** One or two sentences, revealed on demand rather than shown up front. */
@@ -35,8 +37,6 @@ export type Strain = {
   labReport?: string;
   /** METRC/COA batch code, e.g. "CB040326". */
   batchNumber?: string;
-  quarter?: "Q1" | "Q2" | "Q3" | "Q4";
-  year?: number;
 };
 
 /**
@@ -51,6 +51,7 @@ const FALLBACK_STRAINS: Strain[] = [
     name: "Crunch Berries",
     image: "/Crunch_Berries.png",
     spectrum: "Indica",
+    isCurrent: true,
     tags: ["Berry", "Dessert", "Relaxing"],
     description:
       "A dessert-leaning indica with a jammy berry nose and a slow, heavy-lidded body high built for the end of the day.",
@@ -65,6 +66,7 @@ type DropBatchRow = {
   name: string;
   image: string;
   spectrum: string;
+  is_current: boolean | null;
   tags: string[] | null;
   description: string;
   genetics: string | null;
@@ -73,8 +75,6 @@ type DropBatchRow = {
   thc_percent: number | string | null;
   lab_report_url: string | null;
   batch_number: string | null;
-  quarter: string | null;
-  year: number | null;
 };
 
 function isSpectrumPosition(value: string): value is SpectrumPosition {
@@ -92,6 +92,7 @@ function rowToStrain(row: DropBatchRow): Strain | null {
     name: row.name,
     image: row.image,
     spectrum: row.spectrum,
+    isCurrent: row.is_current ?? false,
     tags: row.tags ?? [],
     description: row.description,
     genetics: row.genetics ?? undefined,
@@ -100,13 +101,11 @@ function rowToStrain(row: DropBatchRow): Strain | null {
     thc: row.thc_percent != null ? `${Number(row.thc_percent).toFixed(1)}%` : undefined,
     labReport: row.lab_report_url ?? undefined,
     batchNumber: row.batch_number ?? undefined,
-    quarter: row.quarter && ["Q1", "Q2", "Q3", "Q4"].includes(row.quarter) ? (row.quarter as Strain["quarter"]) : undefined,
-    year: row.year ?? undefined,
   };
 }
 
 const SELECT_COLUMNS =
-  "slug, name, image, spectrum, tags, description, genetics, terpenes, ideal_time, thc_percent, lab_report_url, batch_number, quarter, year";
+  "slug, name, image, spectrum, is_current, tags, description, genetics, terpenes, ideal_time, thc_percent, lab_report_url, batch_number";
 
 /** The batches shown in the homepage's "Latest Drops" section. */
 export async function getCurrentDrops(): Promise<Strain[]> {
@@ -135,8 +134,7 @@ export async function getArchiveBatches(): Promise<Strain[]> {
   const { data, error } = await supabase
     .from("drop_batches")
     .select(SELECT_COLUMNS)
-    .order("year", { ascending: false })
-    .order("quarter", { ascending: false })
+    .order("collected_at", { ascending: false, nullsFirst: false })
     .order("name", { ascending: true });
 
   if (error) {

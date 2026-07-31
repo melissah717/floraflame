@@ -14,7 +14,7 @@ export default async function ArchivePage() {
       <Reveal>
         <SectionLabel number="—">Archive</SectionLabel>
         <h1 className="mt-4 max-w-[16ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl lg:text-6xl">
-          Past drops, by year and quarter.
+          Every batch we've tested.
         </h1>
       </Reveal>
 

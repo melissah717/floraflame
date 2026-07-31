@@ -1,26 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
 import type { Strain } from "@/lib/strains";
 
-const QUARTERS = ["Q1", "Q2", "Q3", "Q4"] as const;
-
 export function ArchiveClient({ batches }: { batches: Strain[] }) {
-  const years = useMemo(
-    () => [...new Set(batches.map((b) => b.year).filter((y): y is number => y != null))].sort(
-      (a, b) => b - a
-    ),
-    [batches]
-  );
+  const currentBatches = batches.filter((b) => b.isCurrent);
 
-  const [activeYear, setActiveYear] = useState(years[0]);
-  const [activeQuarter, setActiveQuarter] = useState<(typeof QUARTERS)[number]>("Q1");
+  const [activeIndex, setActiveIndex] = useState(() => {
+    const firstCurrent = batches.findIndex((b) => b.isCurrent);
+    return firstCurrent === -1 ? 0 : firstCurrent;
+  });
 
-  if (years.length === 0) {
+  if (batches.length === 0) {
     return (
       <ComingSoonBanner>
         Coming soon — no past drops on file yet.
@@ -28,112 +23,147 @@ export function ArchiveClient({ batches }: { batches: Strain[] }) {
     );
   }
 
-  const filtered = batches.filter(
-    (b) => b.year === activeYear && b.quarter === activeQuarter
-  );
+  const active = batches[activeIndex];
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[160px_1fr] lg:gap-16">
-      {/* Year + quarter tabs */}
-      <div className="flex flex-col gap-6 lg:sticky lg:top-28 lg:h-fit">
-        <div className="flex gap-2 overflow-x-auto lg:flex-col lg:gap-1 lg:overflow-visible">
-          {years.map((y) => {
-            const isActive = y === activeYear;
-            return (
-              <button
-                key={y}
-                type="button"
-                onClick={() => setActiveYear(y)}
-                aria-pressed={isActive}
-                className={cn(
-                  "shrink-0 rounded-full px-4 py-2 text-left text-sm tabular-nums tracking-[0.04em] transition-colors lg:rounded-none lg:px-4 lg:py-1.5",
-                  isActive
-                    ? "bg-neutral-900 text-neutral-50 lg:bg-transparent lg:font-medium lg:text-neutral-900"
-                    : "bg-neutral-100 text-neutral-500 hover:text-neutral-900 lg:bg-transparent lg:text-neutral-400 lg:hover:text-neutral-900"
-                )}
-              >
-                {y}
-              </button>
-            );
-          })}
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,440px)_1fr] lg:gap-16">
+      {/* Selected batch */}
+      <div>
+        <div className="relative aspect-square overflow-hidden rounded-2xl bg-neutral-100">
+          <Image
+            src={active.image}
+            alt={active.name}
+            fill
+            sizes="(max-width: 1024px) 100vw, 440px"
+            className="object-contain"
+            priority
+          />
         </div>
 
-        <div className="hidden h-px w-8 bg-neutral-300 lg:block" />
+        <div className="mt-5 flex flex-col gap-2">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h2 className="font-display text-2xl tracking-[-0.01em] text-neutral-900">
+                {active.name}
+              </h2>
+              {active.isCurrent && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-50">
+                  <span className="h-1.5 w-1.5 rounded-full bg-lime-400" aria-hidden />
+                  In rotation
+                </span>
+              )}
+            </div>
+            <span className="text-sm tracking-[0.04em] text-neutral-500">
+              {active.spectrum}
+              {active.thc ? ` · ${active.thc} THC` : ""}
+            </span>
+          </div>
 
-        <div className="flex gap-2 overflow-x-auto lg:flex-col lg:gap-1 lg:overflow-visible">
-          {QUARTERS.map((q) => {
-            const isActive = q === activeQuarter;
-            return (
-              <button
-                key={q}
-                type="button"
-                onClick={() => setActiveQuarter(q)}
-                aria-pressed={isActive}
-                className={cn(
-                  "shrink-0 rounded-full px-4 py-2 text-left text-sm tracking-[0.04em] transition-colors lg:rounded-none lg:border-l lg:px-4 lg:py-2.5",
-                  isActive
-                    ? "bg-neutral-900 text-neutral-50 lg:border-neutral-900 lg:bg-transparent lg:font-medium lg:text-neutral-900"
-                    : "bg-neutral-100 text-neutral-500 hover:text-neutral-900 lg:border-neutral-200 lg:bg-transparent lg:hover:border-neutral-400"
-                )}
-              >
-                {q}
-              </button>
-            );
-          })}
+          {active.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {active.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-neutral-200 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-500"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <p className="mt-1 text-sm leading-relaxed text-neutral-600 sm:text-base">
+            {active.description}
+          </p>
+
+          {active.labReport && (
+            <a
+              href={active.labReport}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-full border border-neutral-300 px-3 py-1.5 text-xs tracking-[0.04em] text-neutral-500 transition-colors hover:border-neutral-400 hover:text-neutral-900"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Lab report
+            </a>
+          )}
         </div>
       </div>
 
-      {/* Batches */}
-      {filtered.length === 0 ? (
-        <ComingSoonBanner>
-          {`No drops on file for ${activeYear} ${activeQuarter} yet.`}
-        </ComingSoonBanner>
-      ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
-          {filtered.map((batch) => {
-            const card = (
-              <>
-                <div className="relative aspect-square overflow-hidden rounded-2xl bg-neutral-100">
-                  <Image
-                    src={batch.image}
-                    alt={batch.name}
-                    fill
-                    sizes="(max-width: 640px) 50vw, 33vw"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium text-neutral-900">{batch.name}</span>
-                  <span className="text-xs tracking-[0.04em] text-neutral-500">
-                    {batch.spectrum}
-                    {batch.thc ? ` · ${batch.thc} THC` : ""}
-                  </span>
-                </div>
-              </>
-            );
+      {/* Thumbnails */}
+      <div className="flex flex-col gap-8">
+        {currentBatches.length > 0 && (
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+              Now in rotation — {currentBatches.length}
+            </p>
+            <div className="mt-3 grid grid-cols-6 gap-2 sm:grid-cols-8 sm:gap-3">
+              {currentBatches.map((batch) => (
+                <Thumbnail
+                  key={`current-${batch.slug}-${batch.batchNumber}`}
+                  batch={batch}
+                  isActive={active.slug === batch.slug && active.batchNumber === batch.batchNumber}
+                  onSelect={() =>
+                    setActiveIndex(
+                      batches.findIndex(
+                        (b) => b.slug === batch.slug && b.batchNumber === batch.batchNumber
+                      )
+                    )
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
-            return batch.labReport ? (
-              <a
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+            Full archive — {batches.length}
+          </p>
+          <div className="mt-3 grid grid-cols-6 gap-2 sm:grid-cols-8 sm:gap-3">
+            {batches.map((batch, i) => (
+              <Thumbnail
                 key={`${batch.slug}-${batch.batchNumber}`}
-                href={batch.labReport}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col gap-3"
-              >
-                {card}
-                <span className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.04em] text-neutral-400 group-hover:text-neutral-900">
-                  <FileText className="h-3 w-3" />
-                  Lab report
-                </span>
-              </a>
-            ) : (
-              <div key={`${batch.slug}-${batch.batchNumber}`} className="flex flex-col gap-3">
-                {card}
-              </div>
-            );
-          })}
+                batch={batch}
+                isActive={i === activeIndex}
+                onSelect={() => setActiveIndex(i)}
+              />
+            ))}
+          </div>
         </div>
-      )}
+      </div>
     </div>
+  );
+}
+
+function Thumbnail({
+  batch,
+  isActive,
+  onSelect,
+}: {
+  batch: Strain;
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={isActive}
+      aria-label={batch.name}
+      title={batch.name}
+      className={cn(
+        "relative aspect-square overflow-hidden rounded-lg bg-neutral-100 transition-all",
+        isActive ? "ring-2 ring-neutral-900 ring-offset-2" : "opacity-70 hover:opacity-100"
+      )}
+    >
+      <Image src={batch.image} alt="" fill sizes="80px" className="object-contain" />
+      {batch.isCurrent && (
+        <span
+          aria-hidden
+          className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-lime-400 ring-2 ring-neutral-50"
+        />
+      )}
+    </button>
   );
 }

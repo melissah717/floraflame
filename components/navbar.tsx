@@ -79,7 +79,10 @@ export function Navbar() {
           : "bg-transparent"
       )}
     >
-      <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
+      <nav
+        aria-label="Primary"
+        className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8"
+      >
         <Link
           href="/"
           className="font-display text-2xl tracking-tight sm:text-3xl"
