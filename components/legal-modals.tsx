@@ -14,12 +14,12 @@ import {
  * CCPA/CPRA rights section and any BCC/DCC marketing-rule specifics)
  * before this site is treated as launch-ready.
  */
-const TRIGGER_CLASS = "transition-colors hover:text-neutral-900";
+const TRIGGER_CLASS = "transition-colors hover:text-neutral-50";
 
 const CONTENT_CLASS =
-  "max-h-[80vh] w-full overflow-y-auto sm:max-w-2xl";
+  "max-h-[80vh] w-full overflow-y-auto bg-neutral-900 text-neutral-50 ring-neutral-800 sm:max-w-2xl";
 
-const SECTION_CLASS = "space-y-4 text-sm leading-relaxed text-neutral-600";
+const SECTION_CLASS = "space-y-4 text-sm leading-relaxed text-neutral-300";
 
 const LAST_UPDATED = "July 27, 2026";
 
@@ -32,7 +32,7 @@ function LegalSection({
 }) {
   return (
     <div>
-      <h3 className="font-medium text-neutral-900">{heading}</h3>
+      <h3 className="font-medium text-neutral-50">{heading}</h3>
       <p className="mt-1">{children}</p>
     </div>
   );
@@ -128,7 +128,7 @@ export function PrivacyPolicyModal() {
             Questions about this policy or your data can be sent to{" "}
             <a
               href="mailto:floraflameca@gmail.com"
-              className="underline hover:text-neutral-900"
+              className="underline hover:text-neutral-50"
             >
               floraflameca@gmail.com
             </a>
@@ -232,7 +232,7 @@ export function TermsModal() {
             Questions about these Terms can be sent to{" "}
             <a
               href="mailto:floraflameca@gmail.com"
-              className="underline hover:text-neutral-900"
+              className="underline hover:text-neutral-50"
             >
               floraflameca@gmail.com
             </a>

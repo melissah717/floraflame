@@ -10,16 +10,13 @@ import {
 } from "motion/react";
 
 /**
- * Full-bleed light block → hard edge → dark block.
+ * Full-bleed dark section, head then body.
  *
  * WIDTH: no max-w container. Obscura's type gets that big because the
  * column is the viewport minus ~4.5% padding, not a centred 1280px box.
  * That also makes vw-based type sizing behave — vw inside a capped
  * container is what caused the earlier overflow, because the text kept
  * growing after the column stopped.
- *
- * The contrast IS the transition. No colour interpolation: a gradient
- * softens exactly the edge doing the work.
  */
 
 const HEADLINE = "What is living soil?";
@@ -68,21 +65,20 @@ export function LivingSoil() {
 
   return (
     <section id="living-soil" className="scroll-mt-20">
-      {/* ---------- LIGHT ---------- */}
+      {/* ---------- HEAD ---------- */}
       <div
         ref={headRef}
-        // pb-0: the headline's baseline sits on the boundary. Any bottom
-        // padding and it's just a headline above a dark box.
-        className={`bg-neutral-50 pb-0 pt-36 sm:pt-56 ${GUTTER}`}
+        // pb-0: the headline's baseline sits on the boundary.
+        className={`bg-neutral-900 pb-0 pt-36 sm:pt-56 ${GUTTER}`}
       >
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="order-2 pb-3 lg:order-1 lg:w-72 lg:shrink-0">
-            <div className="flex items-center gap-3 text-xs tracking-[0.08em] text-neutral-500">
+            <div className="flex items-center gap-3 text-xs tracking-[0.08em] text-neutral-400">
               <span className="tabular-nums">02</span>
-              <span className="h-px w-8 bg-neutral-300" />
+              <span className="h-px w-8 bg-neutral-700" />
               <span>The Method</span>
             </div>
-            <p className="mt-5 text-base leading-relaxed text-neutral-500">
+            <p className="mt-5 text-base leading-relaxed text-neutral-400">
               No-till. No synthetics. No pesticides. The whole method comes
               down to one idea, and it isn&apos;t a shortcut.
             </p>
@@ -122,7 +118,7 @@ export function LivingSoil() {
         </div>
       </div>
 
-      {/* ---------- DARK ---------- */}
+      {/* ---------- BODY ---------- */}
       <div
         ref={bodyRef}
         className={`bg-neutral-900 py-32 text-neutral-50 sm:py-48 ${GUTTER}`}

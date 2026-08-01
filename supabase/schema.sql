@@ -27,7 +27,8 @@ create table if not exists public.drop_batches (
       'Sativa'
     )
   ),
-  image text not null,               -- product photo path/URL
+  image text not null,               -- product photo: container + nug (used on the homepage)
+  nug_image text,                    -- nug-only close-up (used on the /archive page)
   tags text[] not null default '{}', -- flavor/effect chips
   description text not null,
   genetics text,                     -- e.g. "Zkittlez x Do-Si-Dos"
@@ -52,6 +53,10 @@ create table if not exists public.drop_batches (
 -- columns, this drops them; harmless no-op on a fresh install.
 alter table public.drop_batches drop column if exists quarter;
 alter table public.drop_batches drop column if exists year;
+
+-- If you already ran an earlier version of this file without nug_image,
+-- this adds it; harmless no-op on a fresh install.
+alter table public.drop_batches add column if not exists nug_image text;
 
 -- Anyone can read (the site fetches this with the public anon key);
 -- nobody can write through the app. Add/edit batches from the Supabase

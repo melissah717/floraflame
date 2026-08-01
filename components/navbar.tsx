@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -28,6 +29,13 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string>("");
   const [open, setOpen] = useState(false);
+
+  // Every page is dark except the Hero's own sticky top section — its
+  // background has to stay light for the mix-blend-difference title
+  // effect to work (see hero.tsx). While the transparent navbar sits over
+  // that one light section, it needs dark-on-light text instead of its
+  // usual light-on-dark set, or it reads as invisible.
+  const overLightHero = isHome && !scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -75,7 +83,7 @@ export function Navbar() {
       className={cn(
         "fixed top-0 z-50 w-full transition-colors duration-300",
         scrolled
-          ? "border-b border-neutral-200 bg-neutral-50/85 backdrop-blur-md"
+          ? "border-b border-neutral-800 bg-neutral-900/85 backdrop-blur-md"
           : "bg-transparent"
       )}
     >
@@ -83,11 +91,16 @@ export function Navbar() {
         aria-label="Primary"
         className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8"
       >
-        <Link
-          href="/"
-          className="font-display text-2xl tracking-tight sm:text-3xl"
-        >
-          Flora &amp; Flame
+        <Link href="/" aria-label="Flora & Flame — home" className="shrink-0">
+          <Image
+            src="https://res.cloudinary.com/g0mcdcfr/image/upload/v1785517828/text-logo.svg"
+            alt="Flora & Flame"
+            width={240}
+            height={48}
+            unoptimized
+            priority
+            className={cn("h-10 w-auto transition-[filter] duration-300 sm:h-12", !overLightHero && "invert")}
+          />
         </Link>
 
         {/* Desktop */}
@@ -97,12 +110,17 @@ export function Navbar() {
               key={id}
               onClick={() => scrollTo(id)}
               className={cn(
-                "px-4 py-2 text-md transition-colors duration-200",
+                "cursor-pointer px-4 py-2 text-md transition-colors duration-200",
                 active === id
                   ? // Active state is a weight bump only — 400 → 500.
                   // Subtle enough to read as emphasis, not a different label.
-                  "font-medium text-neutral-900"
-                  : "font-normal text-neutral-500 hover:text-neutral-900"
+                  cn("font-medium", overLightHero ? "text-neutral-900" : "text-neutral-50")
+                  : cn(
+                      "font-normal",
+                      overLightHero
+                        ? "text-neutral-500 hover:text-neutral-900"
+                        : "text-neutral-300 hover:text-neutral-50"
+                    )
               )}
             >
               {label}
@@ -111,21 +129,36 @@ export function Navbar() {
 
           <Link
             href="/blog"
-            className="px-4 py-2 text-lg text-neutral-500 transition-colors duration-200 hover:text-neutral-900"
+            className={cn(
+              "px-4 py-2 text-lg transition-colors duration-200",
+              overLightHero
+                ? "text-neutral-500 hover:text-neutral-900"
+                : "text-neutral-300 hover:text-neutral-50"
+            )}
           >
             Blog
           </Link>
 
           <Link
             href="/archive"
-            className="px-4 py-2 text-lg text-neutral-500 transition-colors duration-200 hover:text-neutral-900"
+            className={cn(
+              "px-4 py-2 text-lg transition-colors duration-200",
+              overLightHero
+                ? "text-neutral-500 hover:text-neutral-900"
+                : "text-neutral-300 hover:text-neutral-50"
+            )}
           >
             Archive
           </Link>
 
           <Link
             href="/merch"
-            className="px-4 py-2 text-lg text-neutral-500 transition-colors duration-200 hover:text-neutral-900"
+            className={cn(
+              "px-4 py-2 text-lg transition-colors duration-200",
+              overLightHero
+                ? "text-neutral-500 hover:text-neutral-900"
+                : "text-neutral-300 hover:text-neutral-50"
+            )}
           >
             Merch
           </Link>
@@ -133,7 +166,12 @@ export function Navbar() {
           <Button
             size="lg"
             onClick={() => scrollTo("subscribe")}
-            className="ml-4 rounded-full border border-neutral-300 bg-transparent px-6 text-base font-normal text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+            className={cn(
+              "ml-4 rounded-full border bg-transparent px-6 text-base font-normal",
+              overLightHero
+                ? "border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+                : "border-neutral-600 text-neutral-200 hover:bg-neutral-800 hover:text-neutral-50"
+            )}
           >
             Subscribe
           </Button>
@@ -141,7 +179,12 @@ export function Navbar() {
           <Button
             size="lg"
             onClick={() => scrollTo("wholesale")}
-            className="ml-3 rounded-full bg-neutral-900 px-7 text-base font-normal text-neutral-50 hover:bg-neutral-700"
+            className={cn(
+              "ml-3 rounded-full px-7 text-base font-normal",
+              overLightHero
+                ? "bg-neutral-900 text-neutral-50 hover:bg-neutral-700"
+                : "bg-neutral-50 text-neutral-900 hover:bg-neutral-200"
+            )}
           >
             Get in touch
           </Button>
@@ -153,7 +196,12 @@ export function Navbar() {
               it directly. Avoids the Radix/React 19 prop inference issue. */}
           <SheetTrigger
             aria-label="Open menu"
-            className="inline-flex size-10 items-center justify-center rounded-md transition-colors hover:bg-neutral-200 xl:hidden"
+            className={cn(
+              "inline-flex size-10 cursor-pointer items-center justify-center rounded-md transition-colors xl:hidden",
+              overLightHero
+                ? "text-neutral-900 hover:bg-neutral-200"
+                : "text-neutral-50 hover:bg-neutral-800"
+            )}
           >
             <Menu className="size-6" />
           </SheetTrigger>
@@ -167,7 +215,7 @@ export function Navbar() {
                 <button
                   key={id}
                   onClick={() => scrollTo(id)}
-                  className="flex items-baseline gap-4 border-b border-neutral-700 py-5 text-left"
+                  className="flex cursor-pointer items-baseline gap-4 border-b border-neutral-700 py-5 text-left"
                 >
                   <span className="text-xs tabular-nums text-neutral-500">
                     0{i + 1}
@@ -202,7 +250,7 @@ export function Navbar() {
 
               <button
                 onClick={() => scrollTo("subscribe")}
-                className="flex items-baseline gap-4 border-b border-neutral-700 py-5 text-left"
+                className="flex cursor-pointer items-baseline gap-4 border-b border-neutral-700 py-5 text-left"
               >
                 <span className="text-xs tabular-nums text-neutral-500">07</span>
                 <span className="font-display text-3xl text-neutral-50">

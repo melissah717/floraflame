@@ -41,7 +41,7 @@ const STATS = [
  * type visible instead of invisible, since the text itself is transparent.
  */
 const MASK_IMAGE = "/logo.png";
-const MASK_BASE = "#1c1915";
+const MASK_BASE = "#faf8f4";
 
 /**
  * Logo height, in line-heights. The knob that decides whether black shows
@@ -103,7 +103,7 @@ export function About() {
     <section
       ref={sectionRef}
       id="about"
-      className={`scroll-mt-20 border-t border-neutral-200 py-28 sm:py-40 ${GUTTER}`}
+      className={`scroll-mt-20 border-t border-neutral-800 py-28 sm:py-40 ${GUTTER}`}
     >
       <div className="flex flex-col gap-14 lg:flex-row lg:gap-16">
         {/* LEFT — pins while the right column scrolls */}
@@ -169,7 +169,7 @@ export function About() {
 
           <div className="mt-12 max-w-2xl space-y-8">
             <Reveal>
-              <p className="text-lg leading-relaxed text-neutral-600">
+              <p className="text-lg leading-relaxed text-neutral-300">
                 At Flora &amp; Flame, every plant is nurtured with care.
                 We&apos;re a small team of craft cannabis cultivators based in
                 Oakland, California, growing flower the way it&apos;s supposed
@@ -179,7 +179,7 @@ export function About() {
             </Reveal>
 
             <Reveal delay={0.05}>
-              <p className="text-lg leading-relaxed text-neutral-600">
+              <p className="text-lg leading-relaxed text-neutral-300">
                 Every plant is nurtured from seed to harvest in our indoor
                 no-till facility. Every bud is hand-trimmed and hand-packaged.
                 We don&apos;t use machines because machines don&apos;t give a
@@ -188,7 +188,7 @@ export function About() {
             </Reveal>
 
             <Reveal delay={0.05}>
-              <p className="text-lg leading-relaxed text-neutral-600">
+              <p className="text-lg leading-relaxed text-neutral-300">
                 We&apos;re not trying to be the biggest cannabis brand in
                 California. We&apos;re trying to grow the best flower we can,
                 batch after batch, and work with retail partners who understand
@@ -197,7 +197,7 @@ export function About() {
             </Reveal>
           </div>
 
-          <dl className="mt-16 flex flex-wrap gap-x-20 gap-y-8 border-t border-neutral-200 pt-10">
+          <dl className="mt-16 flex flex-wrap gap-x-20 gap-y-8 border-t border-neutral-800 pt-10">
             {STATS.map((stat, i) => (
               <Stat
                 key={stat.k}
@@ -333,7 +333,7 @@ function Stat({
   if (disabled) {
     return (
       <div>
-        <dt className="text-xs tracking-[0.04em] text-neutral-500">{stat.k}</dt>
+        <dt className="text-xs tracking-[0.04em] text-neutral-400">{stat.k}</dt>
         <dd className="mt-2 font-display text-3xl">{stat.v}</dd>
       </div>
     );

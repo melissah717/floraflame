@@ -1,27 +1,10 @@
 import Link from "next/link";
-import { Marquee } from "@/components/scroll-primitives";
 import { NewsletterSignup } from "@/components/newsletter-signup";
 import { PrivacyPolicyModal, TermsModal } from "@/components/legal-modals";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-neutral-200">
-      {/* Marquee strip — same trick as the reference site. Purely decorative
-          repeated branding (already conveyed via the logo/copyright below),
-          so it's hidden from screen readers rather than read out 6 times. */}
-      <div aria-hidden="true" className="border-b border-neutral-200 py-6">
-        <Marquee duration={40}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <span
-              key={i}
-              className="font-display text-4xl text-neutral-300 sm:text-5xl"
-            >
-              Flora &amp; Flame — Living Soil — Oakland, CA —
-            </span>
-          ))}
-        </Marquee>
-      </div>
-
+    <footer className="border-t border-neutral-800">
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
           <div id="subscribe" className="scroll-mt-24 lg:col-span-2">
@@ -46,13 +29,13 @@ export function SiteFooter() {
                 <li key={label}>
                   <Link
                     href={href}
-                    className="text-neutral-500 transition-colors hover:text-neutral-900"
+                    className="text-neutral-400 transition-colors hover:text-neutral-50"
                   >
                     {label}
                   </Link>
                 </li>
               ))}
-              <li className="cursor-not-allowed text-neutral-300">
+              <li className="cursor-not-allowed text-neutral-600">
                 Merch — soon
               </li>
             </ul>
@@ -65,18 +48,18 @@ export function SiteFooter() {
             <ul className="mt-4 space-y-2 text-sm">
               {["Instagram", "Weedmaps", "Leafly"].map((s) => (
                 <li key={s}>
-                  <span className="text-neutral-500">{s}</span>
+                  <span className="text-neutral-400">{s}</span>
                 </li>
               ))}
             </ul>
           </div>
         </div>
 
-        <div className="mt-16 border-t border-neutral-200 pt-6">
+        <div className="mt-16 border-t border-neutral-800 pt-6">
           {/* California Prop 65 — OEHHA safe-harbor warning for cannabis
               products. Required disclosure, not a stylistic choice. */}
-          <p className="max-w-3xl text-xs leading-relaxed text-neutral-500">
-            <span className="font-semibold text-neutral-700">WARNING:</span>{" "}
+          <p className="max-w-3xl text-xs leading-relaxed text-neutral-400">
+            <span className="font-semibold text-neutral-200">WARNING:</span>{" "}
             This product can expose you to chemicals including marijuana
             smoke, which is known to the State of California to cause
             cancer, and delta-9-tetrahydrocannabinol (THC), which is known
@@ -86,7 +69,7 @@ export function SiteFooter() {
               href="https://www.p65warnings.ca.gov"
               target="_blank"
               rel="noreferrer"
-              className="underline hover:text-neutral-900"
+              className="underline hover:text-neutral-50"
             >
               www.P65Warnings.ca.gov
             </a>

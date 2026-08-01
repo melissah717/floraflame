@@ -95,10 +95,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${karla.variable}`}>
-      <body className="bg-neutral-50 font-sans text-neutral-900 antialiased">
+      <body className="bg-neutral-900 font-sans text-neutral-50 antialiased">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:rounded-full focus:bg-neutral-900 focus:px-5 focus:py-3 focus:text-sm focus:text-neutral-50"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:rounded-full focus:bg-neutral-50 focus:px-5 focus:py-3 focus:text-sm focus:text-neutral-900"
         >
           Skip to main content
         </a>

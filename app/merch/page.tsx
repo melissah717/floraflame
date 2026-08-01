@@ -27,9 +27,9 @@ export default function MerchPage() {
       <div className="mt-12 grid grid-cols-2 gap-4 sm:mt-16 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
         {Array.from({ length: PLACEHOLDER_COUNT }).map((_, i) => (
           <div key={i} className="flex flex-col gap-3">
-            <div className="aspect-square animate-pulse rounded-2xl bg-neutral-200" />
-            <div className="h-3 w-3/4 animate-pulse rounded-full bg-neutral-200" />
-            <div className="h-3 w-1/3 animate-pulse rounded-full bg-neutral-200" />
+            <div className="aspect-square animate-pulse rounded-2xl bg-neutral-800" />
+            <div className="h-3 w-3/4 animate-pulse rounded-full bg-neutral-800" />
+            <div className="h-3 w-1/3 animate-pulse rounded-full bg-neutral-800" />
           </div>
         ))}
       </div>

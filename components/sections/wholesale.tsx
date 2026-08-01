@@ -148,7 +148,7 @@ function FormDecor({
           alt=""
           width={240}
           height={240}
-          className="h-full w-full object-contain"
+          className="h-full w-full object-contain invert"
         />
       </div>
     </motion.div>
@@ -156,10 +156,6 @@ function FormDecor({
 }
 
 /**
- * Light section — deliberately breaks the light/dark/light/dark/light
- * rhythm the rest of the page uses, so this reads as a flat page of
- * neutral-100 next to About's neutral-50 and Find Us's neutral-100.
- *
  * No backend on this site, so "sending" the request means handing it to the
  * visitor's own email client via a mailto: link — zero accounts, zero API
  * keys, works today. REQUEST_TO_EMAIL is a placeholder until there's a real
@@ -216,7 +212,7 @@ export function Wholesale() {
     <section
       ref={sectionRef}
       id="wholesale"
-      className="scroll-mt-20 relative overflow-hidden bg-neutral-100 px-5 py-24 text-neutral-900 sm:px-8 sm:py-32"
+      className="scroll-mt-20 relative overflow-hidden bg-neutral-800 px-5 py-24 text-neutral-50 sm:px-8 sm:py-32"
     >
       {!reduce && (
         <>
@@ -239,7 +235,7 @@ export function Wholesale() {
         <Reveal delay={0.05}>
           <ParallaxText speed={16}>
             <div className="mx-auto mt-4 flex justify-center">
-              <h2 className="max-w-[14ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] text-neutral-950 sm:text-5xl lg:text-6xl">
+              <h2 className="max-w-[14ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] text-neutral-50 sm:text-5xl lg:text-6xl">
                 Tell us what you need.
               </h2>
             </div>
@@ -248,7 +244,7 @@ export function Wholesale() {
 
         <div className="mx-auto mt-16 max-w-2xl">
           <Reveal>
-            <p className="text-lg leading-relaxed text-neutral-500">
+            <p className="text-lg leading-relaxed text-neutral-400">
               Questions about a drop, press, a collab, or getting Flora &amp;
               Flame on your shelf — this goes straight to our inbox.
             </p>
@@ -320,7 +316,7 @@ export function Wholesale() {
               />
 
               <div>
-                <label htmlFor="field-description" className="text-xs tracking-[0.04em] text-neutral-500">
+                <label htmlFor="field-description" className="text-xs tracking-[0.04em] text-neutral-400">
                   Description
                 </label>
                 {/* Plain textarea — shadcn's defaults fight this section's
@@ -334,13 +330,13 @@ export function Wholesale() {
                   placeholder="What's going on?"
                   aria-invalid={Boolean(errors.description)}
                   aria-describedby={errors.description ? "field-description-error" : undefined}
-                  className={`mt-2 w-full resize-none border-0 border-b bg-transparent px-0 py-2 text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 ${errors.description
+                  className={`mt-2 w-full resize-none border-0 border-b bg-transparent px-0 py-2 text-neutral-50 outline-none transition-colors placeholder:text-neutral-500 ${errors.description
                       ? "border-red-500 focus:border-red-500"
-                      : "border-neutral-300 focus:border-neutral-900"
+                      : "border-neutral-600 focus:border-neutral-50"
                     }`}
                 />
                 {errors.description && (
-                  <p id="field-description-error" className="mt-1 text-xs text-red-600">
+                  <p id="field-description-error" className="mt-1 text-xs text-red-400">
                     {errors.description}
                   </p>
                 )}
@@ -349,12 +345,12 @@ export function Wholesale() {
               <Button
                 type="submit"
                 size="lg"
-                className="mt-4 w-full rounded-full bg-neutral-900 py-6 text-base font-normal text-neutral-50 hover:bg-neutral-700 sm:w-auto sm:px-10"
+                className="mt-4 w-full rounded-full bg-neutral-50 py-6 text-base font-normal text-neutral-900 hover:bg-neutral-200 sm:w-auto sm:px-10"
               >
                 {sent ? "Opened your email client — send when ready" : "Send request"}
               </Button>
 
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-400">
                 Opens your email app, addressed to {REQUEST_TO_EMAIL}.
               </p>
             </form>
@@ -389,7 +385,7 @@ function Field({
   const errorId = `${id}-error`;
   return (
     <div>
-      <label htmlFor={id} className="text-xs tracking-[0.04em] text-neutral-500">
+      <label htmlFor={id} className="text-xs tracking-[0.04em] text-neutral-400">
         {label}
       </label>
       <input
@@ -400,11 +396,11 @@ function Field({
         onChange={onChange}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? errorId : undefined}
-        className={`mt-2 w-full border-0 border-b bg-transparent px-0 py-2 text-neutral-900 outline-none transition-colors ${error ? "border-red-500 focus:border-red-500" : "border-neutral-300 focus:border-neutral-900"
+        className={`mt-2 w-full border-0 border-b bg-transparent px-0 py-2 text-neutral-50 outline-none transition-colors ${error ? "border-red-500 focus:border-red-500" : "border-neutral-600 focus:border-neutral-50"
           }`}
       />
       {error && (
-        <p id={errorId} className="mt-1 text-xs text-red-600">
+        <p id={errorId} className="mt-1 text-xs text-red-400">
           {error}
         </p>
       )}
@@ -433,7 +429,7 @@ function SelectField({
   const errorId = `${id}-error`;
   return (
     <div>
-      <label htmlFor={id} className="text-xs tracking-[0.04em] text-neutral-500">
+      <label htmlFor={id} className="text-xs tracking-[0.04em] text-neutral-400">
         {label}
       </label>
       <select
@@ -445,12 +441,12 @@ function SelectField({
         aria-describedby={error ? errorId : undefined}
         style={{
           backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%237a7263'%3E%3Cpath d='M5.5 7.5l4.5 5 4.5-5z'/%3E%3C/svg%3E\")",
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23a29886'%3E%3Cpath d='M5.5 7.5l4.5 5 4.5-5z'/%3E%3C/svg%3E\")",
           backgroundSize: "14px",
           backgroundPosition: "right 2px center",
           backgroundRepeat: "no-repeat",
         }}
-        className={`mt-2 w-full appearance-none border-0 border-b bg-transparent px-0 py-2 pr-6 text-neutral-900 outline-none transition-colors ${error ? "border-red-500 focus:border-red-500" : "border-neutral-300 focus:border-neutral-900"
+        className={`mt-2 w-full appearance-none border-0 border-b bg-transparent px-0 py-2 pr-6 text-neutral-50 outline-none transition-colors ${error ? "border-red-500 focus:border-red-500" : "border-neutral-600 focus:border-neutral-50"
           }`}
       >
         <option value="" disabled className="text-neutral-500">
@@ -463,7 +459,7 @@ function SelectField({
         ))}
       </select>
       {error && (
-        <p id={errorId} className="mt-1 text-xs text-red-600">
+        <p id={errorId} className="mt-1 text-xs text-red-400">
           {error}
         </p>
       )}

@@ -21,7 +21,7 @@ export default async function BlogPostPage({
       <Reveal>
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900"
+          className="inline-flex items-center gap-2 text-sm text-neutral-400 transition-colors hover:text-neutral-50"
         >
           <ArrowLeft className="h-4 w-4" />
           Blog
@@ -32,7 +32,7 @@ export default async function BlogPostPage({
         </h1>
 
         {post.blurb && (
-          <p className="mt-5 text-lg leading-relaxed text-neutral-500">
+          <p className="mt-5 text-lg leading-relaxed text-neutral-400">
             {post.blurb}
           </p>
         )}
@@ -57,7 +57,7 @@ export default async function BlogPostPage({
         {post.paragraphs.map((p, i) => (
           <Reveal key={i} delay={0.05}>
             {p.title && (
-              <h2 className="font-display text-2xl tracking-[-0.01em] text-neutral-900">
+              <h2 className="font-display text-2xl tracking-[-0.01em] text-neutral-50">
                 {p.title}
               </h2>
             )}
@@ -73,7 +73,7 @@ export default async function BlogPostPage({
               </div>
             )}
             {p.body && (
-              <p className="mt-3 text-base leading-relaxed text-neutral-600 sm:text-lg">
+              <p className="mt-3 text-base leading-relaxed text-neutral-300 sm:text-lg">
                 {p.body}
               </p>
             )}
