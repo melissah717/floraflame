@@ -46,9 +46,19 @@ export function SiteFooter() {
               Socials
             </p>
             <ul className="mt-4 space-y-2 text-sm">
-              {["Instagram", "Weedmaps", "Leafly"].map((s) => (
-                <li key={s}>
-                  <span className="text-neutral-400">{s}</span>
+              {[
+                ["Instagram", "https://instagram.com/floraandflameca"],
+                ["Weedmaps", "https://weedmaps.com/brands/flora-flame"],
+              ].map(([label, href]) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-neutral-400 transition-colors hover:text-neutral-50"
+                  >
+                    {label}
+                  </a>
                 </li>
               ))}
             </ul>
