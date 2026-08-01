@@ -328,11 +328,11 @@ export function ScrollMarquee({
 /* ------------------------------------------------------------------ */
 export function SectionLabel({
   number,
-  tone = "dark",
+  tone = "light",
   children,
 }: {
   number: string;
-  /** "dark" = for light backgrounds. "light" = for dark sections. */
+  /** "dark" = for light backgrounds. "light" = for dark sections (site default). */
   tone?: "dark" | "light";
   children: ReactNode;
 }) {

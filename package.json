@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "shrink-images": "node scripts/shrink-images.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -36,6 +37,7 @@
     "eslint-config-next": "16.2.6",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -17,7 +17,10 @@ export type SpectrumPosition = (typeof SPECTRUM_POSITIONS)[number];
 export type Strain = {
   slug: string;
   name: string;
+  /** Container + nug — the shot used on the homepage's "Latest Drops". */
   image: string;
+  /** Nug-only close-up — used on the /archive page. Falls back to `image` when not on file. */
+  nugImage?: string;
   spectrum: SpectrumPosition;
   /** True if this batch is part of the current rotation (shown on the homepage). */
   isCurrent: boolean;
@@ -65,6 +68,7 @@ type DropBatchRow = {
   slug: string;
   name: string;
   image: string;
+  nug_image: string | null;
   spectrum: string;
   is_current: boolean | null;
   tags: string[] | null;
@@ -91,6 +95,7 @@ function rowToStrain(row: DropBatchRow): Strain | null {
     slug: row.slug,
     name: row.name,
     image: row.image,
+    nugImage: row.nug_image ?? undefined,
     spectrum: row.spectrum,
     isCurrent: row.is_current ?? false,
     tags: row.tags ?? [],
@@ -105,7 +110,7 @@ function rowToStrain(row: DropBatchRow): Strain | null {
 }
 
 const SELECT_COLUMNS =
-  "slug, name, image, spectrum, is_current, tags, description, genetics, terpenes, ideal_time, thc_percent, lab_report_url, batch_number";
+  "slug, name, image, nug_image, spectrum, is_current, tags, description, genetics, terpenes, ideal_time, thc_percent, lab_report_url, batch_number";
 
 /** The batches shown in the homepage's "Latest Drops" section. */
 export async function getCurrentDrops(): Promise<Strain[]> {

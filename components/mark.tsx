@@ -11,11 +11,11 @@ import { cn } from "@/lib/utils";
  */
 export function Mark({
   size = 120,
-  tone = "dark",
+  tone = "light",
   className,
 }: {
   size?: number;
-  /** "dark" = for light backgrounds. "light" = for dark backgrounds. */
+  /** "dark" = for light backgrounds. "light" = for dark backgrounds (site default). */
   tone?: "dark" | "light";
   className?: string;
 }) {

@@ -61,7 +61,7 @@ export function StockistMap({
 
       map.current = new mapboxgl.Map({
         container: container.current,
-        style: "mapbox://styles/mapbox/light-v11",
+        style: "mapbox://styles/mapbox/dark-v11",
         center: [-121.5, 37.5],
         zoom: 5,
         cooperativeGestures: true, // don't hijack page scroll
@@ -116,7 +116,7 @@ export function StockistMap({
 
         const dot = document.createElement("div");
         dot.className =
-          "h-full w-full rounded-full border-2 border-white bg-neutral-900 shadow-md transition-transform duration-300 hover:scale-125";
+          "h-full w-full rounded-full border-2 border-neutral-900 bg-neutral-50 shadow-md transition-transform duration-300 hover:scale-125";
         el.appendChild(dot);
 
         const popup = new mapboxgl.Popup({
@@ -291,7 +291,7 @@ export function StockistMap({
   if (!token) {
     return (
       <div
-        className={`flex items-center justify-center border border-dashed border-neutral-300 bg-neutral-50 ${className ?? ""}`}
+        className={`flex items-center justify-center border border-dashed border-neutral-700 bg-neutral-800 ${className ?? ""}`}
       >
         <span className="text-xs tracking-[0.04em] text-neutral-400">
           Map unavailable — NEXT_PUBLIC_MAPBOX_TOKEN not set

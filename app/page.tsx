@@ -49,10 +49,10 @@ export default async function HomePage() {
       {/*
         Everything below the hero scrolls OVER it.
         - relative z-10 puts it above the sticky hero
-        - bg-neutral-50 makes it opaque, so the hero doesn't show through
+        - bg-neutral-900 makes it opaque, so the hero doesn't show through
         Sections with their own bg (marquee band, wholesale) override it.
       */}
-      <div className="relative z-10 bg-neutral-50">
+      <div className="relative z-10 bg-neutral-900">
         <About />
         <LivingSoil />
         <Drops strains={strains} />

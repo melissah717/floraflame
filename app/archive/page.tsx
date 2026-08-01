@@ -10,17 +10,21 @@ export default async function ArchivePage() {
   const batches = await getArchiveBatches();
 
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-24 pt-32 sm:px-8 sm:pt-40">
-      <Reveal>
-        <SectionLabel number="—">Archive</SectionLabel>
-        <h1 className="mt-4 max-w-[16ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl lg:text-6xl">
-          Every batch we've tested.
-        </h1>
-      </Reveal>
+    <div className="bg-neutral-900 text-neutral-50">
+      <div className="mx-auto max-w-7xl px-5 pb-24 pt-32 sm:px-8 sm:pt-40">
+        <Reveal>
+          <SectionLabel number="—" tone="light">
+            Archive
+          </SectionLabel>
+          <h1 className="mt-4 max-w-[16ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl lg:text-6xl">
+            Every batch we've tested.
+          </h1>
+        </Reveal>
 
-      <Reveal delay={0.05} className="mt-12 sm:mt-16">
-        <ArchiveClient batches={batches} />
-      </Reveal>
+        <Reveal delay={0.05} className="mt-12 sm:mt-16">
+          <ArchiveClient batches={batches} />
+        </Reveal>
+      </div>
     </div>
   );
 }

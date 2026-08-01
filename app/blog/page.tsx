@@ -32,7 +32,7 @@ export default async function BlogPage() {
           {posts.map((post) => (
             <RevealItem key={post.slug}>
               <Link href={`/blog/${post.slug}`} className="group flex h-full flex-col">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-neutral-100">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-neutral-800">
                   {post.heroImage ? (
                     <Image
                       src={post.heroImage}
@@ -51,15 +51,15 @@ export default async function BlogPage() {
                 </div>
 
                 <div className="mt-5 flex flex-1 flex-col gap-2.5">
-                  <h2 className="font-display text-2xl leading-tight tracking-[-0.01em] text-neutral-900 transition-colors duration-200 group-hover:text-neutral-600">
+                  <h2 className="font-display text-2xl leading-tight tracking-[-0.01em] text-neutral-50 transition-colors duration-200 group-hover:text-neutral-300">
                     {post.title}
                   </h2>
                   {post.blurb && (
-                    <p className="line-clamp-2 text-sm leading-relaxed text-neutral-500">
+                    <p className="line-clamp-2 text-sm leading-relaxed text-neutral-400">
                       {post.blurb}
                     </p>
                   )}
-                  <span className="mt-1 inline-flex items-center gap-1.5 text-xs tracking-[0.06em] text-neutral-400 transition-colors duration-200 group-hover:text-neutral-900">
+                  <span className="mt-1 inline-flex items-center gap-1.5 text-xs tracking-[0.06em] text-neutral-400 transition-colors duration-200 group-hover:text-neutral-50">
                     Read the post
                     <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
                   </span>
