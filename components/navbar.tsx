@@ -207,66 +207,49 @@ export function Navbar() {
           </SheetTrigger>
           <SheetContent
             side="right"
-            className="w-full border-l-0 bg-neutral-900 sm:w-96"
+            className="w-full overflow-y-auto border-l-0 bg-neutral-900 text-neutral-50 sm:w-96"
           >
             <SheetTitle className="sr-only">Navigation</SheetTitle>
-            <div className="mt-16 flex flex-col gap-1 px-6">
-              {SECTIONS.map(({ id, label }, i) => (
+            <div className="mt-8 flex flex-col px-6 pb-4">
+              {SECTIONS.map(({ id, label }) => (
                 <button
                   key={id}
                   onClick={() => scrollTo(id)}
-                  className="flex cursor-pointer items-baseline gap-4 border-b border-neutral-700 py-5 text-left"
+                  className="cursor-pointer border-b border-neutral-700 py-2.5 text-left font-display text-lg leading-tight text-neutral-50"
                 >
-                  <span className="text-xs tabular-nums text-neutral-500">
-                    0{i + 1}
-                  </span>
-                  <span className="font-display text-3xl text-neutral-50">
-                    {label}
-                  </span>
+                  {label}
                 </button>
               ))}
 
               <Link
                 href="/blog"
                 onClick={() => setOpen(false)}
-                className="flex items-baseline gap-4 border-b border-neutral-700 py-5"
+                className="block border-b border-neutral-700 py-2.5 font-display text-lg leading-tight text-neutral-50"
               >
-                <span className="text-xs tabular-nums text-neutral-500">05</span>
-                <span className="font-display text-3xl text-neutral-50">
-                  Blog
-                </span>
+                Blog
               </Link>
 
               <Link
                 href="/archive"
                 onClick={() => setOpen(false)}
-                className="flex items-baseline gap-4 border-b border-neutral-700 py-5"
+                className="block border-b border-neutral-700 py-2.5 font-display text-lg leading-tight text-neutral-50"
               >
-                <span className="text-xs tabular-nums text-neutral-500">06</span>
-                <span className="font-display text-3xl text-neutral-50">
-                  Archive
-                </span>
+                Archive
               </Link>
 
               <button
                 onClick={() => scrollTo("subscribe")}
-                className="flex cursor-pointer items-baseline gap-4 border-b border-neutral-700 py-5 text-left"
+                className="cursor-pointer border-b border-neutral-700 py-2.5 text-left font-display text-lg leading-tight text-neutral-50"
               >
-                <span className="text-xs tabular-nums text-neutral-500">07</span>
-                <span className="font-display text-3xl text-neutral-50">
-                  Subscribe
-                </span>
+                Subscribe
               </button>
 
               <Link
                 href="/merch"
                 onClick={() => setOpen(false)}
-                className="flex items-baseline gap-4 py-5"
+                className="block py-2.5 font-display text-lg leading-tight text-neutral-50"
               >
-                <span className="text-xs tabular-nums text-neutral-500">08</span>
-                <span className="font-display text-3xl text-neutral-50">
-                  Merch
-                </span>
+                Merch
               </Link>
             </div>
           </SheetContent>
