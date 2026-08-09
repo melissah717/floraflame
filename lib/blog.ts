@@ -41,7 +41,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         title: "More soon",
         image: "",
-        body: "This placeholder shows while BLOG_URL is unset or the sheet fetch fails — see lib/blog.ts.",
+        body: "This placeholder shows while BLOG_URL is unset or the sheet fetch fails. See lib/blog.ts.",
       },
     ],
   },

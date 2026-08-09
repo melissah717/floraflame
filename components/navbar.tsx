@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Menu } from "lucide-react";
+import { ChevronDown, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -13,6 +13,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarTrigger,
+} from "@/components/ui/menubar";
 import { cn } from "@/lib/utils";
 
 const SECTIONS = [
@@ -29,13 +35,10 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string>("");
   const [open, setOpen] = useState(false);
-
-  // Every page is dark except the Hero's own sticky top section — its
-  // background has to stay light for the mix-blend-difference title
-  // effect to work (see hero.tsx). While the transparent navbar sits over
-  // that one light section, it needs dark-on-light text instead of its
-  // usual light-on-dark set, or it reads as invisible.
-  const overLightHero = isHome && !scrolled;
+  // The "Home" trigger reads as active when scroll position is inside any
+  // of the sections it drops down to, even though the dropdown itself is
+  // closed most of the time.
+  const homeActive = SECTIONS.some((s) => s.id === active);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -99,66 +102,69 @@ export function Navbar() {
             height={48}
             unoptimized
             priority
-            className={cn("h-10 w-auto transition-[filter] duration-300 sm:h-12", !overLightHero && "invert")}
+            className="h-10 w-auto invert sm:h-12"
           />
         </Link>
 
         {/* Desktop */}
         <div className="hidden items-center gap-1 xl:flex">
-          {SECTIONS.map(({ id, label }) => (
-            <button
-              key={id}
-              onClick={() => scrollTo(id)}
+          <MenubarMenu>
+            <MenubarTrigger
               className={cn(
-                "cursor-pointer px-4 py-2 text-md transition-colors duration-200",
-                active === id
-                  ? // Active state is a weight bump only — 400 → 500.
-                  // Subtle enough to read as emphasis, not a different label.
-                  cn("font-medium", overLightHero ? "text-neutral-900" : "text-neutral-50")
-                  : cn(
-                      "font-normal",
-                      overLightHero
-                        ? "text-neutral-500 hover:text-neutral-900"
-                        : "text-neutral-300 hover:text-neutral-50"
-                    )
+                "flex cursor-pointer items-center gap-1 rounded-none px-4 py-2 text-lg outline-none transition-colors duration-200 hover:bg-transparent aria-expanded:bg-transparent",
+                homeActive
+                  ? "font-medium text-neutral-50"
+                  : "font-normal text-neutral-300 hover:text-neutral-50"
               )}
             >
-              {label}
-            </button>
-          ))}
+              Home
+              <ChevronDown className="size-3.5" />
+            </MenubarTrigger>
+            <MenubarContent className="border border-neutral-700 bg-neutral-900 text-neutral-50">
+              {SECTIONS.map(({ id, label }) => (
+                <MenubarItem
+                  key={id}
+                  onClick={() => scrollTo(id)}
+                  className={cn(
+                    "cursor-pointer text-base focus:bg-neutral-800 focus:text-neutral-50",
+                    active === id ? "font-medium text-neutral-50" : "text-neutral-300"
+                  )}
+                >
+                  {label}
+                </MenubarItem>
+              ))}
+            </MenubarContent>
+          </MenubarMenu>
+
+          <Link
+            href="/learn"
+            className={cn(
+              "px-4 py-2 text-lg transition-colors duration-200",
+              pathname === "/learn"
+                ? "font-medium text-neutral-50"
+                : "text-neutral-300 hover:text-neutral-50"
+            )}
+          >
+            Learn
+          </Link>
 
           <Link
             href="/blog"
-            className={cn(
-              "px-4 py-2 text-lg transition-colors duration-200",
-              overLightHero
-                ? "text-neutral-500 hover:text-neutral-900"
-                : "text-neutral-300 hover:text-neutral-50"
-            )}
+            className="px-4 py-2 text-lg text-neutral-300 transition-colors duration-200 hover:text-neutral-50"
           >
             Blog
           </Link>
 
           <Link
             href="/archive"
-            className={cn(
-              "px-4 py-2 text-lg transition-colors duration-200",
-              overLightHero
-                ? "text-neutral-500 hover:text-neutral-900"
-                : "text-neutral-300 hover:text-neutral-50"
-            )}
+            className="px-4 py-2 text-lg text-neutral-300 transition-colors duration-200 hover:text-neutral-50"
           >
             Archive
           </Link>
 
           <Link
             href="/merch"
-            className={cn(
-              "px-4 py-2 text-lg transition-colors duration-200",
-              overLightHero
-                ? "text-neutral-500 hover:text-neutral-900"
-                : "text-neutral-300 hover:text-neutral-50"
-            )}
+            className="px-4 py-2 text-lg text-neutral-300 transition-colors duration-200 hover:text-neutral-50"
           >
             Merch
           </Link>
@@ -166,12 +172,7 @@ export function Navbar() {
           <Button
             size="lg"
             onClick={() => scrollTo("subscribe")}
-            className={cn(
-              "ml-4 rounded-full border bg-transparent px-6 text-base font-normal",
-              overLightHero
-                ? "border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
-                : "border-neutral-600 text-neutral-200 hover:bg-neutral-800 hover:text-neutral-50"
-            )}
+            className="ml-4 rounded-full border border-neutral-600 bg-transparent px-6 text-base font-normal text-neutral-200 hover:bg-neutral-800 hover:text-neutral-50"
           >
             Subscribe
           </Button>
@@ -179,12 +180,7 @@ export function Navbar() {
           <Button
             size="lg"
             onClick={() => scrollTo("wholesale")}
-            className={cn(
-              "ml-3 rounded-full px-7 text-base font-normal",
-              overLightHero
-                ? "bg-neutral-900 text-neutral-50 hover:bg-neutral-700"
-                : "bg-neutral-50 text-neutral-900 hover:bg-neutral-200"
-            )}
+            className="ml-3 rounded-full bg-neutral-50 px-7 text-base font-normal text-neutral-900 hover:bg-neutral-200"
           >
             Get in touch
           </Button>
@@ -196,12 +192,7 @@ export function Navbar() {
               it directly. Avoids the Radix/React 19 prop inference issue. */}
           <SheetTrigger
             aria-label="Open menu"
-            className={cn(
-              "inline-flex size-10 cursor-pointer items-center justify-center rounded-md transition-colors xl:hidden",
-              overLightHero
-                ? "text-neutral-900 hover:bg-neutral-200"
-                : "text-neutral-50 hover:bg-neutral-800"
-            )}
+            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-md text-neutral-50 transition-colors hover:bg-neutral-800 xl:hidden"
           >
             <Menu className="size-6" />
           </SheetTrigger>
@@ -211,15 +202,26 @@ export function Navbar() {
           >
             <SheetTitle className="sr-only">Navigation</SheetTitle>
             <div className="mt-8 flex flex-col px-6 pb-4">
+              <p className="pt-2.5 text-xs uppercase tracking-[0.08em] text-neutral-500">
+                Home
+              </p>
               {SECTIONS.map(({ id, label }) => (
                 <button
                   key={id}
                   onClick={() => scrollTo(id)}
-                  className="cursor-pointer border-b border-neutral-700 py-2.5 text-left font-display text-lg leading-tight text-neutral-50"
+                  className="cursor-pointer border-b border-neutral-700 py-2.5 pl-3 text-left font-display text-lg leading-tight text-neutral-50"
                 >
                   {label}
                 </button>
               ))}
+
+              <Link
+                href="/learn"
+                onClick={() => setOpen(false)}
+                className="block border-b border-neutral-700 py-2.5 font-display text-lg leading-tight text-neutral-50"
+              >
+                Learn
+              </Link>
 
               <Link
                 href="/blog"

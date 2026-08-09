@@ -181,7 +181,7 @@ export function About() {
             <Reveal delay={0.05}>
               <p className="text-lg leading-relaxed text-neutral-300">
                 Every plant is nurtured from seed to harvest in our indoor
-                no-till facility. Every bud is hand-trimmed and hand-packaged.
+                no till facility. Every bud is hand trimmed and hand packaged.
                 We don&apos;t use machines because machines don&apos;t give a
                 f*ck about trichomes.
               </p>

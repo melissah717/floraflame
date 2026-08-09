@@ -22,7 +22,7 @@ export function SectionTransition() {
     offset: ["start end", "end start"],
   });
 
-  const backgroundColor = useTransform(scrollYProgress, [0, 1], ["#1c1915", "#2c2823"]);
+  const backgroundColor = useTransform(scrollYProgress, [0, 1], ["#000000", "#000000"]);
   const textY = useTransform(scrollYProgress, [0, 1], [26, -26]);
   // Text fades in from one dark background and back out into the other at
   // the far end, rather than snapping to solid color the instant the

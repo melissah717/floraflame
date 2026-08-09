@@ -85,7 +85,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1c1915",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
@@ -94,7 +94,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${karla.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${karla.variable} bg-neutral-900`}>
       <body className="bg-neutral-900 font-sans text-neutral-50 antialiased">
         <a
           href="#main-content"

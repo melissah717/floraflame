@@ -59,15 +59,15 @@ export function PrivacyPolicyModal() {
             &quot;us&quot;) operates floraflame.ca (the &quot;Site&quot;).
             This policy explains what information we collect through the
             Site, how we use it, and the choices you have. This Site does
-            not sell cannabis products directly — it&apos;s a marketing and
-            wholesale-contact site for a licensed California cultivator.
+            not sell cannabis products directly. It&apos;s a marketing and
+            wholesale contact site for a licensed California cultivator.
           </LegalSection>
 
           <LegalSection heading="Information we collect">
-            Contact-form submissions (name, email, phone, state, business
-            name, and message), newsletter sign-up emails, and standard
+            Contact form submissions (name, email, phone, state, business
+            name, and message), newsletter signup emails, and standard
             technical data collected automatically by the Site and its
-            service providers — IP address, browser/device type, pages
+            service providers, including IP address, browser/device type, pages
             visited, and cookies. See our cookie banner for more on the
             latter.
           </LegalSection>
@@ -76,13 +76,13 @@ export function PrivacyPolicyModal() {
             To respond to inquiries and wholesale requests, send drop
             announcements and other marketing to newsletter subscribers,
             operate and improve the Site, and comply with applicable law
-            (including state cannabis-licensing recordkeeping
-            requirements). We do not use contact-form or newsletter data
+            (including state cannabis licensing recordkeeping
+            requirements). We do not use contact form or newsletter data
             for anything unrelated to these purposes.
           </LegalSection>
 
-          <LegalSection heading="Third-party service providers">
-            We use third-party vendors to run parts of the Site, including
+          <LegalSection heading="Third party service providers">
+            We use third party vendors to run parts of the Site, including
             an email marketing platform for the newsletter, a mapping
             provider for the retailer locator, and standard web hosting
             infrastructure. These providers process data on our behalf
@@ -188,14 +188,14 @@ export function TermsModal() {
           </LegalSection>
 
           <LegalSection heading="Intellectual property">
-            The Flora &amp; Flame name, logo, and all Site content —
-            text, graphics, and images — are owned by Flora &amp; Flame LLC
+            The Flora &amp; Flame name, logo, and all Site content,
+            including text, graphics, and images, are owned by Flora &amp; Flame LLC
             or its licensors and may not be copied, reproduced, or used
             without prior written permission.
           </LegalSection>
 
-          <LegalSection heading="Third-party links">
-            The Site links to third-party sites and services (retailer
+          <LegalSection heading="Third party links">
+            The Site links to third party sites and services (retailer
             websites, social platforms, mapping tools) we don&apos;t
             control. We aren&apos;t responsible for their content,
             policies, or practices.
@@ -205,8 +205,8 @@ export function TermsModal() {
             The Site is provided &quot;as is&quot; and &quot;as
             available,&quot; without warranties of any kind, express or
             implied, including merchantability, fitness for a particular
-            purpose, or non-infringement. We don&apos;t warrant the Site
-            will be uninterrupted, error-free, or free of harmful
+            purpose, or noninfringement. We don&apos;t warrant the Site
+            will be uninterrupted, error free, or free of harmful
             components.
           </LegalSection>
 
@@ -219,7 +219,7 @@ export function TermsModal() {
 
           <LegalSection heading="Governing law">
             These Terms are governed by the laws of the State of
-            California, without regard to conflict-of-law principles.
+            California, without regard to conflict of law principles.
           </LegalSection>
 
           <LegalSection heading="Changes to these terms">

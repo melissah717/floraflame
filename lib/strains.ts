@@ -14,6 +14,36 @@ export const SPECTRUM_POSITIONS = [
 
 export type SpectrumPosition = (typeof SPECTRUM_POSITIONS)[number];
 
+function normalizeSpectrumPosition(value: string): SpectrumPosition | null {
+  const trimmed = value.trim();
+  if ((SPECTRUM_POSITIONS as readonly string[]).includes(trimmed)) {
+    return trimmed as SpectrumPosition;
+  }
+
+  const folded = trimmed
+    .toLowerCase()
+    .replace(/[–—]/g, "-")
+    .replace(/[_/]/g, " ")
+    .replace(/-/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  switch (folded) {
+    case "indica":
+      return "Indica";
+    case "indica leaning hybrid":
+      return "Indica-Leaning Hybrid";
+    case "balanced hybrid":
+      return "Balanced Hybrid";
+    case "sativa leaning hybrid":
+      return "Sativa-Leaning Hybrid";
+    case "sativa":
+      return "Sativa";
+    default:
+      return null;
+  }
+}
+
 export type Strain = {
   slug: string;
   name: string;
@@ -57,7 +87,7 @@ const FALLBACK_STRAINS: Strain[] = [
     isCurrent: true,
     tags: ["Berry", "Dessert", "Relaxing"],
     description:
-      "A dessert-leaning indica with a jammy berry nose and a slow, heavy-lidded body high built for the end of the day.",
+      "A dessert leaning indica with a jammy berry nose and a slow, heavy lidded body high built for the end of the day.",
     idealTime: "Evenings",
   },
 ];
@@ -86,7 +116,8 @@ function isSpectrumPosition(value: string): value is SpectrumPosition {
 }
 
 function rowToStrain(row: DropBatchRow): Strain | null {
-  if (!isSpectrumPosition(row.spectrum)) {
+  const spectrum = normalizeSpectrumPosition(row.spectrum);
+  if (!spectrum) {
     console.error(`${LOG} Unknown spectrum "${row.spectrum}" on "${row.slug}" — skipped.`);
     return null;
   }
@@ -96,7 +127,7 @@ function rowToStrain(row: DropBatchRow): Strain | null {
     name: row.name,
     image: row.image,
     nugImage: row.nug_image ?? undefined,
-    spectrum: row.spectrum,
+    spectrum,
     isCurrent: row.is_current ?? false,
     tags: row.tags ?? [],
     description: row.description,

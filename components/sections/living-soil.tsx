@@ -22,7 +22,7 @@ import {
 const HEADLINE = "What is living soil?";
 
 const LEAD =
-  "An ecosystem, not a growing medium. A self-sustaining web of microbes, organic matter and biology that feeds the plant the way the earth always has.";
+  "An ecosystem, not a growing medium. A self sustaining web of microbes, organic matter and biology that feeds the plant the way the earth always has.";
 
 const POINTS = [
   {
@@ -33,12 +33,12 @@ const POINTS = [
   {
     n: "02",
     title: "The plant defends itself",
-    body: "Sensing those microbes triggers induced systemic resistance — the plant's own defense response. That's what drives higher cannabinoid and flavonoid production, without anything sprayed on it.",
+      body: "Sensing those microbes triggers induced systemic resistance, the plant's own defense response. That's what drives higher cannabinoid and flavonoid production, without anything sprayed on it.",
   },
   {
     n: "03",
     title: "Hydro feeds plants, soil feeds biology",
-    body: "Most cannabis is grown hydroponically: inert media, synthetic liquid nutrients. Fast, scalable, one-dimensional. Chemical fertilizers feed the plant directly. Living soil feeds the microbes that feed the plant.",
+      body: "Most cannabis is grown hydroponically: inert media, synthetic liquid nutrients. Fast, scalable, and one dimensional. Chemical fertilizers feed the plant directly. Living soil feeds the microbes that feed the plant.",
   },
 ];
 
@@ -79,7 +79,7 @@ export function LivingSoil() {
               <span>The Method</span>
             </div>
             <p className="mt-5 text-base leading-relaxed text-neutral-400">
-              No-till. No synthetics. No pesticides. The whole method comes
+              No till. No synthetics. No pesticides. The whole method comes
               down to one idea, and it isn&apos;t a shortcut.
             </p>
           </div>

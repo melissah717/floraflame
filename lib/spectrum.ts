@@ -5,14 +5,18 @@ import { SPECTRUM_POSITIONS, type SpectrumPosition } from "@/lib/strains";
  * the archive's spectrum backdrop — kept in one place so both stay in
  * sync if the palette ever changes.
  */
-export const INDICA = [139, 92, 246] as const; // violet
-export const HYBRID = [255, 141, 61] as const; // flame orange
-export const SATIVA = [163, 230, 53] as const; // flora lime
+export const INDICA = [135, 54, 148] as const; // #873694
+export const HYBRID = [251, 176, 58] as const; // #FBB03A
+export const SATIVA = [79, 142, 69] as const; // #4F8E45
+export const BRAND_RED = [237, 31, 39] as const; // #ED1F27
+export const BRAND_SLATE = [71, 81, 103] as const; // #475167
 
 export const RGB = {
   indica: `rgb(${INDICA.join(" ")})`,
   hybrid: `rgb(${HYBRID.join(" ")})`,
   sativa: `rgb(${SATIVA.join(" ")})`,
+  red: `rgb(${BRAND_RED.join(" ")})`,
+  slate: `rgb(${BRAND_SLATE.join(" ")})`,
 };
 
 function mix(a: readonly number[], b: readonly number[], t: number) {
