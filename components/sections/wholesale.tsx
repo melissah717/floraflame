@@ -246,7 +246,7 @@ export function Wholesale() {
           <Reveal>
             <p className="text-lg leading-relaxed text-neutral-400">
               Questions about a drop, press, a collab, or getting Flora &amp;
-              Flame on your shelf — this goes straight to our inbox.
+              Flame on your shelf. This goes straight to our inbox.
             </p>
           </Reveal>
 

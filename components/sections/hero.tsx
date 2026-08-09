@@ -12,23 +12,13 @@ import {
 } from "motion/react";
 
 /**
- * Hero with a mouse-tracked panel and difference-blended type.
+ * Hero with a mouse-tracked floating panel over a solid black background.
  *
- * THE MASK EFFECT — mix-blend-mode: difference.
- * The type is pure white with `mix-blend-difference`. Difference computes
- * |backdrop − source| per channel:
- *   over bone   (250) → |250 − 255| =   5  → reads black
- *   over artwork ( 30) → | 30 − 255| = 225 → reads white
- * One element, no duplicated layers, no SVG masks, and it tracks the panel
- * automatically because it's just compositing.
- *
- * Requirements for it to work:
- *   - the blending wrapper needs `isolate` (scopes the blend group)
- *   - that wrapper needs an actual background colour to difference against
- *   - the panel must sit BELOW the type in the same stacking context
- *
- * The dim overlay lives OUTSIDE the isolated wrapper, above it, so the
- * scroll-to-black still works over the whole composition.
+ * Previously this used mix-blend-difference to invert white type wherever
+ * the panel sat behind it, over a light background that dimmed to black on
+ * scroll. Simplified to a plain black background throughout — the panel
+ * still floats and tracks the pointer, the headline still reveals line by
+ * line, there's just no color-inversion trick or scroll-to-dim anymore.
  */
 
 /**
@@ -92,21 +82,19 @@ export function Hero() {
   }, [pointer]);
 
   // --- scroll -----------------------------------------------------------
-  const overlayOpacity = useTransform(
-    scrollY,
-    [0, h * 0.15, h * 0.3, h * 0.45],
-    [0, 0.15, 0.55, 1]
-  );
+  // No scale here on purpose — scaling a layer down inside an
+  // overflow-hidden parent leaves a hairline anti-aliasing seam at its edge
+  // during GPU compositing (shows as a stray light line), regardless of how
+  // well the surrounding background colors are matched. Plain translation
+  // doesn't have that failure mode.
   const contentY = useTransform(scrollY, [0, h * 0.8], ["0%", "-12%"]);
-  const contentScale = useTransform(scrollY, [0, h * 0.8], [1, 0.96]);
   const cueOpacity = useTransform(scrollY, [0, h * 0.12], [1, 0]);
 
   return (
-    <section className="sticky top-0 h-svh overflow-hidden">
-      {/* isolate = its own blend group. bg is what the type differences against. */}
+    <section className="sticky top-0 h-svh overflow-hidden bg-neutral-900">
       <motion.div
-        style={reduce ? undefined : { y: contentY, scale: contentScale }}
-        className="relative isolate flex h-full items-center bg-neutral-50 will-change-transform"
+        style={reduce ? undefined : { y: contentY }}
+        className="relative flex h-full items-center bg-neutral-900 will-change-transform"
       >
         {/* OUTER — pointer tracking only. Kept separate from the entrance
             because one element can't take both an animated `x` and a
@@ -137,8 +125,8 @@ export function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* Type — white + difference. Inverts wherever the panel sits behind. */}
-        <div className="relative z-10 w-full px-5 mix-blend-difference sm:px-8">
+        {/* Type — plain white, over the panel. */}
+        <div className="relative z-10 w-full px-5 sm:px-8">
           <div className="mx-auto w-full max-w-7xl">
             <h1 className="font-display uppercase leading-[0.85] tracking-[-0.035em] text-white">
               {LINES.map((line, i) => (
@@ -173,13 +161,6 @@ export function Hero() {
           </div>
         </div>
       </motion.div>
-
-      {/* Dim — outside the blend group, above everything. */}
-      <motion.div
-        aria-hidden
-        style={reduce ? { opacity: 0 } : { opacity: overlayOpacity }}
-        className="pointer-events-none absolute inset-0 z-20 bg-neutral-900"
-      />
 
       {/* Footer row */}
       <motion.div
