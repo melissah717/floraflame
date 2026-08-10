@@ -74,7 +74,7 @@ export function LivingSoil() {
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="order-2 pb-3 lg:order-1 lg:w-72 lg:shrink-0">
             <div className="flex items-center gap-3 text-xs tracking-[0.08em] text-neutral-400">
-              <span className="tabular-nums">02</span>
+              <span className="tabular-nums">—</span>
               <span className="h-px w-8 bg-neutral-700" />
               <span>The Method</span>
             </div>

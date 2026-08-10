@@ -1,13 +1,14 @@
-"use client";
+"use client"
 
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react"
+import Image from "next/image"
 import {
   motion,
   useScroll,
   useTransform,
   useReducedMotion,
   type MotionValue,
-} from "motion/react";
+} from "motion/react"
 import {
   Brain,
   Citrus,
@@ -23,9 +24,9 @@ import {
   TreePine,
   Zap,
   type LucideIcon,
-} from "lucide-react";
-import { RGB } from "@/lib/spectrum";
-import { cn } from "@/lib/utils";
+} from "lucide-react"
+import { RGB } from "@/lib/spectrum"
+import { cn } from "@/lib/utils"
 
 /**
  * "Know What You're Smoking" — one continuous scrollytelling infographic,
@@ -47,29 +48,47 @@ import { cn } from "@/lib/utils";
  * than something that only plays at you.
  */
 
-const HEADLINE = "Know what you're smoking";
+const HEADLINE = "Know what you're smoking"
 
+const LEAD_EMPHASIS = "A strain is more than its THC percentage."
 const LEAD =
-  "A strain is more than its THC percentage. Cannabinoids and terpenes shape the effect, the plant's own anatomy is where they're made, and how you consume it changes all of it again.";
+  "Cannabinoids and terpenes shape the effect, the plant's own anatomy is where they're made, and how you consume it changes all of it again."
 
 /** Inserts an alpha channel into a legacy-space rgb() string, e.g.
  * "rgb(139 92 246)" -> "rgb(139 92 246 / 0.15)". */
 function withAlpha(rgb: string, alpha: number) {
-  return rgb.replace(/\)$/, ` / ${alpha})`);
+  return rgb.replace(/\)$/, ` / ${alpha})`)
+}
+
+/** True below the `lg` breakpoint — same 1024px cutoff GraphicColumn uses
+ * to switch between its stacked-mobile and sticky-desktop layouts. */
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1023px)")
+    setIsMobile(mql.matches)
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mql.addEventListener("change", onChange)
+    return () => mql.removeEventListener("change", onChange)
+  }, [])
+  return isMobile
 }
 
 type Item = {
-  n: string;
-  title: string;
-  body: string;
-  icon: LucideIcon;
-  accent?: string;
+  n: string
+  title: string
+  body: string
+  icon: LucideIcon
+  accent?: string
   /** Terpene wheel share, chapter 1 only — shares among wheel items sum to 100. */
-  pct?: number;
+  pct?: number
   /** Onset/duration comparison bars, chapter 3 only. */
-  stat?: { onset: { pct: number; label: string }; duration: { pct: number; label: string } };
-};
-type Chapter = { title: string; accent: string; items: Item[] };
+  stat?: {
+    onset: { pct: number; label: string }
+    duration: { pct: number; label: string }
+  }
+}
+type Chapter = { title: string; accent: string; items: Item[] }
 
 const CHAPTERS: Chapter[] = [
   {
@@ -79,7 +98,7 @@ const CHAPTERS: Chapter[] = [
       {
         n: "01",
         title: "THC",
-        body: "Binds CB1 receptors in the brain — psychoactive, the reason for the high.",
+        body: "Binds CB1 receptors in the brain. Psychoactive, the reason for the high.",
         icon: Brain,
       },
       {
@@ -91,15 +110,15 @@ const CHAPTERS: Chapter[] = [
       {
         n: "03",
         title: "Myrcene",
-        body: "Earthy, musky terpene — the heavy-lidded, body-melting one.",
+        body: "Musky, earthy, and lightly fruity. One of the most common cannabis terpenes, often associated with heavier aromatic profiles.",
         icon: Leaf,
-        accent: RGB.indica,
+        accent: RGB.slate,
         pct: 35,
       },
       {
         n: "04",
         title: "Caryophyllene",
-        body: "Peppery and spicy — the one terpene that's also a cannabinoid.",
+        body: "Spicy, woody, and peppery. Notable because beta-caryophyllene is studied for interacting with the CB2 receptor.",
         icon: Zap,
         accent: RGB.red,
         pct: 25,
@@ -107,7 +126,7 @@ const CHAPTERS: Chapter[] = [
       {
         n: "05",
         title: "Limonene",
-        body: "Citrus terpene. Mood-lifting, straight off the jar.",
+        body: "Citrus-forward, lemon-orange aroma with a sweeter flavor impression. Common in brighter, fruitier cultivars.",
         icon: Citrus,
         accent: RGB.hybrid,
         pct: 22,
@@ -115,10 +134,52 @@ const CHAPTERS: Chapter[] = [
       {
         n: "06",
         title: "Pinene",
-        body: "Pine, sharp. Keeps a heavy strain from feeling foggy.",
+        body: "Piney and resinous with a sharp, woody edge. One of the better-known conifer-like terpenes in cannabis.",
         icon: TreePine,
         accent: RGB.sativa,
         pct: 18,
+      },
+      {
+        n: "07",
+        title: "Linalool",
+        body: "Floral and lavender-like with a lightly spicy finish. Commonly discussed in calmer, more aromatic terpene mixes.",
+        icon: Flower2,
+        accent: RGB.indica,
+      },
+      {
+        n: "08",
+        title: "Humulene",
+        body: "Earthy, woody, and slightly hoppy-bitter. A sesquiterpene also found in hops and under study for anti-inflammatory potential.",
+        icon: Leaf,
+        accent: RGB.slate,
+      },
+      {
+        n: "09",
+        title: "Terpinolene",
+        body: "Floral, herbal, and citrusy with a mildly bitter edge. Less common in cannabis than the big headliners.",
+        icon: Cloud,
+        accent: RGB.indica,
+      },
+      {
+        n: "10",
+        title: "Ocimene",
+        body: "Sweet, herbal, and slightly fruity-woody. Part of the brighter green side of cannabis aroma chemistry.",
+        icon: Feather,
+        accent: RGB.hybrid,
+      },
+      {
+        n: "11",
+        title: "Bisabolol",
+        body: "Sweet and floral with a soft, mildly bitter flavor impression. Also known from chamomile-like aromatics.",
+        icon: Droplet,
+        accent: RGB.indica,
+      },
+      {
+        n: "12",
+        title: "Nerolidol",
+        body: "Woody and citrusy with a subtle bitter finish. Being explored in the literature for antimicrobial and antiparasitic potential.",
+        icon: TreePine,
+        accent: RGB.slate,
       },
     ],
   },
@@ -129,7 +190,7 @@ const CHAPTERS: Chapter[] = [
       {
         n: "01",
         title: "Trichome",
-        body: "The frosty crystals coating the bud — where the cannabinoids and terpenes actually live.",
+        body: "The frosty crystals coating the bud. This is where the cannabinoids and terpenes actually live.",
         icon: Snowflake,
       },
       {
@@ -141,13 +202,13 @@ const CHAPTERS: Chapter[] = [
       {
         n: "03",
         title: "Pistil",
-        body: "The wispy hairs — white when young, darkening as the plant matures.",
+        body: "The wispy hairs. White when young, darkening as the plant matures.",
         icon: Feather,
       },
       {
         n: "04",
         title: "Cola",
-        body: "The main flowering cluster at the top of the branch — the densest bud on the plant.",
+        body: "The main flowering cluster at the top of the branch. Usually the densest bud on the plant.",
         icon: Flower2,
       },
     ],
@@ -159,7 +220,7 @@ const CHAPTERS: Chapter[] = [
       {
         n: "01",
         title: "Smoking",
-        body: "Fastest onset, shortest duration — effects in minutes, gone in a couple hours.",
+        body: "Fastest onset, shortest duration. Effects in minutes, gone in a couple hours.",
         icon: Flame,
         stat: {
           onset: { pct: 8, label: "Seconds to minutes" },
@@ -169,7 +230,7 @@ const CHAPTERS: Chapter[] = [
       {
         n: "02",
         title: "Vaping",
-        body: "Similar speed to smoking, gentler on the lungs — heat, not combustion.",
+        body: "Similar speed to smoking, gentler on the lungs. Heat, not combustion.",
         icon: Cloud,
         stat: {
           onset: { pct: 10, label: "Minutes" },
@@ -179,7 +240,7 @@ const CHAPTERS: Chapter[] = [
       {
         n: "03",
         title: "Edibles",
-        body: "Slowest onset, longest duration — processed through the liver into a stronger compound.",
+        body: "Slowest onset, longest duration. Processed through the liver into a stronger compound.",
         icon: Cookie,
         stat: {
           onset: { pct: 75, label: "30–90 minutes" },
@@ -188,17 +249,28 @@ const CHAPTERS: Chapter[] = [
       },
     ],
   },
-];
+]
 
 /** Flat list driving the shared scroll progress — chapter markers and their
  * items share one sequence, so the whole section reads as a single
  * continuous scroll rather than three separately-triggered blocks. */
 type Beat =
   | { kind: "chapter"; chapterIndex: number; title: string; accent: string }
-  | { kind: "item"; chapterIndex: number; item: Item; accent: string; indexInChapter: number };
+  | {
+      kind: "item"
+      chapterIndex: number
+      item: Item
+      accent: string
+      indexInChapter: number
+    }
 
 const BEATS: Beat[] = CHAPTERS.flatMap((chapter, chapterIndex) => [
-  { kind: "chapter" as const, chapterIndex, title: chapter.title, accent: chapter.accent },
+  {
+    kind: "chapter" as const,
+    chapterIndex,
+    title: chapter.title,
+    accent: chapter.accent,
+  },
   ...chapter.items.map((item, indexInChapter) => ({
     kind: "item" as const,
     chapterIndex,
@@ -206,111 +278,173 @@ const BEATS: Beat[] = CHAPTERS.flatMap((chapter, chapterIndex) => [
     accent: item.accent ?? chapter.accent,
     indexInChapter,
   })),
-]);
+])
 
 // Windows are tuned so the last one ends comfortably before progress caps at
 // 1 — see about.tsx's note on this same failure mode.
-const BEATS_BASE = 0.0;
-const BEATS_RANGE = 0.82;
-const BEATS_WINDOW = 0.16;
+const BEATS_BASE = 0.0
+const BEATS_RANGE = 0.82
+const BEATS_WINDOW = 0.16
 
 function beatWindow(index: number) {
-  const start = BEATS_BASE + (index / BEATS.length) * BEATS_RANGE;
-  return { start, end: start + BEATS_WINDOW };
+  const start = BEATS_BASE + (index / BEATS.length) * BEATS_RANGE
+  return { start, end: start + BEATS_WINDOW }
 }
 
-type Span = { start: number; end: number };
+type Span = { start: number; end: number }
 
-function holdWindow(start: number, end: number, inPortion = 0.35, outPortion = 0.3): number[] {
-  const length = end - start;
-  const inEnd = start + length * inPortion;
-  const outStart = Math.max(inEnd, end - length * outPortion);
-  return [start, inEnd, outStart, end];
+function holdWindow(
+  start: number,
+  end: number,
+  inPortion = 0.35,
+  outPortion = 0.3
+): number[] {
+  const length = end - start
+  const inEnd = start + length * inPortion
+  const outStart = Math.max(inEnd, end - length * outPortion)
+  return [start, inEnd, outStart, end]
 }
 
 /** Each chapter's full on-screen span — from its own marker to its last
  * row — so a chapter's visual centerpiece can be driven by the same
  * progress its rows use, rather than a separate trigger. */
 const CHAPTER_SPANS: Span[] = CHAPTERS.map((_, chapterIndex) => {
-  const markerIndex = BEATS.findIndex((b) => b.kind === "chapter" && b.chapterIndex === chapterIndex);
-  let lastItemIndex = markerIndex;
+  const markerIndex = BEATS.findIndex(
+    (b) => b.kind === "chapter" && b.chapterIndex === chapterIndex
+  )
+  let lastItemIndex = markerIndex
   BEATS.forEach((b, i) => {
-    if (b.kind === "item" && b.chapterIndex === chapterIndex) lastItemIndex = i;
-  });
-  return { start: beatWindow(markerIndex).start, end: beatWindow(lastItemIndex).end };
-});
+    if (b.kind === "item" && b.chapterIndex === chapterIndex) lastItemIndex = i
+  })
+  return {
+    start: beatWindow(markerIndex).start,
+    end: beatWindow(lastItemIndex).end,
+  }
+})
 
 /** Each chapter's items paired with their own actual on-screen window, so a
  * centerpiece visual (wheel arc, leader line, bar) can be perfectly synced
- * to the row it corresponds to below it. */
-const CHAPTER_ITEM_WINDOWS: Span[][] = CHAPTERS.map((chapter, chapterIndex) =>
-  chapter.items.map((_, indexInChapter) => {
+ * to the row it corresponds to below it.
+ *
+ * Chapter 3 ("How You Take It") is the exception — Smoking/Vaping/Edibles
+ * all share item 0's window instead of each getting their own, so they
+ * spawn together on the first trigger rather than staggering in one at a
+ * time as you keep scrolling. */
+const CHAPTER_ITEM_WINDOWS: Span[][] = CHAPTERS.map((chapter, chapterIndex) => {
+  const unifyTrigger = chapterIndex === 2
+  const firstBeatIndex = BEATS.findIndex(
+    (b) =>
+      b.kind === "item" &&
+      b.chapterIndex === chapterIndex &&
+      b.indexInChapter === 0
+  )
+  const sharedWindow = unifyTrigger ? beatWindow(firstBeatIndex) : null
+
+  return chapter.items.map((_, indexInChapter) => {
+    if (sharedWindow) return sharedWindow
     const beatIndex = BEATS.findIndex(
-      (b) => b.kind === "item" && b.chapterIndex === chapterIndex && b.indexInChapter === indexInChapter
-    );
-    return beatWindow(beatIndex);
+      (b) =>
+        b.kind === "item" &&
+        b.chapterIndex === chapterIndex &&
+        b.indexInChapter === indexInChapter
+    )
+    return beatWindow(beatIndex)
   })
-);
+})
 
 /** Shared side padding — matches living-soil.tsx's full-bleed columns. */
-const GUTTER = "px-5 sm:px-8 lg:px-14";
+const GUTTER = "px-5 sm:px-8 lg:px-14"
 
-type ActiveKey = { chapter: number; index: number } | null;
+type ActiveKey = { chapter: number; index: number } | null
 
 export function Breakdown() {
-  const headRef = useRef<HTMLDivElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
+  const headRef = useRef<HTMLDivElement>(null)
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const reduce = useReducedMotion()
 
   // Hover previews on desktop; a tap "pins" the same state for touch —
   // whichever is set wins, so hovering never fights a tap.
-  const [hovered, setHovered] = useState<ActiveKey>(null);
-  const [pinned, setPinned] = useState<ActiveKey>(null);
-  const active = hovered ?? pinned;
+  const [hovered, setHovered] = useState<ActiveKey>(null)
+  const [pinned, setPinned] = useState<ActiveKey>(null)
+  const active = hovered ?? pinned
 
   const { scrollYProgress: headProgress } = useScroll({
     target: headRef,
     offset: ["start start", "end start"],
-  });
+  })
 
   const { scrollYProgress: bodyProgress } = useScroll({
     target: bodyRef,
     offset: ["start 100%", "end start"],
-  });
+  })
 
-  const titleY = useTransform(headProgress, [0, 0.52, 0.82, 1], ["0%", "0%", "-18%", "-18%"]);
-  const titleOpacity = useTransform(headProgress, [0, 0.52, 0.82, 1], [1, 1, 0.32, 0.32]);
-  const titleBlur = useTransform(headProgress, [0, 0.52, 0.82, 1], ["blur(0px)", "blur(0px)", "blur(10px)", "blur(10px)"]);
-  const smokeY = useTransform(headProgress, [0, 0.5, 1], ["0%", "-14%", "-42%"]);
-  const smokeX = useTransform(headProgress, [0, 0.5, 1], ["0%", "2%", "6%"]);
-  const smokeScale = useTransform(headProgress, [0, 0.5, 1], [1, 1.1, 1.28]);
+  const titleY = useTransform(
+    headProgress,
+    [0, 0.52, 0.82, 1],
+    ["0%", "0%", "-18%", "-18%"]
+  )
+  const titleOpacity = useTransform(
+    headProgress,
+    [0, 0.52, 0.82, 1],
+    [1, 1, 0.32, 0.32]
+  )
+  const titleBlur = useTransform(
+    headProgress,
+    [0, 0.52, 0.82, 1],
+    ["blur(0px)", "blur(0px)", "blur(10px)", "blur(10px)"]
+  )
+  const smokeY = useTransform(headProgress, [0, 0.5, 1], ["0%", "-14%", "-42%"])
+  const smokeX = useTransform(headProgress, [0, 0.5, 1], ["0%", "2%", "6%"])
+  const smokeScale = useTransform(headProgress, [0, 0.5, 1], [1, 1.1, 1.28])
   // Peaks much higher (was 0.22, further diluted by the /70 text color) and
   // holds there instead of spiking and dropping in one breath, so it reads
   // as smoke actually drifting off rather than a flicker.
-  const smokeOpacity = useTransform(headProgress, [0, 0.35, 0.65, 1], [0, 0.85, 0.7, 0]);
-  const smokeBlur = useTransform(headProgress, [0, 0.5, 1], ["blur(0px)", "blur(8px)", "blur(18px)"]);
+  const smokeOpacity = useTransform(
+    headProgress,
+    [0, 0.35, 0.65, 1],
+    [0, 0.85, 0.7, 0]
+  )
+  const smokeBlur = useTransform(
+    headProgress,
+    [0, 0.5, 1],
+    ["blur(0px)", "blur(8px)", "blur(18px)"]
+  )
 
-  const bodyGlowLeftY = useTransform(bodyProgress, [0, 0.72, 1], ["-4%", "10%", "10%"]);
-  const bodyGlowRightY = useTransform(bodyProgress, [0, 0.72, 1], ["10%", "-6%", "-6%"]);
-  const bodyGridOpacity = useTransform(bodyProgress, [0, 0.2, 0.6, 1], [0, 0.3, 0.22, 0]);
+  const bodyGlowLeftY = useTransform(
+    bodyProgress,
+    [0, 0.72, 1],
+    ["-4%", "10%", "10%"]
+  )
+  const bodyGlowRightY = useTransform(
+    bodyProgress,
+    [0, 0.72, 1],
+    ["10%", "-6%", "-6%"]
+  )
+  const bodyGridOpacity = useTransform(
+    bodyProgress,
+    [0, 0.2, 0.6, 1],
+    [0, 0.3, 0.22, 0]
+  )
 
   return (
-    <section id="breakdown" className="scroll-mt-20 relative bg-neutral-900">
+    <section id="breakdown" className="relative scroll-mt-20 bg-neutral-900">
       {/* ---------- HEAD ---------- */}
       <div
         ref={headRef}
-        className={`relative overflow-hidden bg-neutral-900 pb-8 pt-28 text-neutral-50 sm:pb-10 sm:pt-48 ${GUTTER}`}
+        className={`relative overflow-hidden bg-neutral-900 pt-28 pb-8 text-neutral-50 sm:pt-48 sm:pb-10 ${GUTTER}`}
       >
         <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div
-            className="absolute -left-20 top-16 h-56 w-56 rounded-full blur-3xl sm:h-72 sm:w-72"
-          >
-            <div className="h-full w-full rounded-full" style={{ backgroundColor: RGB.indica, opacity: 0.18 }} />
+          <div className="absolute top-16 -left-20 h-56 w-56 rounded-full blur-3xl sm:h-72 sm:w-72">
+            <div
+              className="h-full w-full rounded-full"
+              style={{ backgroundColor: RGB.indica, opacity: 0.18 }}
+            />
           </div>
-          <div
-            className="absolute right-[-6rem] top-4 h-64 w-64 rounded-full blur-3xl sm:h-80 sm:w-80"
-          >
-            <div className="h-full w-full rounded-full" style={{ backgroundColor: RGB.hybrid, opacity: 0.16 }} />
+          <div className="absolute top-4 right-[-6rem] h-64 w-64 rounded-full blur-3xl sm:h-80 sm:w-80">
+            <div
+              className="h-full w-full rounded-full"
+              style={{ backgroundColor: RGB.hybrid, opacity: 0.16 }}
+            />
           </div>
           <div
             className="absolute inset-x-0 bottom-0 h-px"
@@ -327,20 +461,29 @@ export function Breakdown() {
               <span>The Breakdown</span>
             </div>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900/80 px-3 py-1 text-[11px] tracking-[0.14em] text-neutral-300 backdrop-blur-sm">
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: RGB.indica }} />
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: RGB.hybrid }} />
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: RGB.sativa }} />
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: RGB.indica }}
+              />
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: RGB.hybrid }}
+              />
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: RGB.sativa }}
+              />
               <span>Effects decoded</span>
             </div>
             <p className="mt-5 text-base leading-relaxed text-neutral-200">
-              Terpenes, trichomes, and how you actually take it — tap
-              anything below to see how the pieces connect.
+              Terpenes, trichomes, how you actually take it. Poke around
+              below and watch how it all clicks together.
             </p>
           </div>
 
           <motion.h2
             className={[
-              "relative order-1 font-display uppercase leading-[0.86] tracking-[-0.04em] text-neutral-50 lg:order-2",
+              "relative order-1 font-display leading-[0.86] tracking-[-0.04em] text-neutral-50 uppercase lg:order-2",
               // min-w-0 so this can actually shrink inside the flex row —
               // without it the longest word ("SMOKING") forces the column
               // wider than the viewport and the tail clips off the right.
@@ -350,7 +493,12 @@ export function Breakdown() {
             style={
               reduce
                 ? { marginBottom: "-0.02em" }
-                : { marginBottom: "-0.02em", y: titleY, opacity: titleOpacity, filter: titleBlur }
+                : {
+                    marginBottom: "-0.02em",
+                    y: titleY,
+                    opacity: titleOpacity,
+                    filter: titleBlur,
+                  }
             }
           >
             <motion.span
@@ -358,12 +506,21 @@ export function Breakdown() {
               style={
                 reduce
                   ? { opacity: 0 }
-                  : { x: smokeX, y: smokeY, scale: smokeScale, opacity: smokeOpacity, filter: smokeBlur }
+                  : {
+                      x: smokeX,
+                      y: smokeY,
+                      scale: smokeScale,
+                      opacity: smokeOpacity,
+                      filter: smokeBlur,
+                    }
               }
               className="pointer-events-none absolute inset-0 text-neutral-50"
             >
               {HEADLINE.split(" ").map((word) => (
-                <span key={`${word}-smoke`} className="inline-block whitespace-nowrap">
+                <span
+                  key={`${word}-smoke`}
+                  className="inline-block whitespace-nowrap"
+                >
                   {word}
                   <span className="inline-block w-[0.24em]" />
                 </span>
@@ -394,46 +551,43 @@ export function Breakdown() {
             decorative layer (a sibling of the chapter content, not an
             ancestor) keeps the bleeding blur circles contained without
             standing between the sticky graphic and the real viewport. */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 overflow-hidden"
+        >
           <motion.div
-            style={reduce ? undefined : { y: bodyGlowLeftY, opacity: bodyGridOpacity }}
-            className="absolute left-[-8rem] top-24 h-72 w-72 rounded-full blur-3xl sm:h-[26rem] sm:w-[26rem]"
-          >
-            <div className="h-full w-full rounded-full" style={{ backgroundColor: RGB.indica, opacity: 0.14 }} />
-          </motion.div>
-          <motion.div
-            style={reduce ? undefined : { y: bodyGlowRightY, opacity: bodyGridOpacity }}
-            className="absolute right-[-10rem] top-[38rem] h-80 w-80 rounded-full blur-3xl sm:h-[30rem] sm:w-[30rem]"
-          >
-            <div className="h-full w-full rounded-full" style={{ backgroundColor: RGB.sativa, opacity: 0.14 }} />
-          </motion.div>
-          <motion.div
-            style={reduce ? undefined : { opacity: bodyGridOpacity }}
-            className="absolute inset-0"
+            style={
+              reduce
+                ? undefined
+                : { y: bodyGlowLeftY, opacity: bodyGridOpacity }
+            }
+            className="absolute top-24 left-[-8rem] h-72 w-72 rounded-full blur-3xl sm:h-[26rem] sm:w-[26rem]"
           >
             <div
-              className="h-full w-full"
-              style={{
-                backgroundImage:
-                  "linear-gradient(to right, rgb(250 248 244 / 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgb(250 248 244 / 0.04) 1px, transparent 1px)",
-                backgroundSize: "48px 48px",
-                maskImage: "linear-gradient(to bottom, transparent, black 12%, black 82%, transparent)",
-              }}
+              className="h-full w-full rounded-full"
+              style={{ backgroundColor: RGB.indica, opacity: 0.14 }}
+            />
+          </motion.div>
+          <motion.div
+            style={
+              reduce
+                ? undefined
+                : { y: bodyGlowRightY, opacity: bodyGridOpacity }
+            }
+            className="absolute top-[38rem] right-[-10rem] h-80 w-80 rounded-full blur-3xl sm:h-[30rem] sm:w-[30rem]"
+          >
+            <div
+              className="h-full w-full rounded-full"
+              style={{ backgroundColor: RGB.sativa, opacity: 0.14 }}
             />
           </motion.div>
         </div>
-        {/* Lead — assembles word by word, resolves early in the scroll. */}
-        <p className="relative max-w-5xl text-2xl leading-[1.35] text-neutral-50 sm:text-3xl lg:text-4xl">
-          {LEAD.split(" ").map((word, i, arr) => (
-            <Word
-              key={`${word}-${i}`}
-              word={word}
-              index={i}
-              total={arr.length}
-              progress={bodyProgress}
-              disabled={!!reduce}
-            />
-          ))}
+        {/* Lead — plain static text, no scroll-triggered reveal. */}
+        <p className="relative max-w-4xl font-display text-[clamp(2rem,4.6vw,4.4rem)] leading-[1.02] tracking-[-0.03em] text-neutral-50">
+          {LEAD_EMPHASIS}
+        </p>
+        <p className="relative mt-5 max-w-5xl text-xl leading-[1.38] text-neutral-200 sm:text-2xl lg:text-[2rem]">
+          {LEAD}
         </p>
 
         {/* Chapters — one continuous sequence of chapter marks, a visual
@@ -444,22 +598,29 @@ export function Breakdown() {
           {CHAPTERS.map((chapter, chapterIndex) => {
             const markerBeatIndex = BEATS.findIndex(
               (b) => b.kind === "chapter" && b.chapterIndex === chapterIndex
-            );
-            const { start, end } = beatWindow(markerBeatIndex);
-            const span = CHAPTER_SPANS[chapterIndex];
-            const spanLead = chapterIndex === 0 ? 0.1 : 0.06;
-            const visualSpan = { start: Math.max(0, span.start - spanLead), end: span.end };
-            const itemWindows = CHAPTER_ITEM_WINDOWS[chapterIndex];
-            const rowLead = chapterIndex === 0 ? 0.09 : 0.045;
-            const activeIndex = active && active.chapter === chapterIndex ? active.index : null;
-            const onHover = (index: number) => setHovered({ chapter: chapterIndex, index });
-            const onLeave = () => setHovered(null);
+            )
+            const { start, end } = beatWindow(markerBeatIndex)
+            const span = CHAPTER_SPANS[chapterIndex]
+            const chapterMarkStart = Math.max(0, start - 0.07)
+            const chapterMarkEnd = Math.min(1, start + (span.end - start) * 0.3)
+            const spanLead = chapterIndex === 0 ? 0.1 : 0.06
+            const visualSpan = {
+              start: Math.max(0, span.start - spanLead),
+              end: span.end,
+            }
+            const itemWindows = CHAPTER_ITEM_WINDOWS[chapterIndex]
+            const rowLead = chapterIndex === 0 ? 0.09 : 0.045
+            const activeIndex =
+              active && active.chapter === chapterIndex ? active.index : null
+            const onHover = (index: number) =>
+              setHovered({ chapter: chapterIndex, index })
+            const onLeave = () => setHovered(null)
             const onSelect = (index: number) =>
               setPinned((prev) =>
                 prev && prev.chapter === chapterIndex && prev.index === index
                   ? null
                   : { chapter: chapterIndex, index }
-              );
+              )
             const visual =
               chapterIndex === 0 ? (
                 <TerpeneStackVisual
@@ -499,7 +660,7 @@ export function Breakdown() {
                   onLeave={onLeave}
                   onSelect={onSelect}
                 />
-              );
+              )
 
             return (
               <ChapterFrame
@@ -507,6 +668,8 @@ export function Breakdown() {
                 accent={chapter.accent}
                 isFirst={chapterIndex === 0}
                 isExtended={chapterIndex > 0}
+                isFirstTall={chapterIndex === 0}
+                isExtraTall={chapterIndex === 1}
               >
                 <div
                   aria-hidden
@@ -525,34 +688,59 @@ export function Breakdown() {
                   number={chapterIndex + 1}
                   title={chapter.title}
                   accent={chapter.accent}
-                  start={start}
-                  end={end}
+                  start={chapterMarkStart}
+                  end={chapterMarkEnd}
+                  progress={bodyProgress}
+                  disabled={!!reduce}
+                />
+                <ChapterSideLabel
+                  title={chapter.title}
+                  accent={chapter.accent}
+                  start={chapterMarkStart}
+                  end={chapterMarkEnd}
+                  span={span}
                   progress={bodyProgress}
                   disabled={!!reduce}
                 />
 
                 <div
                   className={cn(
-                    "mt-7 grid gap-7 lg:grid-cols-[minmax(220px,0.85fr)_minmax(0,1.35fr)] lg:items-stretch lg:gap-10",
-                    chapterIndex > 0 && "lg:min-h-[72rem]"
+                    "mt-7 grid gap-7 lg:grid-cols-[minmax(280px,1fr)_minmax(0,1.2fr)] lg:items-stretch lg:gap-10",
+                    chapterIndex === 0 && "lg:min-h-[64rem]",
+                    chapterIndex > 0 &&
+                      (chapterIndex === 1
+                        ? "lg:min-h-[100rem]"
+                        : "lg:min-h-[72rem]")
                   )}
                 >
-                  <GraphicColumn isExtended={chapterIndex > 0}>
+                  <GraphicColumn
+                    isExtended={chapterIndex > 0}
+                    isFirstTall={chapterIndex === 0}
+                    isExtraTall={chapterIndex === 1}
+                  >
                     {visual}
                   </GraphicColumn>
-                  <DescriptionColumn isSticky={chapterIndex > 0}>
+                  <DescriptionColumn
+                    isSticky={chapterIndex > 0}
+                    isExtraTall={chapterIndex === 1}
+                  >
                     {chapter.items.map((item, indexInChapter) => (
                       <ItemRow
                         key={item.title}
                         item={item}
                         accent={item.accent ?? chapter.accent}
                         isFirstInChapter={indexInChapter === 0}
-                        start={Math.max(0, itemWindows[indexInChapter].start - rowLead)}
+                        start={Math.max(
+                          0,
+                          itemWindows[indexInChapter].start - rowLead
+                        )}
                         end={itemWindows[indexInChapter].end}
                         progress={bodyProgress}
                         disabled={!!reduce}
                         isActive={activeIndex === indexInChapter}
-                        isDimmed={activeIndex !== null && activeIndex !== indexInChapter}
+                        isDimmed={
+                          activeIndex !== null && activeIndex !== indexInChapter
+                        }
                         onHover={() => onHover(indexInChapter)}
                         onLeave={onLeave}
                         onSelect={() => onSelect(indexInChapter)}
@@ -561,22 +749,28 @@ export function Breakdown() {
                   </DescriptionColumn>
                 </div>
               </ChapterFrame>
-            );
+            )
           })}
         </div>
 
         <ClosingLine progress={bodyProgress} disabled={!!reduce} />
       </div>
     </section>
-  );
+  )
 }
 
 /** Closes out the same continuous scroll — the last beat lands around
  * progress 0.94, so this picks up right after and rides the tail end of
  * bodyProgress rather than sitting there with no motion of its own. */
-function ClosingLine({ progress, disabled }: { progress: MotionValue<number>; disabled: boolean }) {
-  const y = useTransform(progress, [0.78, 0.84, 0.95, 1], [40, 0, 0, -28]);
-  const opacity = useTransform(progress, [0.78, 0.84, 0.95, 1], [0, 1, 1, 0.85]);
+function ClosingLine({
+  progress,
+  disabled,
+}: {
+  progress: MotionValue<number>
+  disabled: boolean
+}) {
+  const y = useTransform(progress, [0.78, 0.84, 0.95, 1], [40, 0, 0, -28])
+  const opacity = useTransform(progress, [0.78, 0.84, 0.95, 1], [0, 1, 1, 0.85])
 
   return (
     <motion.p
@@ -586,19 +780,23 @@ function ClosingLine({ progress, disabled }: { progress: MotionValue<number>; di
       None of it works alone — it&apos;s the combination that decides how a
       strain actually feels.
     </motion.p>
-  );
+  )
 }
 
 function ChapterFrame({
   accent,
   isFirst,
   isExtended,
+  isFirstTall,
+  isExtraTall,
   children,
 }: {
-  accent: string;
-  isFirst: boolean;
-  isExtended: boolean;
-  children: ReactNode;
+  accent: string
+  isFirst: boolean
+  isExtended: boolean
+  isFirstTall: boolean
+  isExtraTall: boolean
+  children: ReactNode
 }) {
   return (
     <div
@@ -607,62 +805,88 @@ function ChapterFrame({
       }}
       className={cn(
         "relative overflow-visible rounded-[1.5rem] border border-neutral-800/80 px-4 py-10 shadow-[0_0_0_1px_rgb(250_248_244_/_0.02)] sm:px-6 sm:py-12",
-        isExtended && "lg:min-h-[78rem] lg:py-14",
+        isFirstTall && "lg:min-h-[68rem] lg:py-16",
+        isExtended &&
+          (isExtraTall
+            ? "lg:min-h-[108rem] lg:py-16"
+            : "lg:min-h-[78rem] lg:py-14"),
         isFirst ? "mt-0" : "mt-20 sm:mt-24"
       )}
     >
       {children}
     </div>
-  );
+  )
 }
 
 function GraphicColumn({
   children,
   isExtended,
+  isFirstTall,
+  isExtraTall,
 }: {
-  children: ReactNode;
-  isExtended: boolean;
+  children: ReactNode
+  isExtended: boolean
+  isFirstTall: boolean
+  isExtraTall: boolean
 }) {
   return (
     <div
       className={cn(
         "relative min-h-64 sm:min-h-72 lg:h-full",
-        isExtended ? "lg:min-h-[60rem]" : "lg:min-h-[28rem]"
+        isExtended
+          ? isExtraTall
+            ? "lg:min-h-[86rem]"
+            : "lg:min-h-[60rem]"
+          : isFirstTall
+            ? "lg:min-h-[52rem]"
+            : "lg:min-h-[32rem]"
       )}
     >
       <div className="lg:hidden">{children}</div>
       <div
         className={cn(
-          "hidden lg:flex lg:sticky lg:top-24 lg:items-center",
-          isExtended ? "lg:h-[calc(100vh-2rem)]" : "lg:h-[calc(100vh-6rem)]"
-        )}
-      >
-        <div className="w-full">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DescriptionColumn({
-  children,
-  isSticky,
-}: {
-  children: ReactNode;
-  isSticky: boolean;
-}) {
-  return (
-    <div className={cn("relative", isSticky && "lg:min-h-[60rem]")}>
-      <div
-        className={cn(
-          isSticky && "lg:sticky lg:top-24 lg:flex lg:min-h-[calc(100vh-2rem)] lg:items-center"
+          "hidden lg:sticky lg:top-24 lg:flex lg:items-center",
+          isExtended
+            ? isExtraTall
+              ? "lg:h-[calc(100vh-1rem)]"
+              : "lg:h-[calc(100vh-2rem)]"
+            : "lg:h-[calc(100vh-6rem)]"
         )}
       >
         <div className="w-full">{children}</div>
       </div>
     </div>
-  );
+  )
+}
+
+function DescriptionColumn({
+  children,
+  isSticky,
+  isExtraTall,
+}: {
+  children: ReactNode
+  isSticky: boolean
+  isExtraTall: boolean
+}) {
+  return (
+    <div
+      className={cn(
+        "relative",
+        isSticky && (isExtraTall ? "lg:min-h-[86rem]" : "lg:min-h-[60rem]")
+      )}
+    >
+      <div
+        className={cn(
+          isSticky &&
+            (isExtraTall
+              ? "lg:sticky lg:top-24 lg:flex lg:min-h-[calc(100vh-1rem)] lg:items-center"
+              : "lg:sticky lg:top-24 lg:flex lg:min-h-[calc(100vh-2rem)] lg:items-center")
+        )}
+      >
+        <div className="w-full">{children}</div>
+      </div>
+    </div>
+  )
 }
 
 function ChapterAura({
@@ -671,55 +895,122 @@ function ChapterAura({
   progress,
   disabled,
 }: {
-  accent: string;
-  span: Span;
-  progress: MotionValue<number>;
-  disabled: boolean;
+  accent: string
+  span: Span
+  progress: MotionValue<number>
+  disabled: boolean
 }) {
-  const input = holdWindow(span.start, span.end, 0.12, 0.12);
-  const y = useTransform(progress, input, [-12, 0, 0, 18]);
-  const x = useTransform(progress, input, ["-3%", "0%", "0%", "4%"]);
-  const opacity = useTransform(progress, input, [0, 1, 1, 0.18]);
+  const input = holdWindow(span.start, span.end, 0.12, 0.12)
+  const y = useTransform(progress, input, [-12, 0, 0, 18])
+  const x = useTransform(progress, input, ["-3%", "0%", "0%", "4%"])
+  const opacity = useTransform(progress, input, [0, 1, 1, 0.18])
 
   return (
     <motion.div
       aria-hidden
       style={disabled ? undefined : { x, y, opacity }}
-      className="pointer-events-none absolute right-[-8%] top-10 h-36 w-36 rounded-full blur-3xl sm:h-48 sm:w-48"
+      className="pointer-events-none absolute top-10 right-[-8%] h-36 w-36 rounded-full blur-3xl sm:h-48 sm:w-48"
     >
-      <div className="h-full w-full rounded-full" style={{ backgroundColor: accent, opacity: 0.12 }} />
+      <div
+        className="h-full w-full rounded-full"
+        style={{ backgroundColor: accent, opacity: 0.12 }}
+      />
     </motion.div>
-  );
+  )
+}
+
+function ChapterSideLabel({
+  title,
+  accent,
+  start,
+  end,
+  span,
+  progress,
+  disabled,
+}: {
+  title: string
+  accent: string
+  start: number
+  end: number
+  span: Span
+  progress: MotionValue<number>
+  disabled: boolean
+}) {
+  const handoffStart = end - (end - start) * 0.18
+  const handoffSettle = Math.min(
+    span.start + (span.end - span.start) * 0.2,
+    end + (span.end - end) * 0.18
+  )
+  const handoffEnd = span.end - (span.end - span.start) * 0.08
+  const opacity = useTransform(
+    progress,
+    [handoffStart, handoffSettle, handoffEnd, span.end],
+    [0, 0.72, 0.72, 0]
+  )
+  const x = useTransform(
+    progress,
+    [handoffStart, handoffSettle, handoffEnd, span.end],
+    ["18px", "0px", "0px", "10px"]
+  )
+  const blur = useTransform(
+    progress,
+    [handoffStart, handoffSettle, handoffEnd, span.end],
+    ["blur(10px)", "blur(0px)", "blur(0px)", "blur(6px)"]
+  )
+
+  return (
+    <div className="pointer-events-none absolute top-28 bottom-8 left-[-3.75rem] hidden lg:block">
+      <div className="sticky top-28 flex h-[calc(100vh-8rem)] items-center justify-start">
+        {disabled ? (
+          <div className="pl-1 text-[12px] tracking-[0.16em] text-neutral-500 uppercase [text-orientation:upright] [writing-mode:vertical-rl]">
+            <span style={{ color: accent }}>{title.replaceAll(" ", "  ")}</span>
+          </div>
+        ) : (
+          <motion.div
+            style={{ opacity, x, filter: blur }}
+            className="pl-1 text-[12px] tracking-[0.16em] text-neutral-500 uppercase [text-orientation:upright] [writing-mode:vertical-rl]"
+          >
+            <span style={{ color: accent }}>{title.replaceAll(" ", "  ")}</span>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 function TerpeneStackVisual({
   items,
   windows,
-  span,
-  progress,
-  disabled,
-  activeIndex,
-  onHover,
-  onLeave,
-  onSelect,
+  span: _span,
+  progress: _progress,
+  disabled: _disabled,
 }: {
-  items: Item[];
-  windows: Span[];
-  span: Span;
-  progress: MotionValue<number>;
-  disabled: boolean;
+  items: Item[]
+  windows: Span[]
+  span: Span
+  progress: MotionValue<number>
+  disabled: boolean
 } & VisualInteraction) {
-  type Terpene = { item: Item & { pct: number }; window: Span; index: number };
+  type Terpene = { item: Item & { pct: number }; window: Span; index: number }
   const terpenes = items
     .map((item, index) => ({ item, window: windows[index], index }))
-    .filter((t): t is Terpene => t.item.pct != null);
-
-  const activeTerpene = terpenes.find((t) => t.index === activeIndex);
+    .filter((t): t is Terpene => t.item.pct != null)
+  const popularTerpenes = [
+    "Terpinolene",
+    "Linalool",
+    "Humulene",
+    "Ocimene",
+    "Bisabolol",
+    "Nerolidol",
+  ]
 
   return (
-    <div className="relative mx-auto w-full max-w-[22rem] sm:max-w-[24rem]">
-      <div className="relative h-[18rem] sm:h-[20rem]">
-        <div aria-hidden className="absolute inset-x-10 bottom-8 top-14 rounded-[2rem] blur-3xl">
+    <div className="relative mx-auto w-full max-w-[24rem] sm:max-w-[26rem]">
+      <div className="relative h-[18rem] sm:h-[19.5rem]">
+        <div
+          aria-hidden
+          className="absolute inset-x-10 top-10 bottom-8 rounded-[2rem] blur-3xl"
+        >
           <div
             className="h-full w-full rounded-[2rem]"
             style={{
@@ -730,103 +1021,109 @@ function TerpeneStackVisual({
             }}
           />
         </div>
-        <div className="absolute inset-0 rounded-[2rem] border border-neutral-800/80 bg-neutral-950/50" />
-        <div className="relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-neutral-700/50 bg-neutral-950/55 p-5 backdrop-blur-sm sm:p-6">
-          <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.28em] text-neutral-500">
-            <span>Terpene</span>
-            <span>Blend</span>
+        <div className="relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-[#0d0d0f] px-4 py-4 shadow-[0_20px_50px_rgb(0_0_0_/_0.28)] sm:px-5 sm:py-5">
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-px"
+            style={{
+              backgroundImage: `linear-gradient(90deg, transparent 0%, ${withAlpha(
+                RGB.indica,
+                0.75
+              )} 16%, ${withAlpha(RGB.hybrid, 0.75)} 54%, ${withAlpha(RGB.sativa, 0.75)} 100%)`,
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-[0.18]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, rgb(250 248 244 / 0.045) 1px, transparent 1px), linear-gradient(to bottom, rgb(250 248 244 / 0.035) 1px, transparent 1px)",
+              backgroundSize: "28px 28px",
+            }}
+          />
+          <div className="flex items-center justify-between text-[9px] tracking-[0.28em] text-neutral-500 uppercase">
+            <span>Effects</span>
+            <span>Decode</span>
           </div>
-          <div className="pointer-events-none absolute inset-x-6 top-[4.5rem] h-px bg-neutral-800/80 sm:inset-x-8" />
-          <div className="relative mt-10 flex-1">
-            {terpenes.map((terpene, stackIndex) => (
-            <TerpeneBand
-              key={terpene.item.title}
-              item={terpene.item}
-              stackIndex={stackIndex}
-              isActive={activeIndex === terpene.index}
-              isDimmed={activeIndex !== null && activeIndex !== terpene.index}
-                onHover={() => onHover(terpene.index)}
-                onLeave={onLeave}
-                onSelect={() => onSelect(terpene.index)}
-              />
+          <div
+            className="pointer-events-none absolute inset-x-4 top-[3.25rem] h-px sm:inset-x-5"
+            style={{
+              backgroundImage: `linear-gradient(90deg, ${withAlpha(RGB.indica, 0.55)} 0%, ${withAlpha(
+                RGB.hybrid,
+                0.45
+              )} 52%, ${withAlpha(RGB.sativa, 0.55)} 100%)`,
+            }}
+          />
+          <div className="relative mt-7 grid gap-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-[1.15rem] bg-white/[0.04] px-3 py-3">
+                <span className="block text-[9px] tracking-[0.2em] text-neutral-500 uppercase">
+                  Cannabinoids
+                </span>
+                <span className="mt-1.5 block font-display text-[1.15rem] leading-none text-neutral-50">
+                  Set intensity
+                </span>
+                <span className="mt-1.5 block text-[12px] leading-relaxed text-neutral-300">
+                  THC and CBD shape the weight of the high.
+                </span>
+              </div>
+              <div className="rounded-[1.15rem] bg-white/[0.04] px-3 py-3">
+                <span className="block text-[9px] tracking-[0.2em] text-neutral-500 uppercase">
+                  Terpenes
+                </span>
+                <span className="mt-1.5 block font-display text-[1.15rem] leading-none text-neutral-50">
+                  Set character
+                </span>
+                <span className="mt-1.5 block text-[12px] leading-relaxed text-neutral-300">
+                  Aroma compounds steer mood, body feel, and clarity.
+                </span>
+              </div>
+            </div>
+            <div className="rounded-[1.15rem] bg-white/[0.03] px-3 py-3">
+              <span className="block text-[9px] tracking-[0.2em] text-neutral-500 uppercase">
+                Common notes
+              </span>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {terpenes.map((terpene) => (
+                  <div
+                    key={terpene.item.title}
+                    className="flex items-center gap-2 rounded-full bg-white/[0.035] px-2.5 py-2 text-left"
+                  >
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{
+                        backgroundColor: terpene.item.accent ?? RGB.hybrid,
+                      }}
+                    />
+                    <span className="truncate text-[12px] tracking-[0.12em] text-neutral-200 uppercase">
+                      {terpene.item.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="pointer-events-none mt-3 min-h-[6rem] sm:mt-4">
+        <div className="flex min-h-[6rem] w-[14rem] flex-col justify-between rounded-[1.25rem] bg-[#0d0d0f] px-3.5 py-3 shadow-[0_10px_28px_rgb(0_0_0_/_0.22)]">
+          <span className="block text-[10px] tracking-[0.22em] text-neutral-500">
+            OTHER POPULAR TERPENES
+          </span>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {popularTerpenes.map((terpene) => (
+              <span
+                key={terpene}
+                className="rounded-full bg-white/[0.04] px-2 py-1 text-[11px] tracking-[0.12em] text-neutral-300 uppercase"
+              >
+                {terpene}
+              </span>
             ))}
           </div>
         </div>
       </div>
-      <div className="pointer-events-none mt-4 sm:mt-5">
-        {activeTerpene ? (
-          <div className="max-w-[12rem] rounded-2xl border border-neutral-700/70 bg-neutral-950/80 px-4 py-3 backdrop-blur-sm">
-            <span className="block text-[10px] tracking-[0.22em] text-neutral-500">DOMINANT NOTE</span>
-            <span className="mt-2 block font-display text-xl leading-none text-neutral-50">
-              {activeTerpene.item.title}
-            </span>
-            <span className="mt-2 block text-[11px] uppercase tracking-[0.18em] text-neutral-400">
-              {activeTerpene.item.pct}% of profile
-            </span>
-          </div>
-        ) : (
-          <div className="max-w-[12rem] rounded-2xl border border-neutral-700/60 bg-neutral-950/72 px-4 py-3 backdrop-blur-sm">
-            <span className="block text-[10px] tracking-[0.22em] text-neutral-500">PROFILE STACK</span>
-            <span className="mt-2 block font-display text-xl leading-none text-neutral-50">
-              Terpenes in play
-            </span>
-            <span className="mt-2 block text-sm leading-relaxed text-neutral-300">
-              Scroll to layer in the scent notes and feel the profile build.
-            </span>
-          </div>
-        )}
-      </div>
     </div>
-  );
-}
-
-function TerpeneBand({
-  item,
-  stackIndex,
-  isActive,
-  isDimmed,
-  onHover,
-  onLeave,
-  onSelect,
-}: {
-  item: Item & { pct: number };
-  stackIndex: number;
-  isActive: boolean;
-  isDimmed: boolean;
-  onHover: () => void;
-  onLeave: () => void;
-  onSelect: () => void;
-}) {
-  const top = 8 + stackIndex * 13;
-  const width = `${44 + item.pct * 0.42}%`;
-  const color = item.accent ?? RGB.hybrid;
-
-  return (
-    <motion.button
-      type="button"
-      role="button"
-      aria-label={item.title}
-      aria-pressed={isActive}
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-      onClick={onSelect}
-      style={{ opacity: isDimmed ? 0.3 : 1, top: `${top}%`, width }}
-      className="absolute left-0 flex h-12 items-center gap-3 rounded-r-full border border-neutral-800/80 bg-neutral-950/78 px-4 text-left transition-[opacity,border-color,background-color] duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-200/70 sm:h-14"
-    >
-      <span
-        className="absolute inset-y-[6px] left-[6px] w-1.5 rounded-full sm:inset-y-[7px]"
-        style={{ backgroundColor: color, opacity: isActive ? 1 : 0.82 }}
-      />
-      <span className="pl-2">
-        <span className="block font-display text-lg leading-none text-neutral-50 sm:text-xl">
-          {item.title}
-        </span>
-        <span className="mt-1 block text-[10px] uppercase tracking-[0.18em] text-neutral-500">
-          {item.pct}% share
-        </span>
-      </span>
-    </motion.button>
-  );
+  )
 }
 
 /* ------------------------------------------------------------------ */
@@ -847,20 +1144,40 @@ function ChapterMark({
   progress,
   disabled,
 }: {
-  number: number;
-  title: string;
-  accent: string;
-  start: number;
-  end: number;
-  progress: MotionValue<number>;
-  disabled: boolean;
+  number: number
+  title: string
+  accent: string
+  start: number
+  end: number
+  progress: MotionValue<number>
+  disabled: boolean
 }) {
-  const snapEnd = start + (end - start) * 0.55;
-  const input = holdWindow(start, end, 0.1, 0.18);
-  const scale = useTransform(progress, [start, snapEnd, input[2], input[3]], [0.82, 1, 1, 0.92]);
-  const rotate = useTransform(progress, [start, snapEnd, input[2], input[3]], [-4, 0, 0, 3]);
-  const opacity = useTransform(progress, [start, start + (end - start) * 0.1], [0, 1]);
-  const ruleScale = useTransform(progress, input, [0, 1, 1, 0]);
+  const snapEnd = start + (end - start) * (number === 1 ? 0.18 : 0.55)
+  const clarityEnd = start + (end - start) * (number === 1 ? 0.045 : 0.24)
+  const input = holdWindow(start, end, 0.1, number === 1 ? 0.12 : 0.18)
+  const scale = useTransform(
+    progress,
+    [start, snapEnd, input[2], input[3]],
+    [0.96, 1, 1, 0.98]
+  )
+  const rotate = useTransform(
+    progress,
+    [start, snapEnd, input[2], input[3]],
+    [-0.8, 0, 0, 0.8]
+  )
+  const y = useTransform(progress, input, [10, 0, 0, -8])
+  const x = useTransform(progress, input, ["-1.2%", "0%", "0%", "1.6%"])
+  const opacity = useTransform(
+    progress,
+    [start, start + (end - start) * 0.12, input[2], input[3]],
+    [0, 1, 1, number === 1 ? 0.62 : 0.34]
+  )
+  const blur = useTransform(
+    progress,
+    [start, clarityEnd, input[2], input[3]],
+    ["blur(8px)", "blur(0px)", "blur(0px)", "blur(4px)"]
+  )
+  const ruleScale = useTransform(progress, input, [0, 1, 1, 0])
 
   const label = (
     <div>
@@ -873,14 +1190,17 @@ function ChapterMark({
         {title}
       </h3>
     </div>
-  );
+  )
 
   return (
     <div>
       {disabled ? (
         label
       ) : (
-        <motion.div style={{ scale, rotate, opacity }} className="origin-left">
+        <motion.div
+          style={{ scale, rotate, x, y, opacity, filter: blur }}
+          className="origin-left"
+        >
           {label}
         </motion.div>
       )}
@@ -889,19 +1209,26 @@ function ChapterMark({
       <div aria-hidden className="relative mt-5 sm:mt-6">
         <div className="relative h-[3px] bg-neutral-800">
           <motion.div
-            style={{ backgroundColor: accent, scaleX: disabled ? 1 : ruleScale }}
+            style={{
+              backgroundColor: accent,
+              scaleX: disabled ? 1 : ruleScale,
+            }}
             className="absolute inset-0 origin-left"
           />
         </div>
         <div className="relative mt-1 h-px bg-neutral-800">
           <motion.div
-            style={{ backgroundColor: accent, scaleX: disabled ? 1 : ruleScale, opacity: 0.5 }}
+            style={{
+              backgroundColor: accent,
+              scaleX: disabled ? 1 : ruleScale,
+              opacity: 0.5,
+            }}
             className="absolute inset-0 origin-left"
           />
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 /**
@@ -926,34 +1253,46 @@ function ItemRow({
   onLeave,
   onSelect,
 }: {
-  item: Item;
-  accent: string;
-  isFirstInChapter: boolean;
-  start: number;
-  end: number;
-  progress: MotionValue<number>;
-  disabled: boolean;
-  isActive: boolean;
-  isDimmed: boolean;
-  onHover: () => void;
-  onLeave: () => void;
-  onSelect: () => void;
+  item: Item
+  accent: string
+  isFirstInChapter: boolean
+  start: number
+  end: number
+  progress: MotionValue<number>
+  disabled: boolean
+  isActive: boolean
+  isDimmed: boolean
+  onHover: () => void
+  onLeave: () => void
+  onSelect: () => void
 }) {
-  const snapEnd = start + (end - start) * 0.6;
-  const input = holdWindow(start, end, 0.1, 0.18);
-  const scale = useTransform(progress, [start, snapEnd, input[2], input[3]], [0.92, 1, 1, 0.96]);
-  const rotate = useTransform(progress, [start, snapEnd, input[2], input[3]], [-1.5, 0, 0, 1.2]);
+  const snapEnd = start + (end - start) * 0.6
+  const input = holdWindow(start, end, 0.1, 0.18)
+  const scale = useTransform(
+    progress,
+    [start, snapEnd, input[2], input[3]],
+    [0.92, 1, 1, 0.96]
+  )
+  const rotate = useTransform(
+    progress,
+    [start, snapEnd, input[2], input[3]],
+    [-1.5, 0, 0, 1.2]
+  )
   // Icon travels the least of anything in the row — it reads as the
   // closest, heaviest element, with the number a step behind it and title
   // /body receding further — four depths instead of three.
-  const iconY = useTransform(progress, input, [8, 0, 0, -8]);
-  const numY = useTransform(progress, input, [20, 0, 0, -12]);
-  const titleY = useTransform(progress, input, [36, 0, 0, -18]);
-  const bodyY = useTransform(progress, input, [64, 0, 0, -24]);
-  const entranceOpacity = useTransform(progress, [start, start + (end - start) * 0.1], [0, 1]);
-  const ruleScale = useTransform(progress, input, [0, 1, 1, 0]);
+  const iconY = useTransform(progress, input, [8, 0, 0, -8])
+  const numY = useTransform(progress, input, [20, 0, 0, -12])
+  const titleY = useTransform(progress, input, [36, 0, 0, -18])
+  const bodyY = useTransform(progress, input, [64, 0, 0, -24])
+  const entranceOpacity = useTransform(
+    progress,
+    [start, start + (end - start) * 0.1],
+    [0, 1]
+  )
+  const ruleScale = useTransform(progress, input, [0, 1, 1, 0])
 
-  const Icon = item.icon;
+  const Icon = item.icon
   const iconNode = (
     <span
       className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-transform duration-200"
@@ -966,18 +1305,20 @@ function ItemRow({
     >
       <Icon className="h-4 w-4" strokeWidth={2} />
     </span>
-  );
+  )
 
   const numberNode = (
-    <span className="text-xs tabular-nums tracking-[0.04em] text-neutral-500">{item.n}</span>
-  );
+    <span className="text-xs tracking-[0.04em] text-neutral-500 tabular-nums">
+      {item.n}
+    </span>
+  )
 
   const markerNode = (
     <div className="flex items-center gap-3 lg:flex-col lg:items-start lg:gap-2.5">
       {iconNode}
       {numberNode}
     </div>
-  );
+  )
 
   const content = (
     <div
@@ -986,8 +1327,8 @@ function ItemRow({
       onClick={onSelect}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect();
+          e.preventDefault()
+          onSelect()
         }
       }}
       role="button"
@@ -997,19 +1338,28 @@ function ItemRow({
         backgroundColor: isActive ? withAlpha(accent, 0.08) : "transparent",
         boxShadow: isActive ? `inset 3px 0 0 0 ${accent}` : undefined,
       }}
-      className="cursor-pointer rounded-r-md px-3 -mx-3 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="-mx-3 cursor-pointer rounded-r-md px-3 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       {disabled ? (
         <div
           className="grid items-start gap-4 py-6 sm:py-8 lg:grid-cols-12 lg:gap-8"
-          style={!isFirstInChapter ? { borderTop: `2px solid ${accent}` } : undefined}
+          style={
+            !isFirstInChapter ? { borderTop: `2px solid ${accent}` } : undefined
+          }
         >
           <div className="lg:col-span-1">{markerNode}</div>
-          <h4 className="font-display text-xl sm:text-2xl lg:col-span-4">{item.title}</h4>
-          <p className="text-base leading-relaxed text-neutral-400 lg:col-span-7">{item.body}</p>
+          <h4 className="font-display text-xl sm:text-2xl lg:col-span-4">
+            {item.title}
+          </h4>
+          <p className="text-base leading-relaxed text-neutral-400 lg:col-span-7">
+            {item.body}
+          </p>
         </div>
       ) : (
-        <motion.div style={{ scale, rotate }} className="relative origin-left py-6 sm:py-8">
+        <motion.div
+          style={{ scale, rotate }}
+          className="relative origin-left py-6 sm:py-8"
+        >
           {!isFirstInChapter && (
             <div className="absolute inset-x-0 top-0">
               <div className="relative h-[2px] bg-neutral-800">
@@ -1020,7 +1370,11 @@ function ItemRow({
               </div>
               <div className="relative mt-[3px] h-px bg-neutral-800">
                 <motion.div
-                  style={{ backgroundColor: accent, scaleX: ruleScale, opacity: 0.5 }}
+                  style={{
+                    backgroundColor: accent,
+                    scaleX: ruleScale,
+                    opacity: 0.5,
+                  }}
                   className="absolute inset-0 origin-left"
                 />
               </div>
@@ -1030,7 +1384,7 @@ function ItemRow({
             style={{ opacity: entranceOpacity }}
             className="grid items-start gap-4 lg:grid-cols-12 lg:gap-8"
           >
-            <div className="flex items-center gap-3 lg:flex-col lg:items-start lg:gap-2.5 lg:col-span-1">
+            <div className="flex items-center gap-3 lg:col-span-1 lg:flex-col lg:items-start lg:gap-2.5">
               <motion.div style={{ y: iconY }}>{iconNode}</motion.div>
               <motion.div style={{ y: numY }}>{numberNode}</motion.div>
             </div>
@@ -1050,13 +1404,16 @@ function ItemRow({
         </motion.div>
       )}
     </div>
-  );
+  )
 
   return (
-    <div style={{ opacity: isDimmed ? 0.4 : 1 }} className="transition-opacity duration-200">
+    <div
+      style={{ opacity: isDimmed ? 0.4 : 1 }}
+      className="transition-opacity duration-200"
+    >
       {content}
     </div>
-  );
+  )
 }
 
 /* ------------------------------------------------------------------ */
@@ -1064,34 +1421,34 @@ function ItemRow({
 /* ------------------------------------------------------------------ */
 
 type VisualInteraction = {
-  activeIndex: number | null;
-  onHover: (index: number) => void;
-  onLeave: () => void;
-  onSelect: (index: number) => void;
-};
+  activeIndex: number | null
+  onHover: (index: number) => void
+  onLeave: () => void
+  onSelect: (index: number) => void
+}
 
 /* ------------------------------------------------------------------ */
 /* Chapter 1 visual — terpene wheel                                    */
 /* ------------------------------------------------------------------ */
 
-const RING_CENTER = 100;
-const RING_RADIUS = 72;
-const RING_STROKE = 22;
-const RING_GAP_DEG = 3;
+const RING_CENTER = 100
+const RING_RADIUS = 72
+const RING_STROKE = 22
+const RING_GAP_DEG = 3
 
 function polarToCartesian(angleDeg: number) {
-  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  const rad = ((angleDeg - 90) * Math.PI) / 180
   return {
     x: RING_CENTER + RING_RADIUS * Math.cos(rad),
     y: RING_CENTER + RING_RADIUS * Math.sin(rad),
-  };
+  }
 }
 
 function describeArc(startAngle: number, endAngle: number) {
-  const start = polarToCartesian(startAngle);
-  const end = polarToCartesian(endAngle);
-  const largeArc = endAngle - startAngle <= 180 ? "0" : "1";
-  return `M ${start.x} ${start.y} A ${RING_RADIUS} ${RING_RADIUS} 0 ${largeArc} 1 ${end.x} ${end.y}`;
+  const start = polarToCartesian(startAngle)
+  const end = polarToCartesian(endAngle)
+  const largeArc = endAngle - startAngle <= 180 ? "0" : "1"
+  return `M ${start.x} ${start.y} A ${RING_RADIUS} ${RING_RADIUS} 0 ${largeArc} 1 ${end.x} ${end.y}`
 }
 
 function TerpeneWheelVisual({
@@ -1105,45 +1462,71 @@ function TerpeneWheelVisual({
   onLeave,
   onSelect,
 }: {
-  items: Item[];
-  windows: Span[];
-  span: Span;
-  progress: MotionValue<number>;
-  disabled: boolean;
+  items: Item[]
+  windows: Span[]
+  span: Span
+  progress: MotionValue<number>
+  disabled: boolean
 } & VisualInteraction) {
-  type Terpene = { item: Item & { pct: number }; window: Span; index: number };
+  type Terpene = { item: Item & { pct: number }; window: Span; index: number }
   const terpenes = items
     .map((item, index) => ({ item, window: windows[index], index }))
-    .filter((t): t is Terpene => t.item.pct != null);
+    .filter((t): t is Terpene => t.item.pct != null)
 
-  const available = 360 - terpenes.length * RING_GAP_DEG;
-  const segments = terpenes.reduce<Array<Terpene & { d: string; cursor: number }>>(
-    (acc, t) => {
-      const cursor = acc.length ? acc[acc.length - 1].cursor : 0;
-      const sweep = (t.item.pct / 100) * available;
-      const startAngle = cursor + RING_GAP_DEG / 2;
-      const endAngle = startAngle + sweep;
-      acc.push({ ...t, d: describeArc(startAngle, endAngle), cursor: cursor + sweep + RING_GAP_DEG });
-      return acc;
-    },
-    []
-  );
+  const available = 360 - terpenes.length * RING_GAP_DEG
+  const segments = terpenes.reduce<
+    Array<Terpene & { d: string; cursor: number }>
+  >((acc, t) => {
+    const cursor = acc.length ? acc[acc.length - 1].cursor : 0
+    const sweep = (t.item.pct / 100) * available
+    const startAngle = cursor + RING_GAP_DEG / 2
+    const endAngle = startAngle + sweep
+    acc.push({
+      ...t,
+      d: describeArc(startAngle, endAngle),
+      cursor: cursor + sweep + RING_GAP_DEG,
+    })
+    return acc
+  }, [])
 
-  const wheelSettleEnd = span.start + (span.end - span.start) * 0.22;
-  const wheelScale = useTransform(progress, [span.start, span.start + (span.end - span.start) * 0.08, wheelSettleEnd, span.end], [0.85, 1, 1, 1]);
-  const wheelOpacity = useTransform(progress, [span.start, span.start + (span.end - span.start) * 0.08], [0, 1]);
-  const wheelParallaxEnd = span.start + (span.end - span.start) * 0.28;
+  const wheelSettleEnd = span.start + (span.end - span.start) * 0.22
+  const wheelScale = useTransform(
+    progress,
+    [
+      span.start,
+      span.start + (span.end - span.start) * 0.08,
+      wheelSettleEnd,
+      span.end,
+    ],
+    [0.85, 1, 1, 1]
+  )
+  const wheelOpacity = useTransform(
+    progress,
+    [span.start, span.start + (span.end - span.start) * 0.08],
+    [0, 1]
+  )
+  const wheelParallaxEnd = span.start + (span.end - span.start) * 0.28
   // Keeps turning the whole time its chapter is on screen, not just once on
   // entry — a real parallax tied to how far you've scrolled, not a fixed
   // one-shot animation.
-  const wheelRotate = useTransform(progress, [span.start, wheelParallaxEnd, span.end], [-12, 12, 12]);
-  const glowY = useTransform(progress, [span.start, wheelParallaxEnd, span.end], ["-6%", "6%", "6%"]);
+  const wheelRotate = useTransform(
+    progress,
+    [span.start, wheelParallaxEnd, span.end],
+    [-12, 12, 12]
+  )
+  const glowY = useTransform(
+    progress,
+    [span.start, wheelParallaxEnd, span.end],
+    ["-6%", "6%", "6%"]
+  )
 
-  const activeTerpene = terpenes.find((t) => t.index === activeIndex);
+  const activeTerpene = terpenes.find((t) => t.index === activeIndex)
 
   return (
     <motion.div
-      style={disabled ? undefined : { scale: wheelScale, opacity: wheelOpacity }}
+      style={
+        disabled ? undefined : { scale: wheelScale, opacity: wheelOpacity }
+      }
       className="relative mx-auto h-52 w-52 sm:h-60 sm:w-60"
     >
       <motion.div
@@ -1151,7 +1534,10 @@ function TerpeneWheelVisual({
         style={disabled ? undefined : { y: glowY }}
         className="absolute inset-[10%] rounded-full blur-2xl"
       >
-        <div className="h-full w-full rounded-full" style={{ backgroundColor: RGB.hybrid, opacity: 0.2 }} />
+        <div
+          className="h-full w-full rounded-full"
+          style={{ backgroundColor: RGB.hybrid, opacity: 0.2 }}
+        />
       </motion.div>
       <motion.svg
         viewBox="0 0 200 200"
@@ -1178,20 +1564,26 @@ function TerpeneWheelVisual({
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
         {activeTerpene ? (
           <>
-            <span className="font-display text-lg leading-none">{activeTerpene.item.title}</span>
+            <span className="font-display text-lg leading-none">
+              {activeTerpene.item.title}
+            </span>
             <span className="mt-1.5 text-[10px] tracking-[0.18em] text-neutral-500">
               {activeTerpene.item.pct}%
             </span>
           </>
         ) : (
           <>
-            <span className="text-[10px] tracking-[0.18em] text-neutral-500">TERPENE</span>
-            <span className="text-[10px] tracking-[0.18em] text-neutral-500">PROFILE</span>
+            <span className="text-[10px] tracking-[0.18em] text-neutral-500">
+              TERPENE
+            </span>
+            <span className="text-[10px] tracking-[0.18em] text-neutral-500">
+              PROFILE
+            </span>
           </>
         )}
       </div>
     </motion.div>
-  );
+  )
 }
 
 function ArcSegment({
@@ -1207,20 +1599,20 @@ function ArcSegment({
   onLeave,
   onSelect,
 }: {
-  d: string;
-  color: string;
-  label: string;
-  window: Span;
-  progress: MotionValue<number>;
-  disabled: boolean;
-  isActive: boolean;
-  isDimmed: boolean;
-  onHover: () => void;
-  onLeave: () => void;
-  onSelect: () => void;
+  d: string
+  color: string
+  label: string
+  window: Span
+  progress: MotionValue<number>
+  disabled: boolean
+  isActive: boolean
+  isDimmed: boolean
+  onHover: () => void
+  onLeave: () => void
+  onSelect: () => void
 }) {
-  const revealEnd = window.start + (window.end - window.start) * 0.12;
-  const pathLength = useTransform(progress, [window.start, revealEnd], [0, 1]);
+  const revealEnd = window.start + (window.end - window.start) * 0.12
+  const pathLength = useTransform(progress, [window.start, revealEnd], [0, 1])
 
   return (
     <motion.g
@@ -1233,8 +1625,8 @@ function ArcSegment({
       onClick={onSelect}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect();
+          e.preventDefault()
+          onSelect()
         }
       }}
       style={{ cursor: "pointer", opacity: isDimmed ? 0.35 : 1 }}
@@ -1250,7 +1642,7 @@ function ArcSegment({
         className="transition-[stroke-width] duration-200"
       />
     </motion.g>
-  );
+  )
 }
 
 /* ------------------------------------------------------------------ */
@@ -1258,17 +1650,17 @@ function ArcSegment({
 /* ------------------------------------------------------------------ */
 
 const BUD_ANCHORS = [
-  { x: 118, y: 92 },
-  { x: 143, y: 100 },
-  { x: 177, y: 100 },
-  { x: 202, y: 92 },
-];
+  { x: 144, y: 52 },
+  { x: 120, y: 86 },
+  { x: 202, y: 84 },
+  { x: 164, y: 28 },
+]
 const BUD_TERMINALS = [
-  { x: 34, y: 158 },
-  { x: 112, y: 158 },
-  { x: 208, y: 158 },
-  { x: 286, y: 158 },
-];
+  { x: 38, y: 160 },
+  { x: 114, y: 160 },
+  { x: 206, y: 160 },
+  { x: 282, y: 160 },
+]
 
 function AnatomyVisual({
   items,
@@ -1282,63 +1674,72 @@ function AnatomyVisual({
   onLeave,
   onSelect,
 }: {
-  items: Item[];
-  windows: Span[];
-  accent: string;
-  span: Span;
-  progress: MotionValue<number>;
-  disabled: boolean;
+  items: Item[]
+  windows: Span[]
+  accent: string
+  span: Span
+  progress: MotionValue<number>
+  disabled: boolean
 } & VisualInteraction) {
-  const budSettleEnd = span.start + (span.end - span.start) * 0.22;
-  const budScale = useTransform(progress, [span.start, span.start + (span.end - span.start) * 0.08, budSettleEnd, span.end], [0.85, 1, 1, 1]);
-  const budOpacity = useTransform(progress, [span.start, span.start + (span.end - span.start) * 0.08], [0, 1]);
-  const budParallaxEnd = span.start + (span.end - span.start) * 0.26;
-  // Same idea as the terpene wheel — motion tied to the full chapter span,
-  // not just a one-shot entrance, so it keeps drifting while you're in it.
-  const budX = useTransform(progress, [span.start, budParallaxEnd, span.end], ["-2%", "2%", "2%"]);
+  const budSettleEnd = span.start + (span.end - span.start) * 0.12
+  const budScale = useTransform(
+    progress,
+    [
+      span.start,
+      span.start + (span.end - span.start) * 0.04,
+      budSettleEnd,
+      span.end,
+    ],
+    [0.9, 1, 1, 1]
+  )
+  const budOpacity = useTransform(
+    progress,
+    [span.start, span.start + (span.end - span.start) * 0.04],
+    [0, 1]
+  )
+  const anatomyRevealStart = span.start + (span.end - span.start) * 0.015
+  const anatomyRevealStep = (span.end - span.start) * 0.04
+  const anatomyRevealDuration = (span.end - span.start) * 0.05
+  const anatomyWindows = items.map((_, index) => ({
+    start: anatomyRevealStart + index * anatomyRevealStep,
+    end: anatomyRevealStart + index * anatomyRevealStep + anatomyRevealDuration,
+  }))
 
   return (
     <motion.div
-      style={disabled ? undefined : { scale: budScale, opacity: budOpacity, x: budX }}
-      className="relative mx-auto aspect-[320/196] w-full max-w-[380px]"
+      style={disabled ? undefined : { scale: budScale, opacity: budOpacity }}
+      // 4:5 — the photo's own portrait ratio (1080x1350), not the old
+      // 320:196 landscape frame that existed only to match the (now
+      // removed) leader-line SVG's viewBox. Matching the photo's actual
+      // shape means object-contain has nothing left to letterbox — no more
+      // dead space beside it.
+      //
+      // Height (not max-height) is what drives sizing on desktop, with
+      // width auto via the aspect-ratio — same as before. `w-auto` +
+      // `h-auto` + `max-height` alone would give the aspect-ratio nothing
+      // definite to resolve against and can collapse to zero width; an
+      // explicit height is what actually keeps it within the viewport.
+      className="relative mx-auto aspect-[4/5] w-full max-w-[378px] lg:h-[min(80vh,44rem)] lg:w-auto lg:max-w-none"
     >
-      {/* viewBox is taller than the diagram needs so the active item's label
-          (drawn below its terminal) has room INSIDE the box — at the old
-          height it rendered past the bottom edge and sat on top of the rows
-          below. No overflow-visible for the same reason. */}
-      <svg viewBox="0 0 320 196" className="h-full w-full">
-        <path
-          d="M160 8c30 0 48 26 48 52 0 22-16 34-48 34s-48-12-48-34c0-26 18-52 48-52Z"
-          className="fill-neutral-800"
-          stroke={accent}
-          strokeWidth={2}
+      <div className="absolute inset-0 overflow-hidden rounded-2xl">
+        <Image
+          src="https://res.cloudinary.com/g0mcdcfr/image/upload/v1786335991/Transparent_Background_Design_pmmnq5.svg"
+          alt="Cannabis flower close-up"
+          fill
+          sizes="(min-width: 1024px) 560px, 80vw"
+          className="object-contain object-left"
+          // SVG source — next/image's optimizer refuses to transform SVGs
+          // unless next.config.ts opts in globally, so this bypasses
+          // optimization for just this image instead. Same pattern as the
+          // navbar's Cloudinary SVG logo.
+          unoptimized
         />
-        {[
-          [140, 30], [178, 24], [122, 52], [198, 50], [160, 20], [150, 68], [172, 66],
-        ].map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r={1.6} className="fill-neutral-50" opacity={0.55} />
-        ))}
-        {items.map((item, i) => (
-          <LeaderLine
-            key={item.title}
-            anchor={BUD_ANCHORS[i]}
-            terminal={BUD_TERMINALS[i]}
-            label={item.n}
-            title={item.title}
-            accent={accent}
-            window={windows[i]}
-            progress={progress}
-            disabled={disabled}
-            isActive={activeIndex === i}
-            isDimmed={activeIndex !== null && activeIndex !== i}
-            onHover={() => onHover(i)}
-            onLeave={onLeave}
-            onSelect={() => onSelect(i)}
-          />
-        ))}
-      </svg>
+      </div>
+      {/* Leader-line pointers removed for now — just the photo while we
+          settle on the right image. See LeaderLine below to bring them
+          back (anatomyWindows/BUD_ANCHORS/BUD_TERMINALS are untouched). */}
     </motion.div>
-  );
+  )
 }
 
 function LeaderLine({
@@ -1356,23 +1757,23 @@ function LeaderLine({
   onLeave,
   onSelect,
 }: {
-  anchor: { x: number; y: number };
-  terminal: { x: number; y: number };
-  label: string;
-  title: string;
-  accent: string;
-  window: Span;
-  progress: MotionValue<number>;
-  disabled: boolean;
-  isActive: boolean;
-  isDimmed: boolean;
-  onHover: () => void;
-  onLeave: () => void;
-  onSelect: () => void;
+  anchor: { x: number; y: number }
+  terminal: { x: number; y: number }
+  label: string
+  title: string
+  accent: string
+  window: Span
+  progress: MotionValue<number>
+  disabled: boolean
+  isActive: boolean
+  isDimmed: boolean
+  onHover: () => void
+  onLeave: () => void
+  onSelect: () => void
 }) {
-  const revealEnd = window.start + (window.end - window.start) * 0.12;
-  const pathLength = useTransform(progress, [window.start, revealEnd], [0, 1]);
-  const dotOpacity = useTransform(progress, [window.start, revealEnd], [0, 1]);
+  const revealEnd = window.start + (window.end - window.start) * 0.12
+  const pathLength = useTransform(progress, [window.start, revealEnd], [0, 1])
+  const dotOpacity = useTransform(progress, [window.start, revealEnd], [0, 1])
 
   return (
     <motion.g
@@ -1385,8 +1786,8 @@ function LeaderLine({
       onClick={onSelect}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect();
+          e.preventDefault()
+          onSelect()
         }
       }}
       style={{ cursor: "pointer", opacity: isDimmed ? 0.3 : 1 }}
@@ -1440,7 +1841,7 @@ function LeaderLine({
         </text>
       )}
     </motion.g>
-  );
+  )
 }
 
 /* ------------------------------------------------------------------ */
@@ -1459,31 +1860,52 @@ function ConsumptionVisual({
   onLeave,
   onSelect,
 }: {
-  items: Item[];
-  windows: Span[];
-  accent: string;
-  span: Span;
-  progress: MotionValue<number>;
-  disabled: boolean;
+  items: Item[]
+  windows: Span[]
+  accent: string
+  span: Span
+  progress: MotionValue<number>
+  disabled: boolean
 } & VisualInteraction) {
-  const input = holdWindow(span.start, span.end, 0.05, 0.08);
-  const barRevealEnd = span.start + (span.end - span.start) * 0.04;
-  const barSettleEnd = span.start + (span.end - span.start) * 0.1;
-  const wrapOpacity = useTransform(progress, [span.start, barRevealEnd], [0, 1]);
-  const onsetX = useTransform(progress, [span.start, barRevealEnd, barSettleEnd, span.end], [-16, 0, 0, 0]);
-  const durationX = useTransform(progress, [span.start, barRevealEnd, barSettleEnd, span.end], [16, 0, 0, 0]);
+  const isMobile = useIsMobile()
+  // Mobile keeps just the bar fill (in ConsumptionBarRow) — no slide/fade
+  // chrome around it, same as the reduced-motion path.
+  const skipChrome = disabled || isMobile
+  const barRevealEnd = span.start + (span.end - span.start) * 0.04
+  const barSettleEnd = span.start + (span.end - span.start) * 0.1
+  const wrapOpacity = useTransform(progress, [span.start, barRevealEnd], [0, 1])
+  const onsetX = useTransform(
+    progress,
+    [span.start, barRevealEnd, barSettleEnd, span.end],
+    [-16, 0, 0, 0]
+  )
+  const durationX = useTransform(
+    progress,
+    [span.start, barRevealEnd, barSettleEnd, span.end],
+    [16, 0, 0, 0]
+  )
 
   return (
     <motion.div
-      style={disabled ? undefined : { opacity: wrapOpacity }}
+      // Explicit { opacity: 1 } / { x: 0 } rather than `undefined` when
+      // skipChrome is true — Motion writes these imperatively to the DOM,
+      // and if the style prop just drops the binding it can leave the last
+      // animated value (opacity 0, pre-scroll) stuck instead of clearing it.
+      style={skipChrome ? { opacity: 1 } : { opacity: wrapOpacity }}
       className="space-y-2.5"
     >
       <div className="flex gap-8 text-xs tracking-[0.08em] text-neutral-500">
         <span className="w-20 shrink-0" />
-        <motion.span style={disabled ? undefined : { x: onsetX }} className="flex-1">
+        <motion.span
+          style={skipChrome ? { x: 0 } : { x: onsetX }}
+          className="flex-1"
+        >
           Onset
         </motion.span>
-        <motion.span style={disabled ? undefined : { x: durationX }} className="flex-1">
+        <motion.span
+          style={skipChrome ? { x: 0 } : { x: durationX }}
+          className="flex-1"
+        >
           Duration
         </motion.span>
       </div>
@@ -1503,7 +1925,7 @@ function ConsumptionVisual({
         />
       ))}
     </motion.div>
-  );
+  )
 }
 
 function ConsumptionBarRow({
@@ -1518,24 +1940,32 @@ function ConsumptionBarRow({
   onLeave,
   onSelect,
 }: {
-  item: Item;
-  accent: string;
-  window: Span;
-  progress: MotionValue<number>;
-  disabled: boolean;
-  isActive: boolean;
-  isDimmed: boolean;
-  onHover: () => void;
-  onLeave: () => void;
-  onSelect: () => void;
+  item: Item
+  accent: string
+  window: Span
+  progress: MotionValue<number>
+  disabled: boolean
+  isActive: boolean
+  isDimmed: boolean
+  onHover: () => void
+  onLeave: () => void
+  onSelect: () => void
 }) {
-  const onsetPct = item.stat?.onset.pct ?? 0;
-  const durationPct = item.stat?.duration.pct ?? 0;
-  const revealEnd = window.start + (window.end - window.start) * 0.04;
-  const onsetScale = useTransform(progress, [window.start, revealEnd], [0, onsetPct / 100]);
-  const durationScale = useTransform(progress, [window.start, revealEnd], [0, durationPct / 100]);
+  const onsetPct = item.stat?.onset.pct ?? 0
+  const durationPct = item.stat?.duration.pct ?? 0
+  const revealEnd = window.start + (window.end - window.start) * 0.04
+  const onsetScale = useTransform(
+    progress,
+    [window.start, revealEnd],
+    [0, onsetPct / 100]
+  )
+  const durationScale = useTransform(
+    progress,
+    [window.start, revealEnd],
+    [0, durationPct / 100]
+  )
 
-  if (!item.stat) return null;
+  if (!item.stat) return null
 
   return (
     <div
@@ -1544,15 +1974,15 @@ function ConsumptionBarRow({
       onClick={onSelect}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect();
+          e.preventDefault()
+          onSelect()
         }
       }}
       role="button"
       tabIndex={0}
       aria-pressed={isActive}
       style={{ opacity: isDimmed ? 0.4 : 1 }}
-      className="flex cursor-pointer items-center gap-8 rounded-md px-3 -mx-3 py-1.5 transition-opacity duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="-mx-3 flex cursor-pointer items-center gap-8 rounded-md px-3 py-1.5 transition-opacity duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       <span
         className={cn(
@@ -1565,23 +1995,33 @@ function ConsumptionBarRow({
       <div className="flex-1">
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-neutral-800">
           <motion.div
-            style={{ backgroundColor: accent, scaleX: disabled ? item.stat.onset.pct / 100 : onsetScale }}
+            style={{
+              backgroundColor: accent,
+              scaleX: disabled ? item.stat.onset.pct / 100 : onsetScale,
+            }}
             className="h-full origin-left rounded-full transition-[height] duration-200"
           />
         </div>
-        <p className="mt-1.5 text-xs text-neutral-500">{item.stat.onset.label}</p>
+        <p className="mt-1.5 text-xs text-neutral-500">
+          {item.stat.onset.label}
+        </p>
       </div>
       <div className="flex-1">
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-neutral-800">
           <motion.div
-            style={{ backgroundColor: accent, scaleX: disabled ? item.stat.duration.pct / 100 : durationScale }}
+            style={{
+              backgroundColor: accent,
+              scaleX: disabled ? item.stat.duration.pct / 100 : durationScale,
+            }}
             className="h-full origin-left rounded-full"
           />
         </div>
-        <p className="mt-1.5 text-xs text-neutral-500">{item.stat.duration.label}</p>
+        <p className="mt-1.5 text-xs text-neutral-500">
+          {item.stat.duration.label}
+        </p>
       </div>
     </div>
-  );
+  )
 }
 
 /* ------------------------------------------------------------------ */
@@ -1596,9 +2036,9 @@ function ConsumptionBarRow({
  * nothing left for the two passes to disagree on.
  */
 function wiggle(seed: number) {
-  const x = Math.sin(seed * 12.9898) * 43758.5453;
-  const raw = (x - Math.floor(x)) * 2 - 1;
-  return Math.round(raw * 100) / 100;
+  const x = Math.sin(seed * 12.9898) * 43758.5453
+  const raw = (x - Math.floor(x)) * 2 - 1
+  return Math.round(raw * 100) / 100
 }
 
 /** One word of the lead — words rather than letters; see living-soil.tsx's
@@ -1611,36 +2051,70 @@ function Word({
   total,
   progress,
   disabled,
+  emphasis = false,
+  delay = 0,
 }: {
-  word: string;
-  index: number;
-  total: number;
-  progress: MotionValue<number>;
-  disabled: boolean;
+  word: string
+  index: number
+  total: number
+  progress: MotionValue<number>
+  disabled: boolean
+  emphasis?: boolean
+  /** Shifts this word's whole in/out cycle later on the shared progress
+   * scale, so a paragraph can wait its turn instead of unraveling at the
+   * same time as whatever comes before it. */
+  delay?: number
 }) {
-  const start = (index / total) * 0.13;
-  const end = start + 0.08;
-  const outStart = 0.24 + (index / total) * 0.08;
-  const outEnd = outStart + 0.08;
-  const tilt = wiggle(index + 100) * 5;
+  const start = delay + (index / total) * (emphasis ? 0.08 : 0.1)
+  const end = start + (emphasis ? 0.11 : 0.1)
+  const outStart =
+    delay +
+    (emphasis ? 0.38 : 0.32) +
+    (index / total) * (emphasis ? 0.05 : 0.06)
+  const outEnd = outStart + (emphasis ? 0.08 : 0.1)
+  const tilt = wiggle(index + 100) * (emphasis ? 3.5 : 5)
 
-  const input = [start, end, outStart, outEnd];
-  const scale = useTransform(progress, input, [1, 1, 1, 0.92]);
-  const rotate = useTransform(progress, input, [0, 0, 0, -tilt * 0.5]);
-  const y = useTransform(progress, input, [0, 0, 0, -14]);
-  const opacity = useTransform(progress, input, [1, 1, 1, 0.8]);
+  const input = [start, end, outStart, outEnd]
+  const scale = useTransform(progress, input, [
+    emphasis ? 1.04 : 1.02,
+    1,
+    1,
+    emphasis ? 0.99 : 0.97,
+  ])
+  const rotate = useTransform(progress, input, [tilt * 0.08, 0, 0, -tilt * 0.1])
+  const x = useTransform(progress, input, [
+    emphasis ? "0.7%" : "0.5%",
+    "0%",
+    "0%",
+    emphasis ? "1.4%" : "1%",
+  ])
+  const y = useTransform(progress, input, [
+    emphasis ? 6 : 5,
+    0,
+    0,
+    emphasis ? -6 : -8,
+  ])
+  const opacity = useTransform(progress, input, [
+    0,
+    1,
+    1,
+    emphasis ? 0.78 : 0.72,
+  ])
 
-  if (disabled) return <>{word} </>;
+  if (disabled) return <>{word} </>
 
   return (
     <motion.span
-      style={{ scale, rotate, y, opacity }}
-      className="inline-block will-change-transform"
+      style={{ scale, rotate, x, y, opacity }}
+      className={cn(
+        "inline-block will-change-transform",
+        emphasis && "text-neutral-50"
+      )}
     >
       {word}
       <span className="inline-block w-[0.26em]" />
     </motion.span>
-  );
+  )
 }
 
 /**
@@ -1657,28 +2131,28 @@ function Letter({
   progress,
   disabled,
 }: {
-  char: string;
-  index: number;
-  total: number;
-  progress: MotionValue<number>;
-  disabled: boolean;
+  char: string
+  index: number
+  total: number
+  progress: MotionValue<number>
+  disabled: boolean
 }) {
-  const outStart = 0.76 + (index / total) * 0.12;
-  const outEnd = Math.min(outStart + 0.1, 1);
-  const tilt = wiggle(index) * 14;
+  const outStart = 0.76 + (index / total) * 0.12
+  const outEnd = Math.min(outStart + 0.1, 1)
+  const tilt = wiggle(index) * 14
 
-  const input = [0, outStart, outEnd];
-  const scale = useTransform(progress, input, [1, 1, 0.9]);
-  const rotate = useTransform(progress, input, [0, 0, -tilt * 0.4]);
-  const y = useTransform(progress, input, ["0%", "0%", "-28%"]);
-  const opacity = useTransform(progress, input, [1, 1, 0.86]);
-  const blur = useTransform(
-    progress,
-    input,
-    ["blur(0px)", "blur(0px)", "blur(4px)"]
-  );
+  const input = [0, outStart, outEnd]
+  const scale = useTransform(progress, input, [1, 1, 0.9])
+  const rotate = useTransform(progress, input, [0, 0, -tilt * 0.4])
+  const y = useTransform(progress, input, ["0%", "0%", "-28%"])
+  const opacity = useTransform(progress, input, [1, 1, 0.86])
+  const blur = useTransform(progress, input, [
+    "blur(0px)",
+    "blur(0px)",
+    "blur(4px)",
+  ])
 
-  if (disabled) return <span className="inline-block">{char}</span>;
+  if (disabled) return <span className="inline-block">{char}</span>
 
   return (
     <motion.span
@@ -1687,5 +2161,5 @@ function Letter({
     >
       {char}
     </motion.span>
-  );
+  )
 }
