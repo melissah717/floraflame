@@ -5,7 +5,6 @@ import { About } from "@/components/sections/about";
 import { SectionTransition } from "@/components/sections/section-transition";
 import { Wholesale } from "@/components/sections/wholesale";
 import { FindUs } from "@/components/sections/find-us";
-import { LivingSoil } from "@/components/sections/living-soil";
 import { getCurrentDrops } from "@/lib/strains";
 
 // Re-checks Supabase for new/updated drops every hour rather than only at
@@ -54,7 +53,6 @@ export default async function HomePage() {
       */}
       <div className="relative z-10 bg-neutral-900">
         <About />
-        <LivingSoil />
         <Drops strains={strains} />
         <SectionTransition />
         <Wholesale />
