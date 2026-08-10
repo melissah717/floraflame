@@ -15,6 +15,7 @@ import { ChevronLeft, ChevronRight, FileText, Info } from "lucide-react";
 import { type Strain } from "@/lib/strains";
 import { INDICA, HYBRID, SATIVA, RGB, anchorForSpectrum, colorForHybrid } from "@/lib/spectrum";
 import { SpectrumBackdrop } from "@/components/spectrum-backdrop";
+import { NugZoom } from "@/components/nug-zoom";
 import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { cn } from "@/lib/utils";
 
@@ -335,15 +336,17 @@ export function Drops({ strains }: { strains: Strain[] }) {
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 className="relative h-full w-full"
               >
-                <Image
-                  src={active.image}
-                  alt={active.name}
-                  fill
-                  sizes="(max-width: 640px) 180px, (max-width: 1024px) 280px, 380px"
-                  draggable={false}
-                  className="object-contain"
-                  priority
-                />
+                <NugZoom className="h-full w-full">
+                  <Image
+                    src={active.image}
+                    alt={active.name}
+                    fill
+                    sizes="(max-width: 640px) 180px, (max-width: 1024px) 280px, 380px"
+                    draggable={false}
+                    className="object-contain"
+                    priority
+                  />
+                </NugZoom>
               </motion.div>
             </AnimatePresence>
           </div>

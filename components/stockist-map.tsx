@@ -294,7 +294,7 @@ export function StockistMap({
         className={`flex items-center justify-center border border-dashed border-neutral-700 bg-neutral-800 ${className ?? ""}`}
       >
         <span className="text-xs tracking-[0.04em] text-neutral-400">
-          Map unavailable — NEXT_PUBLIC_MAPBOX_TOKEN not set
+          Map unavailable: NEXT_PUBLIC_MAPBOX_TOKEN not set
         </span>
       </div>
     );

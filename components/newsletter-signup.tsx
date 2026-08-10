@@ -61,7 +61,7 @@ export function NewsletterSignup() {
             className="flex items-center gap-2.5 rounded-full border border-neutral-50 bg-neutral-50 px-5 py-3 text-sm text-neutral-900"
           >
             <Check className="h-4 w-4 shrink-0" />
-            You&apos;re on the list — welcome in.
+            You&apos;re on the list, welcome in.
           </motion.div>
         ) : (
           <motion.form

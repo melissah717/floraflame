@@ -7,7 +7,7 @@ import { Reveal } from "@/components/scroll-primitives";
 
 export const dynamic = "force-dynamic";
 
-export default async function BlogPostPage({
+export default async function KnowledgePostPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -20,11 +20,11 @@ export default async function BlogPostPage({
     <article className="mx-auto max-w-3xl px-5 pb-24 pt-32 sm:px-8 sm:pt-40">
       <Reveal>
         <Link
-          href="/blog"
+          href="/learn/the-knowledge"
           className="inline-flex items-center gap-2 text-sm text-neutral-400 transition-colors hover:text-neutral-50"
         >
           <ArrowLeft className="h-4 w-4" />
-          Blog
+          The Knowledge
         </Link>
 
         <h1 className="mt-6 font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl">

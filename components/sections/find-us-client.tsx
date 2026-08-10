@@ -208,7 +208,7 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
                   setQuery(e.target.value);
                   setNoMatch(false);
                 }}
-                placeholder="City or zip — try SF, Oakland, 95351"
+                placeholder="City or zip, try SF, Oakland, 95351"
                 aria-label="Search by city or zip"
                 className="w-full border-0 border-b border-neutral-600 bg-transparent px-0 py-3 text-base outline-none transition-colors placeholder:text-neutral-500 focus:border-neutral-50"
               />
@@ -232,7 +232,7 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
 
         {geoState === "denied" && (
           <p className="mt-3 text-sm text-neutral-400">
-            Couldn&apos;t get your location — search by city or zip instead.
+            Couldn&apos;t get your location, search by city or zip instead.
           </p>
         )}
 

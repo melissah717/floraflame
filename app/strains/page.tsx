@@ -6,7 +6,7 @@ import { getArchiveBatches } from "@/lib/strains";
 // time, without giving up static generation the way force-dynamic would.
 export const revalidate = 3600;
 
-export default async function ArchivePage() {
+export default async function StrainsPage() {
   const batches = await getArchiveBatches();
 
   return (
@@ -14,10 +14,10 @@ export default async function ArchivePage() {
       <div className="mx-auto max-w-7xl px-5 pb-24 pt-32 sm:px-8 sm:pt-40">
         <Reveal>
           <SectionLabel number="—" tone="light">
-            Archive
+            Strains
           </SectionLabel>
           <h1 className="mt-4 max-w-[16ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl lg:text-6xl">
-            Every batch we've tested.
+            Every batch we&apos;ve tested.
           </h1>
         </Reveal>
 

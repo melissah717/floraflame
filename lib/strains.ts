@@ -49,7 +49,7 @@ export type Strain = {
   name: string;
   /** Container + nug — the shot used on the homepage's "Latest Drops". */
   image: string;
-  /** Nug-only close-up — used on the /archive page. Falls back to `image` when not on file. */
+  /** Nug-only close-up — used on the /strains page. Falls back to `image` when not on file. */
   nugImage?: string;
   spectrum: SpectrumPosition;
   /** True if this batch is part of the current rotation (shown on the homepage). */
@@ -165,7 +165,7 @@ export async function getCurrentDrops(): Promise<Strain[]> {
   return strains;
 }
 
-/** Every batch on file, newest first — for the /archive page. */
+/** Every batch on file, newest first — for the /strains page. */
 export async function getArchiveBatches(): Promise<Strain[]> {
   const { data, error } = await supabase
     .from("drop_batches")

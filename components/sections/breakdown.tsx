@@ -361,6 +361,7 @@ export function Breakdown() {
   const headRef = useRef<HTMLDivElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
   const reduce = useReducedMotion()
+  const isMobile = useIsMobile()
 
   // Hover previews on desktop; a tap "pins" the same state for touch —
   // whichever is set wins, so hovering never fights a tap.
@@ -692,6 +693,7 @@ export function Breakdown() {
                   end={chapterMarkEnd}
                   progress={bodyProgress}
                   disabled={!!reduce}
+                  isMobile={isMobile}
                 />
                 <ChapterSideLabel
                   title={chapter.title}
@@ -709,7 +711,7 @@ export function Breakdown() {
                     chapterIndex === 0 && "lg:min-h-[64rem]",
                     chapterIndex > 0 &&
                       (chapterIndex === 1
-                        ? "lg:min-h-[100rem]"
+                        ? "lg:min-h-[120rem]"
                         : "lg:min-h-[72rem]")
                   )}
                 >
@@ -777,7 +779,7 @@ function ClosingLine({
       style={disabled ? undefined : { y, opacity }}
       className="relative mt-32 max-w-4xl font-display text-3xl leading-[1.1] sm:mt-44 sm:text-5xl"
     >
-      None of it works alone — it&apos;s the combination that decides how a
+      None of it works alone. It&apos;s the combination that decides how a
       strain actually feels.
     </motion.p>
   )
@@ -808,7 +810,7 @@ function ChapterFrame({
         isFirstTall && "lg:min-h-[68rem] lg:py-16",
         isExtended &&
           (isExtraTall
-            ? "lg:min-h-[108rem] lg:py-16"
+            ? "lg:min-h-[128rem] lg:py-16"
             : "lg:min-h-[78rem] lg:py-14"),
         isFirst ? "mt-0" : "mt-20 sm:mt-24"
       )}
@@ -835,7 +837,7 @@ function GraphicColumn({
         "relative min-h-64 sm:min-h-72 lg:h-full",
         isExtended
           ? isExtraTall
-            ? "lg:min-h-[86rem]"
+            ? "lg:min-h-[104rem]"
             : "lg:min-h-[60rem]"
           : isFirstTall
             ? "lg:min-h-[52rem]"
@@ -872,7 +874,7 @@ function DescriptionColumn({
     <div
       className={cn(
         "relative",
-        isSticky && (isExtraTall ? "lg:min-h-[86rem]" : "lg:min-h-[60rem]")
+        isSticky && (isExtraTall ? "lg:min-h-[104rem]" : "lg:min-h-[60rem]")
       )}
     >
       <div
@@ -1143,6 +1145,7 @@ function ChapterMark({
   end,
   progress,
   disabled,
+  isMobile,
 }: {
   number: number
   title: string
@@ -1151,33 +1154,44 @@ function ChapterMark({
   end: number
   progress: MotionValue<number>
   disabled: boolean
+  isMobile: boolean
 }) {
   const snapEnd = start + (end - start) * (number === 1 ? 0.18 : 0.55)
   const clarityEnd = start + (end - start) * (number === 1 ? 0.045 : 0.24)
   const input = holdWindow(start, end, 0.1, number === 1 ? 0.12 : 0.18)
-  const scale = useTransform(
+
+  // Desktop hands the title off to ChapterSideLabel once it recedes, so
+  // fading/blurring it out here reads as intentional. That handoff is
+  // lg:block only — on mobile there's nothing to take over, so the same
+  // recede left the title sitting dim and blurred for the rest of the
+  // chapter. Simplified mobile version: snap in once, then hold at full
+  // clarity instead of receding.
+  const snapInput = isMobile ? [start, snapEnd] : [start, snapEnd, input[2], input[3]]
+  const holdInput = isMobile ? [input[0], input[1]] : input
+  const opacityInput = isMobile
+    ? [start, start + (end - start) * 0.12]
+    : [start, start + (end - start) * 0.12, input[2], input[3]]
+  const blurInput = isMobile ? [start, clarityEnd] : [start, clarityEnd, input[2], input[3]]
+
+  const scale = useTransform(progress, snapInput, isMobile ? [0.96, 1] : [0.96, 1, 1, 0.98])
+  const rotate = useTransform(progress, snapInput, isMobile ? [-0.8, 0] : [-0.8, 0, 0, 0.8])
+  const y = useTransform(progress, holdInput, isMobile ? [10, 0] : [10, 0, 0, -8])
+  const x = useTransform(
     progress,
-    [start, snapEnd, input[2], input[3]],
-    [0.96, 1, 1, 0.98]
+    holdInput,
+    isMobile ? ["-1.2%", "0%"] : ["-1.2%", "0%", "0%", "1.6%"]
   )
-  const rotate = useTransform(
-    progress,
-    [start, snapEnd, input[2], input[3]],
-    [-0.8, 0, 0, 0.8]
-  )
-  const y = useTransform(progress, input, [10, 0, 0, -8])
-  const x = useTransform(progress, input, ["-1.2%", "0%", "0%", "1.6%"])
   const opacity = useTransform(
     progress,
-    [start, start + (end - start) * 0.12, input[2], input[3]],
-    [0, 1, 1, number === 1 ? 0.62 : 0.34]
+    opacityInput,
+    isMobile ? [0, 1] : [0, 1, 1, number === 1 ? 0.62 : 0.34]
   )
   const blur = useTransform(
     progress,
-    [start, clarityEnd, input[2], input[3]],
-    ["blur(8px)", "blur(0px)", "blur(0px)", "blur(4px)"]
+    blurInput,
+    isMobile ? ["blur(8px)", "blur(0px)"] : ["blur(8px)", "blur(0px)", "blur(0px)", "blur(4px)"]
   )
-  const ruleScale = useTransform(progress, input, [0, 1, 1, 0])
+  const ruleScale = useTransform(progress, holdInput, isMobile ? [0, 1] : [0, 1, 1, 0])
 
   const label = (
     <div>
@@ -1719,7 +1733,13 @@ function AnatomyVisual({
       // `h-auto` + `max-height` alone would give the aspect-ratio nothing
       // definite to resolve against and can collapse to zero width; an
       // explicit height is what actually keeps it within the viewport.
-      className="relative mx-auto aspect-[4/5] w-full max-w-[378px] lg:h-[min(80vh,44rem)] lg:w-auto lg:max-w-none"
+      //
+      // Raised from min(80vh,44rem) — the sticky column has more room now
+      // (see GraphicColumn's isExtraTall min-height), so the image flexes
+      // bigger to use it. Still capped, not lg:h-full: width is derived
+      // from height via the aspect ratio, and an uncapped height on a very
+      // tall viewport would derive a width wider than the column.
+      className="relative mx-auto aspect-[4/5] w-full max-w-[378px] lg:h-[min(92vh,54rem)] lg:w-auto lg:max-w-none"
     >
       <div className="absolute inset-0 overflow-hidden rounded-2xl">
         <Image

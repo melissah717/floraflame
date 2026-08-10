@@ -20,7 +20,7 @@ export default function MerchPage() {
 
       <Reveal delay={0.05} className="mt-8 sm:mt-10">
         <ComingSoonBanner>
-          Coming soon — the shop isn&apos;t open yet.
+          Coming soon, the shop isn&apos;t open yet.
         </ComingSoonBanner>
       </Reveal>
 

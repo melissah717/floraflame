@@ -29,7 +29,7 @@ const karla = Karla({
 
 const SITE_URL = "https://floraflame.ca";
 const SITE_NAME = "Flora & Flame";
-const SITE_TITLE = "Flora & Flame — Living Soil Cannabis, Oakland CA";
+const SITE_TITLE = "Flora & Flame · Living Soil Cannabis, Oakland CA";
 const SITE_DESCRIPTION =
   "Small-batch, no-till living soil cannabis grown by hand in Oakland, California. Pesticide-free, hand-trimmed flower for licensed retailers statewide.";
 

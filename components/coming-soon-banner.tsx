@@ -2,7 +2,7 @@ import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function ComingSoonBanner({
-  children = "Coming soon — we're still building this out.",
+  children = "Coming soon, we're still building this out.",
   tone = "light",
 }: {
   children?: string;

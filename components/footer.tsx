@@ -24,7 +24,7 @@ export function SiteFooter() {
                 ["Drops", "/#drops"],
                 ["Contact", "/#wholesale"],
                 ["Find Us", "/#find-us"],
-                ["Blog", "/blog"],
+                ["The Knowledge", "/learn/the-knowledge"],
               ].map(([label, href]) => (
                 <li key={label}>
                   <Link
@@ -36,7 +36,7 @@ export function SiteFooter() {
                 </li>
               ))}
               <li className="cursor-not-allowed text-neutral-600">
-                Merch — soon
+                Merch (soon)
               </li>
             </ul>
           </div>
@@ -92,7 +92,7 @@ export function SiteFooter() {
               <PrivacyPolicyModal />
               <TermsModal />
             </div>
-            <span>License # — C120000449-LIC · 21+ only</span>
+            <span>License #C120000449-LIC · 21+ only</span>
           </div>
         </div>
       </div>

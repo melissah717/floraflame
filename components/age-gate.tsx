@@ -145,7 +145,7 @@ export function AgeGate() {
               variants={ITEM}
               className="mt-10 text-[11px] uppercase tracking-[0.18em] text-neutral-600"
             >
-              License # — C120000449-LIC · 21+ only
+              License #C120000449-LIC · 21+ only
             </motion.span>
           </motion.div>
         </motion.div>

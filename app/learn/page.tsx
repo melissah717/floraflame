@@ -15,7 +15,7 @@ const ENTRIES = [
     title: "The Leaf",
     kicker: "Cannabinoids & terpenes",
     excerpt:
-      "Cannabinoids, terpenes, plant anatomy, and how different consumption methods actually feel — the parts that matter more than the number on the label.",
+      "Cannabinoids, terpenes, plant anatomy, and how different consumption methods actually feel. The stuff that matters more than the number on the label.",
     accent: RGB.sativa,
   },
   {
@@ -31,8 +31,16 @@ const ENTRIES = [
     title: "The Farm",
     kicker: "Behind the grow",
     excerpt:
-      "Photos and video from the Oakland facility — the plants, the room, the hands actually doing the work.",
+      "Photos and video from the Oakland facility. The plants, the room, the hands actually doing the work.",
     accent: RGB.indica,
+  },
+  {
+    slug: "the-knowledge",
+    title: "The Knowledge",
+    kicker: "Notes from the grow",
+    excerpt:
+      "Everything else worth writing down, grouped by topic and added to as we go.",
+    accent: RGB.red,
   },
 ];
 

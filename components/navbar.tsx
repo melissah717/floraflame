@@ -59,7 +59,7 @@ export function Navbar() {
         aria-label="Primary"
         className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8"
       >
-        <Link href="/" aria-label="Flora & Flame — home" className="shrink-0">
+        <Link href="/" aria-label="Flora & Flame, home" className="shrink-0">
           <Image
             src="https://res.cloudinary.com/g0mcdcfr/image/upload/v1785517828/text-logo.svg"
             alt="Flora & Flame"
@@ -86,6 +86,13 @@ export function Navbar() {
           </Link>
 
           <Link
+            href="/strains"
+            className="px-4 py-2 text-lg text-neutral-300 transition-colors duration-200 hover:text-neutral-50"
+          >
+            Strains
+          </Link>
+
+          <Link
             href="/learn"
             className={cn(
               "px-4 py-2 text-lg transition-colors duration-200",
@@ -95,20 +102,6 @@ export function Navbar() {
             )}
           >
             Learn
-          </Link>
-
-          <Link
-            href="/blog"
-            className="px-4 py-2 text-lg text-neutral-300 transition-colors duration-200 hover:text-neutral-50"
-          >
-            Blog
-          </Link>
-
-          <Link
-            href="/archive"
-            className="px-4 py-2 text-lg text-neutral-300 transition-colors duration-200 hover:text-neutral-50"
-          >
-            Archive
           </Link>
 
           <Link
@@ -160,27 +153,19 @@ export function Navbar() {
               </Link>
 
               <Link
+                href="/strains"
+                onClick={() => setOpen(false)}
+                className="block border-b border-neutral-700 py-2.5 font-display text-lg leading-tight text-neutral-50"
+              >
+                Strains
+              </Link>
+
+              <Link
                 href="/learn"
                 onClick={() => setOpen(false)}
                 className="block border-b border-neutral-700 py-2.5 font-display text-lg leading-tight text-neutral-50"
               >
                 Learn
-              </Link>
-
-              <Link
-                href="/blog"
-                onClick={() => setOpen(false)}
-                className="block border-b border-neutral-700 py-2.5 font-display text-lg leading-tight text-neutral-50"
-              >
-                Blog
-              </Link>
-
-              <Link
-                href="/archive"
-                onClick={() => setOpen(false)}
-                className="block border-b border-neutral-700 py-2.5 font-display text-lg leading-tight text-neutral-50"
-              >
-                Archive
               </Link>
 
               <button

@@ -68,7 +68,7 @@ function validate(form: FormState): FormErrors {
 
   if (!form.description.trim()) errors.description = "Tell us what's going on.";
   else if (form.description.trim().length < 10)
-    errors.description = "A little more detail would help — at least 10 characters.";
+    errors.description = "A little more detail would help, at least 10 characters.";
 
   return errors;
 }
@@ -347,7 +347,7 @@ export function Wholesale() {
                 size="lg"
                 className="mt-4 w-full rounded-full bg-neutral-50 py-6 text-base font-normal text-neutral-900 hover:bg-neutral-200 sm:w-auto sm:px-10"
               >
-                {sent ? "Opened your email client — send when ready" : "Send request"}
+                {sent ? "Opened your email client, send when ready" : "Send request"}
               </Button>
 
               <p className="text-xs text-neutral-400">

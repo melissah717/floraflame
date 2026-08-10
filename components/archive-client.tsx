@@ -7,6 +7,7 @@ import { FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
 import { SpectrumBackdrop } from "@/components/spectrum-backdrop";
+import { NugZoom } from "@/components/nug-zoom";
 import type { Strain } from "@/lib/strains";
 
 export function ArchiveClient({ batches }: { batches: Strain[] }) {
@@ -20,7 +21,7 @@ export function ArchiveClient({ batches }: { batches: Strain[] }) {
   if (batches.length === 0) {
     return (
       <ComingSoonBanner tone="light">
-        Coming soon — no past drops on file yet.
+        Coming soon, no past drops on file yet.
       </ComingSoonBanner>
     );
   }
@@ -46,14 +47,16 @@ export function ArchiveClient({ batches }: { batches: Strain[] }) {
               </motion.div>
             </AnimatePresence>
           </div>
-          <Image
-            src={active.nugImage ?? active.image}
-            alt={active.name}
-            fill
-            sizes="(max-width: 1024px) 100vw, 440px"
-            className="object-contain"
-            priority
-          />
+          <NugZoom className="absolute inset-0">
+            <Image
+              src={active.nugImage ?? active.image}
+              alt={active.name}
+              fill
+              sizes="(max-width: 1024px) 100vw, 440px"
+              className="object-contain"
+              priority
+            />
+          </NugZoom>
         </div>
 
         <div className="mt-5 flex flex-col gap-2">
@@ -111,7 +114,7 @@ export function ArchiveClient({ batches }: { batches: Strain[] }) {
         {currentBatches.length > 0 && (
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
-              Now in rotation — {currentBatches.length}
+              Now in rotation: {currentBatches.length}
             </p>
             <div className="mt-3 grid grid-cols-6 gap-2 sm:grid-cols-8 sm:gap-3">
               {currentBatches.map((batch) => (
@@ -134,7 +137,7 @@ export function ArchiveClient({ batches }: { batches: Strain[] }) {
 
         <div>
           <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
-            Full archive — {batches.length}
+            All strains: {batches.length}
           </p>
           <div className="mt-3 grid grid-cols-6 gap-2 sm:grid-cols-8 sm:gap-3">
             {batches.map((batch, i) => (

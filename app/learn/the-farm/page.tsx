@@ -4,7 +4,7 @@ import { Reveal, SectionLabel } from "@/components/scroll-primitives";
 export const metadata: Metadata = {
   title: "The Farm",
   description:
-    "A look inside the Oakland grow — photos and video from the room.",
+    "A look inside the Oakland grow, photos and video from the room.",
 };
 
 const GUTTER = "px-5 sm:px-8 lg:px-14";
@@ -20,7 +20,7 @@ export default function TheFarmPage() {
           Inside the grow
         </h1>
         <p className="mt-6 max-w-xl text-lg leading-relaxed text-neutral-400">
-          Photos and video from the Oakland facility — the plants, the room,
+          Photos and video from the Oakland facility. The plants, the room,
           the hands actually doing the work.
         </p>
       </Reveal>

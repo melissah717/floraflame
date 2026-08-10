@@ -1,14 +1,17 @@
 /**
  * Blog content lives in a public Google Sheet, not the codebase — anyone
  * on the team can add a post by filling in a row, no deploy required.
+ * Posts render under Learn → The Knowledge (app/learn/the-knowledge),
+ * grouped into sections by the Bucket column.
  *
  * SPREADSHEET SCHEMA — one row per post:
  *
- *   Title | Hero Image | Blurb | P1 Title | P1 Body | P2 Title | P2 Body | ...
+ *   Title | Bucket | Hero Image | Blurb | P1 Title | P1 Body | P2 Title | P2 Body | ...
  *
  * up to P10 Title / P10 Body. A row with no title is treated as
  * blank/unused. There's no slug column — the URL is derived from the
- * title (see slugify below).
+ * title (see slugify below). Bucket is freeform text; posts sharing a
+ * bucket are grouped under that label, in the order they first appear.
  */
 
 import { parseCsvLine } from "@/lib/csv";
@@ -25,6 +28,7 @@ export type BlogParagraph = {
 export type BlogPost = {
   slug: string;
   title: string;
+  bucket: string;
   heroImage: string;
   blurb: string;
   paragraphs: BlogParagraph[];
@@ -35,6 +39,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     slug: "welcome-to-the-blog",
     title: "Welcome to the blog",
+    bucket: "General",
     heroImage: "",
     blurb: "Notes from the grow, posted here as we write them.",
     paragraphs: [
@@ -173,6 +178,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       posts.push({
         slug,
         title,
+        bucket: col(row, "bucket") || "General",
         heroImage: col(row, "hero image"),
         blurb: col(row, "blurb"),
         paragraphs,
