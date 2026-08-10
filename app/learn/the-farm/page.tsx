@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import { Reveal, SectionLabel } from "@/components/scroll-primitives";
-import { ComingSoonBanner } from "@/components/coming-soon-banner";
 
 export const metadata: Metadata = {
   title: "The Farm",
   description:
-    "A look inside the Oakland grow — photos and video from the room, coming soon.",
+    "A look inside the Oakland grow — photos and video from the room.",
 };
 
-/** Shared side padding — matches the other full-bleed sections
- * (living-soil.tsx, breakdown.tsx, and the /learn hub). */
 const GUTTER = "px-5 sm:px-8 lg:px-14";
 
 export default function TheFarmPage() {
@@ -29,9 +26,17 @@ export default function TheFarmPage() {
       </Reveal>
 
       <Reveal delay={0.08} className="mt-10 sm:mt-14">
-        <ComingSoonBanner>
-          Coming soon — we&apos;re still shooting.
-        </ComingSoonBanner>
+        <div className="overflow-hidden rounded-[1.75rem] border border-neutral-800 bg-neutral-950 shadow-[0_0_0_1px_rgb(250_248_244_/_0.02)]">
+          <video
+            className="aspect-video w-full object-cover"
+            src="https://res.cloudinary.com/g0mcdcfr/video/upload/v1786344108/DRONE_BOTTOMTOTOPPULL_dox1os.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls
+          />
+        </div>
       </Reveal>
     </div>
   );
