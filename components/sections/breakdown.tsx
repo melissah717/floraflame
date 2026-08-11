@@ -1157,8 +1157,15 @@ function ChapterMark({
   disabled: boolean
   isMobile: boolean
 }) {
-  const snapEnd = start + (end - start) * (number === 1 ? 0.18 : 0.55)
-  const clarityEnd = start + (end - start) * (number === 1 ? 0.045 : 0.24)
+  // Chapter 2 ("Plant Anatomy") has a much taller physical scroll budget
+  // than the others (see GraphicColumn's isExtraTall min-height), so the
+  // same fraction-of-window used for chapter 3 drags out into far more
+  // real scrolling before the title clears up — it was still visibly
+  // blurred well after the image below it had already resolved. Faster
+  // fractions here, close to chapter 1's, keep the actual scroll
+  // distance to full clarity roughly comparable across chapters.
+  const snapEnd = start + (end - start) * (number === 1 ? 0.18 : number === 2 ? 0.12 : 0.55)
+  const clarityEnd = start + (end - start) * (number === 1 ? 0.045 : number === 2 ? 0.05 : 0.24)
   const input = holdWindow(start, end, 0.1, number === 1 ? 0.12 : 0.18)
 
   // Desktop hands the title off to ChapterSideLabel once it recedes, so
