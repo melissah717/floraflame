@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Reveal, SectionLabel } from "@/components/scroll-primitives";
+import { FarmMediaPlayer } from "@/components/sections/farm-media-player";
 
 const TITLE = "The Farm"
 const DESCRIPTION = "A look inside the Oakland grow, photos and video from the room."
@@ -31,17 +32,7 @@ export default function TheFarmPage() {
       </Reveal>
 
       <Reveal delay={0.08} className="mt-10 sm:mt-14">
-        <div className="overflow-hidden rounded-[1.75rem] border border-neutral-800 bg-neutral-950 shadow-[0_0_0_1px_rgb(250_248_244_/_0.02)]">
-          <video
-            className="aspect-video w-full object-cover"
-            src="https://res.cloudinary.com/g0mcdcfr/video/upload/v1786344108/DRONE_BOTTOMTOTOPPULL_dox1os.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            controls
-          />
-        </div>
+        <FarmMediaPlayer />
       </Reveal>
     </div>
   );
