@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Karla } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AgeGate } from "@/components/age-gate";
 import { CookieConsent } from "@/components/cookie-consent";
 import { Preloader } from "@/components/preloader";
@@ -108,6 +110,8 @@ export default function RootLayout({
         <Navbar />
         <main id="main-content">{children}</main>
         <SiteFooter />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
