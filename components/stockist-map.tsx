@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Map as MapboxMap, Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { directionsUrl, stockistKey, type Stockist } from "@/lib/stockists";
@@ -47,10 +47,16 @@ export function StockistMap({
   const markers = useRef<globalThis.Map<string, Marker>>(new globalThis.Map());
   const originMarker = useRef<Marker | null>(null);
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  // Mapbox needs WebGL. It's usually there, but not always — GPU
+  // acceleration disabled, some VPN/privacy browser setups, older
+  // hardware. new mapboxgl.Map() throws synchronously when the canvas
+  // can't get a WebGL context, so without this the whole thing surfaces
+  // as an unhandled error instead of just... not showing a map.
+  const [mapFailed, setMapFailed] = useState(false);
 
   // --- 1. create the map once ------------------------------------------
   useEffect(() => {
-    if (!token || !container.current || map.current) return;
+    if (!token || !container.current || map.current || mapFailed) return;
     let cancelled = false;
 
     (async () => {
@@ -59,14 +65,26 @@ export function StockistMap({
 
       mapboxgl.accessToken = token;
 
-      map.current = new mapboxgl.Map({
-        container: container.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [-121.5, 37.5],
-        zoom: 5,
-        cooperativeGestures: true, // don't hijack page scroll
-      });
+      try {
+        map.current = new mapboxgl.Map({
+          container: container.current,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: [-121.5, 37.5],
+          zoom: 5,
+          cooperativeGestures: true, // don't hijack page scroll
+        });
+      } catch (err) {
+        console.error("[stockist-map] Failed to initialize WebGL:", err);
+        setMapFailed(true);
+        return;
+      }
 
+      // NOT also listening on the map's 'error' event here — Mapbox fires
+      // that for plenty of non-fatal stuff (a flaky tile fetch, a style
+      // hiccup), not just fatal WebGL loss. Escalating all of those to the
+      // "unavailable" fallback would kill a map that's actually working.
+      // The synchronous throw above is the real, documented WebGL failure
+      // mode; that's the one worth guarding.
       map.current.addControl(
         new mapboxgl.NavigationControl({ showCompass: false }),
         "top-right"
@@ -78,7 +96,7 @@ export function StockistMap({
       map.current?.remove();
       map.current = null;
     };
-  }, [token]);
+  }, [token, mapFailed]);
 
   // --- 2. rebuild pins when the list changes ---------------------------
   useEffect(() => {
@@ -288,13 +306,15 @@ export function StockistMap({
     });
   }, [selected, stockists]);
 
-  if (!token) {
+  if (!token || mapFailed) {
     return (
       <div
         className={`flex items-center justify-center border border-dashed border-neutral-700 bg-neutral-800 ${className ?? ""}`}
       >
         <span className="text-xs tracking-[0.04em] text-neutral-400">
-          Map unavailable: NEXT_PUBLIC_MAPBOX_TOKEN not set
+          {mapFailed
+            ? "Map unavailable: this browser couldn't initialize WebGL"
+            : "Map unavailable: NEXT_PUBLIC_MAPBOX_TOKEN not set"}
         </span>
       </div>
     );

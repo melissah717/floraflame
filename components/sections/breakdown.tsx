@@ -847,7 +847,8 @@ function GraphicColumn({
       <div className="lg:hidden">{children}</div>
       <div
         className={cn(
-          "hidden lg:sticky lg:top-24 lg:flex lg:items-center",
+          "hidden lg:sticky lg:top-24 lg:flex",
+          isExtraTall ? "lg:items-stretch" : "lg:items-center",
           isExtended
             ? isExtraTall
               ? "lg:h-[calc(100vh-1rem)]"
@@ -855,7 +856,7 @@ function GraphicColumn({
             : "lg:h-[calc(100vh-6rem)]"
         )}
       >
-        <div className="w-full">{children}</div>
+        <div className={cn("w-full", isExtraTall && "lg:h-full")}>{children}</div>
       </div>
     </div>
   )
@@ -1722,24 +1723,23 @@ function AnatomyVisual({
   return (
     <motion.div
       style={disabled ? undefined : { scale: budScale, opacity: budOpacity }}
-      // 4:5 — the photo's own portrait ratio (1080x1350), not the old
-      // 320:196 landscape frame that existed only to match the (now
-      // removed) leader-line SVG's viewBox. Matching the photo's actual
-      // shape means object-contain has nothing left to letterbox — no more
-      // dead space beside it.
+      // Mobile: aspect-[4/5] locks the box to the photo's own portrait
+      // ratio (1080x1350) since there's nothing else to size it against.
       //
-      // Height (not max-height) is what drives sizing on desktop, with
-      // width auto via the aspect-ratio — same as before. `w-auto` +
-      // `h-auto` + `max-height` alone would give the aspect-ratio nothing
-      // definite to resolve against and can collapse to zero width; an
-      // explicit height is what actually keeps it within the viewport.
-      //
-      // Raised from min(80vh,44rem) — the sticky column has more room now
-      // (see GraphicColumn's isExtraTall min-height), so the image flexes
-      // bigger to use it. Still capped, not lg:h-full: width is derived
-      // from height via the aspect ratio, and an uncapped height on a very
-      // tall viewport would derive a width wider than the column.
-      className="relative mx-auto aspect-[4/5] w-full max-w-[378px] lg:h-[min(92vh,54rem)] lg:w-auto lg:max-w-none"
+      // Desktop: lg:h-full lg:w-full instead — turns out aspect-ratio on
+      // a block box with width:auto does NOT reliably let height drive
+      // width the way the old comment here claimed. In practice the
+      // browser resolves width:auto to "fill the containing block" first
+      // (ordinary block-layout behavior), and only THEN derives height
+      // from that already-fixed width via the ratio — the opposite of
+      // intended. Net effect: the box's rendered height tracked column
+      // WIDTH, not viewport height, so it visibly did nothing as the
+      // window was resized taller/shorter. Filling the stretched parent
+      // outright (see GraphicColumn's isExtraTall items-stretch) and
+      // letting object-contain on the <Image> below preserve the actual
+      // photo ratio sidesteps that ambiguity, and still can't overflow
+      // the column either way, unlike a hard aspect-ratio + auto-width.
+      className="relative mx-auto aspect-[4/5] w-full max-w-[378px] lg:h-full lg:w-full lg:aspect-auto lg:max-w-none"
     >
       <div className="absolute inset-0 overflow-hidden rounded-2xl">
         <Image

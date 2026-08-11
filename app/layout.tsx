@@ -7,6 +7,7 @@ import { CookieConsent } from "@/components/cookie-consent";
 import { Preloader } from "@/components/preloader";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/footer";
+import { CompassIndicator } from "@/components/compass-indicator";
 import "./globals.css";
 
 /**
@@ -110,6 +111,7 @@ export default function RootLayout({
         <Navbar />
         <main id="main-content">{children}</main>
         <SiteFooter />
+        <CompassIndicator />
         <Analytics />
         <SpeedInsights />
       </body>
