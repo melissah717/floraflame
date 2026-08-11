@@ -610,7 +610,13 @@ export function Breakdown() {
               end: span.end,
             }
             const itemWindows = CHAPTER_ITEM_WINDOWS[chapterIndex]
-            const rowLead = chapterIndex === 0 ? 0.09 : 0.045
+            // Chapter 1's own height grew a lot to keep the graphic pinned
+            // through the last item (see the grid's lg:min-h below), which
+            // slows how fast shared scroll progress advances per pixel for
+            // the WHOLE page — so items here need a bigger head start than
+            // before to finish revealing by the time they're actually
+            // scrolled into view, not just at their raw beat-index slot.
+            const rowLead = chapterIndex === 0 ? 0.16 : 0.045
             const activeIndex =
               active && active.chapter === chapterIndex ? active.index : null
             const onHover = (index: number) =>
@@ -708,7 +714,7 @@ export function Breakdown() {
                 <div
                   className={cn(
                     "mt-7 grid gap-7 lg:grid-cols-[minmax(280px,1fr)_minmax(0,1.2fr)] lg:items-stretch lg:gap-10",
-                    chapterIndex === 0 && "lg:min-h-[64rem]",
+                    chapterIndex === 0 && "lg:min-h-[116rem]",
                     chapterIndex > 0 &&
                       (chapterIndex === 1
                         ? "lg:min-h-[120rem]"
@@ -807,7 +813,7 @@ function ChapterFrame({
       }}
       className={cn(
         "relative overflow-visible rounded-[1.5rem] border border-neutral-800/80 px-4 py-10 shadow-[0_0_0_1px_rgb(250_248_244_/_0.02)] sm:px-6 sm:py-12",
-        isFirstTall && "lg:min-h-[68rem] lg:py-16",
+        isFirstTall && "lg:min-h-[123rem] lg:py-16",
         isExtended &&
           (isExtraTall
             ? "lg:min-h-[128rem] lg:py-16"

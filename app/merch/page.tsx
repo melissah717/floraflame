@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
+
+const TEASER_IMAGE =
+  "https://res.cloudinary.com/g0mcdcfr/image/upload/v1786469936/slowmo_floratees_1_fc1jnc.gif";
 
 /**
  * Skeleton page — placeholder product grid. No storefront yet (waiting
@@ -38,6 +42,22 @@ export default function MerchPage() {
         <ComingSoonBanner>
           Coming soon, the shop isn&apos;t open yet.
         </ComingSoonBanner>
+      </Reveal>
+
+      <Reveal delay={0.08} className="mt-8 sm:mt-10">
+        <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-[1.75rem] border border-neutral-800 bg-neutral-950 shadow-[0_0_0_1px_rgb(250_248_244_/_0.02)]">
+          {/* GIF, so unoptimized — Next's image optimizer strips animation
+              from GIFs when it processes them, same reason the-farm's video
+              and the navbar's SVG logo bypass it too. */}
+          <Image
+            src={TEASER_IMAGE}
+            alt="A first look at Flora & Flame merch"
+            fill
+            sizes="(max-width: 640px) 100vw, 448px"
+            className="object-cover"
+            unoptimized
+          />
+        </div>
       </Reveal>
 
       <div className="mt-12 grid grid-cols-2 gap-4 sm:mt-16 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">

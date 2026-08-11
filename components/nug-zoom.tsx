@@ -58,7 +58,7 @@ export function NugZoom({
     >
       <motion.div
         style={{ scale: springScale, transformOrigin }}
-        className="h-full w-full"
+        className="relative h-full w-full"
       >
         {children}
       </motion.div>
