@@ -1,7 +1,12 @@
 "use client"
 
 import { useRef, type ReactNode } from "react"
-import { motion, useMotionTemplate, useMotionValue, useSpring } from "motion/react"
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useSpring,
+} from "motion/react"
 import { cn } from "@/lib/utils"
 
 /**
@@ -13,7 +18,7 @@ import { cn } from "@/lib/utils"
 export function NugZoom({
   children,
   className,
-  zoom = 1.6,
+  zoom = 1.5,
 }: {
   children: ReactNode
   className?: string
@@ -51,7 +56,10 @@ export function NugZoom({
       onMouseLeave={onMouseLeave}
       className={cn("relative overflow-hidden", className)}
     >
-      <motion.div style={{ scale: springScale, transformOrigin }} className="h-full w-full">
+      <motion.div
+        style={{ scale: springScale, transformOrigin }}
+        className="h-full w-full"
+      >
         {children}
       </motion.div>
     </div>

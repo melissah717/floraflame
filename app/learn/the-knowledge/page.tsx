@@ -10,10 +10,16 @@ import { ComingSoonBanner } from "@/components/coming-soon-banner";
 // window (see lib/blog.ts) in production — no build-time freeze.
 export const dynamic = "force-dynamic";
 
+const TITLE = "The Knowledge"
+const DESCRIPTION = "Notes from the grow, grouped by topic."
+
 export const metadata: Metadata = {
-  title: "The Knowledge",
-  description: "Notes from the grow, grouped by topic.",
-};
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/learn/the-knowledge" },
+  openGraph: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
+  twitter: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
+}
 
 const GUTTER = "px-5 sm:px-8 lg:px-14";
 

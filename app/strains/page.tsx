@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { ArchiveClient } from "@/components/archive-client";
 import { getArchiveBatches } from "@/lib/strains";
@@ -5,6 +6,18 @@ import { getArchiveBatches } from "@/lib/strains";
 // Re-checks Supabase for new batches every hour rather than only at build
 // time, without giving up static generation the way force-dynamic would.
 export const revalidate = 3600;
+
+const TITLE = "Strains"
+const DESCRIPTION =
+  "Every batch Flora & Flame has ever tested: what's currently in rotation and the full history of strains grown in Oakland."
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/strains" },
+  openGraph: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
+  twitter: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
+}
 
 export default async function StrainsPage() {
   const batches = await getArchiveBatches();

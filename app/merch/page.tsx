@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
 
@@ -7,6 +8,21 @@ import { ComingSoonBanner } from "@/components/coming-soon-banner";
  * actual shop into once that's wired up.
  */
 const PLACEHOLDER_COUNT = 8;
+
+// noindex until there's real product content — an empty skeleton grid is
+// exactly the kind of thin page that can drag down how search engines
+// weigh the rest of the site. Drop this once merch actually ships.
+const TITLE = "Merch"
+const DESCRIPTION = "Flora & Flame merch, coming soon."
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/merch" },
+  robots: { index: false, follow: true },
+  openGraph: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
+  twitter: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
+}
 
 export default function MerchPage() {
   return (

@@ -1,7 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Reveal, SectionLabel } from "@/components/scroll-primitives";
 import { RGB } from "@/lib/spectrum";
+
+const TITLE = "Learn"
+const DESCRIPTION =
+  "Cannabinoids and terpenes, the no-till growing method, life inside the Oakland facility, and notes from the grow, all in one place."
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/learn" },
+  openGraph: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
+  twitter: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
+}
 
 /** Inserts an alpha channel into a legacy-space rgb() string, e.g.
  * "rgb(139 92 246)" -> "rgb(139 92 246 / 0.15)". */

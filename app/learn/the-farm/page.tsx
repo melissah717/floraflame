@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import { Reveal, SectionLabel } from "@/components/scroll-primitives";
 
+const TITLE = "The Farm"
+const DESCRIPTION = "A look inside the Oakland grow, photos and video from the room."
+
 export const metadata: Metadata = {
-  title: "The Farm",
-  description:
-    "A look inside the Oakland grow, photos and video from the room.",
-};
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/learn/the-farm" },
+  openGraph: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
+  twitter: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
+}
 
 const GUTTER = "px-5 sm:px-8 lg:px-14";
 
