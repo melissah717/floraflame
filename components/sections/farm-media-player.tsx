@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
+import { Loader2 } from "lucide-react"
 import {
   motion,
+  AnimatePresence,
   animate,
   useScroll,
   useTransform,
@@ -175,6 +177,11 @@ export function FarmMediaPlayer() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [entryDirection, setEntryDirection] = useState<ScrollDirection>("down")
   const [outgoingIndex, setOutgoingIndex] = useState<number | null>(null)
+  // True from the moment a thumbnail is tapped until scroll actually
+  // catches up to it — the tap itself only kicks off a scroll animation,
+  // so without this there's a stretch (worse on slower devices) where
+  // nothing on screen acknowledges the tap happened at all.
+  const [isJumping, setIsJumping] = useState(false)
   const activeIndexRef = useRef(0)
   const lastProgressRef = useRef(0)
   const jumpTargetRef = useRef<number | null>(null)
@@ -213,6 +220,7 @@ export function FarmMediaPlayer() {
 
     if (idx === jumpTargetRef.current) {
       jumpTargetRef.current = null
+      setIsJumping(false)
       if (jumpTimeoutRef.current !== null) {
         window.clearTimeout(jumpTimeoutRef.current)
         jumpTimeoutRef.current = null
@@ -237,10 +245,12 @@ export function FarmMediaPlayer() {
     if (index === activeIndexRef.current) return
 
     jumpTargetRef.current = index
+    setIsJumping(true)
     if (jumpTimeoutRef.current !== null) window.clearTimeout(jumpTimeoutRef.current)
     jumpTimeoutRef.current = window.setTimeout(() => {
       jumpTargetRef.current = null
       jumpTimeoutRef.current = null
+      setIsJumping(false)
     }, 1800)
 
     const isMovingDown = index >= activeIndexRef.current
@@ -335,6 +345,22 @@ export function FarmMediaPlayer() {
               onImageLoad={handleImageLoad}
             />
           ))}
+          <AnimatePresence>
+            {isJumping && (
+              <motion.div
+                key="jump-indicator"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
+              >
+                <div className="flex items-center justify-center rounded-full bg-black/45 p-3.5 backdrop-blur-sm">
+                  <Loader2 className="h-6 w-6 animate-spin text-neutral-100" strokeWidth={2} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="relative z-20 flex shrink-0 flex-col">

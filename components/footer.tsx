@@ -20,11 +20,9 @@ export function SiteFooter() {
             </p>
             <ul className="mt-4 space-y-2 text-sm">
               {[
-                ["About", "/#about"],
-                ["Drops", "/#drops"],
-                ["Contact", "/#wholesale"],
-                ["Find Us", "/#find-us"],
-                ["The Knowledge", "/learn/the-knowledge"],
+                ["Home", "/"],
+                ["Strains", "/strains"],
+                ["Learn", "/learn"],
                 ["Merch", "/merch"],
               ].map(([label, href]) => (
                 <li key={label}>

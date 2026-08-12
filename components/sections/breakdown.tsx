@@ -1015,7 +1015,7 @@ function TerpeneStackVisual({
 
   return (
     <div className="relative mx-auto w-full max-w-[24rem] sm:max-w-[26rem]">
-      <div className="relative h-[21rem] sm:h-[21.5rem]">
+      <div className="relative">
         <div
           aria-hidden
           className="absolute inset-x-10 top-10 bottom-8 rounded-[2rem] blur-3xl"
@@ -1030,7 +1030,7 @@ function TerpeneStackVisual({
             }}
           />
         </div>
-        <div className="relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-[#0d0d0f] px-4 py-4 shadow-[0_20px_50px_rgb(0_0_0_/_0.28)] sm:px-5 sm:py-5">
+        <div className="relative flex flex-col overflow-hidden rounded-[1.75rem] bg-[#0d0d0f] px-4 py-4 shadow-[0_20px_50px_rgb(0_0_0_/_0.28)] sm:px-5 sm:py-5">
           <div
             aria-hidden
             className="absolute inset-x-0 top-0 h-px"
