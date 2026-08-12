@@ -254,7 +254,7 @@ function HeroFrame({
   return (
     <motion.div
       style={disabled ? undefined : { scaleX, scaleY, x, y, opacity }}
-      className="absolute h-[82vh] w-[92vw] overflow-hidden rounded-[1.75rem] border border-neutral-800 bg-neutral-950 shadow-[0_30px_80px_rgb(0_0_0_/_0.45)] sm:w-[min(80vw,1100px)]"
+      className="absolute inset-0 overflow-hidden rounded-[1.75rem] border border-neutral-800 bg-neutral-950 shadow-[0_30px_80px_rgb(0_0_0_/_0.45)]"
     >
       {item.type === "video" ? (
         <video className="h-full w-full object-cover" src={item.src} autoPlay muted loop playsInline />
@@ -263,7 +263,7 @@ function HeroFrame({
           src={item.src}
           alt={item.alt}
           fill
-          sizes="92vw"
+          sizes="(max-width: 640px) 80vw, 1000px"
           className="object-cover"
           style={disabled ? undefined : { objectPosition }}
           priority={index === 0}
