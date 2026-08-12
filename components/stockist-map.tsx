@@ -15,12 +15,16 @@ type Pin = Stockist & { miles?: number };
  * mapbox-gl touches `window` while loading — a top-level import crashes the
  * server render. The CSS import is safe at module scope.
  *
- * Three separate effects, deliberately:
- *   1. create the map (once)
+ * Effects, deliberately separate:
+ *   1. create the map (once), then flip `ready` on its 'load' event
  *   2. rebuild pins + fit bounds (when the list changes)
+ *   2b. frame the focus set (when a search reframes)
  *   3. fly to a selection (when `selected` changes)
- * Merging 2 and 3 would refit the bounds every time someone clicks a shop,
+ * Merging 2 and 2b/3 would refit the bounds every time someone clicks a shop,
  * yanking the view back out instead of zooming in.
+ *
+ * Effects 2/2b/3 gate on `ready` (the map's 'load' event) rather than on the
+ * dynamic import resolving in a particular order — see effect 1.
  */
 export function StockistMap({
   stockists,
@@ -49,19 +53,35 @@ export function StockistMap({
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   // Mapbox needs WebGL. It's usually there, but not always — GPU
   // acceleration disabled, some VPN/privacy browser setups, older
-  // hardware. new mapboxgl.Map() throws synchronously when the canvas
-  // can't get a WebGL context, so without this the whole thing surfaces
-  // as an unhandled error instead of just... not showing a map.
+  // hardware, or (in dev) WebGL contexts exhausted by a long hot-reload
+  // session. new mapboxgl.Map() throws synchronously when the canvas
+  // can't get a context, so without this the whole thing surfaces as an
+  // unhandled error instead of just... not showing a map.
   const [mapFailed, setMapFailed] = useState(false);
+  // Flipped on the map's 'load' event. Effects 2/2b/3 wait for this instead
+  // of assuming the map already exists — the map is created asynchronously.
+  const [ready, setReady] = useState(false);
 
   // --- 1. create the map once ------------------------------------------
   useEffect(() => {
-    if (!token || !container.current || map.current || mapFailed) return;
+    if (!token || !container.current || map.current) return;
     let cancelled = false;
 
     (async () => {
       const mapboxgl = (await import("mapbox-gl")).default;
-      if (cancelled || !container.current) return;
+      if (cancelled || !container.current || map.current) return;
+
+      // Preflight. new mapboxgl.Map() both throws AND logs its own
+      // console.error("Failed to initialize WebGL.") when it can't get a
+      // context — which is a red dev overlay for a case we already handle.
+      // Checking first lets us drop to the fallback quietly. A null context
+      // in dev usually means contexts are exhausted from hot-reloading;
+      // fully restarting the browser frees them.
+      if (!hasWebGL()) {
+        console.warn("[stockist-map] WebGL unavailable — showing fallback");
+        if (!cancelled) setMapFailed(true);
+        return;
+      }
 
       mapboxgl.accessToken = token;
 
@@ -75,9 +95,15 @@ export function StockistMap({
         });
       } catch (err) {
         console.error("[stockist-map] Failed to initialize WebGL:", err);
-        setMapFailed(true);
+        if (!cancelled) setMapFailed(true);
         return;
       }
+
+      // Signal readiness once the style has loaded, so markers and bounds
+      // build against a map that's actually ready for them.
+      map.current.on("load", () => {
+        if (!cancelled) setReady(true);
+      });
 
       // NOT also listening on the map's 'error' event here — Mapbox fires
       // that for plenty of non-fatal stuff (a flaky tile fetch, a style
@@ -93,14 +119,21 @@ export function StockistMap({
 
     return () => {
       cancelled = true;
-      map.current?.remove();
+      // Full teardown so a Strict-Mode remount or hot-reload starts clean
+      // instead of leaking a WebGL context (and its markers) each time.
+      markers.current.forEach((m) => m.remove());
+      markers.current.clear();
+      originMarker.current?.remove();
+      originMarker.current = null;
+      map.current?.remove(); // frees the WebGL context
       map.current = null;
+      setReady(false);
     };
-  }, [token, mapFailed]);
+  }, [token]);
 
   // --- 2. rebuild pins when the list changes ---------------------------
   useEffect(() => {
-    if (!token) return;
+    if (!token || !ready) return;
     let cancelled = false;
 
     (async () => {
@@ -202,13 +235,13 @@ export function StockistMap({
     return () => {
       cancelled = true;
     };
-  }, [stockists, origin, token]);
+  }, [stockists, origin, token, ready]);
 
   // --- 2b. frame the focus set -----------------------------------------
   // Separate from marker building so a search can reframe without tearing
   // down and rebuilding all 45 pins.
   useEffect(() => {
-    if (!token) return;
+    if (!token || !ready) return;
     let cancelled = false;
 
     (async () => {
@@ -258,11 +291,11 @@ export function StockistMap({
     return () => {
       cancelled = true;
     };
-  }, [focus, stockists, origin, token]);
+  }, [focus, stockists, origin, token, ready]);
 
   // --- 3. fly to the selected shop -------------------------------------
   useEffect(() => {
-    if (!map.current || !selected) return;
+    if (!ready || !map.current || !selected) return;
 
     const shop = stockists.find((s) => stockistKey(s) === selected);
     const marker = markers.current.get(selected);
@@ -304,7 +337,7 @@ export function StockistMap({
       // Raise the active pin so its ring isn't clipped by neighbours.
       el.style.zIndex = active ? "10" : "";
     });
-  }, [selected, stockists]);
+  }, [selected, stockists, ready]);
 
   if (!token || mapFailed) {
     return (
@@ -321,6 +354,29 @@ export function StockistMap({
   }
 
   return <div ref={container} className={className} />;
+}
+
+/**
+ * WebGL preflight. Mapbox GL needs a WebGL context (v3 wants WebGL 2, with a
+ * WebGL 1 fallback), and asking for one when the pool is exhausted returns
+ * null. We probe, then immediately release the probe context so we don't hold
+ * one ourselves. Returns false only when no context is available at all —
+ * borderline cases are left to Mapbox + the try/catch backstop.
+ */
+function hasWebGL(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = (canvas.getContext("webgl2") ||
+      canvas.getContext("webgl") ||
+      canvas.getContext(
+        "experimental-webgl"
+      )) as WebGLRenderingContext | null;
+    if (!gl) return false;
+    gl.getExtension("WEBGL_lose_context")?.loseContext();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Popups take raw HTML, and this content comes from a spreadsheet. */
