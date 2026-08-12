@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
-import { FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
 import { SpectrumBackdrop } from "@/components/spectrum-backdrop";
@@ -27,6 +27,8 @@ export function ArchiveClient({ batches }: { batches: Strain[] }) {
   }
 
   const active = batches[activeIndex];
+  const goToPrev = () => setActiveIndex((i) => (i - 1 + batches.length) % batches.length);
+  const goToNext = () => setActiveIndex((i) => (i + 1) % batches.length);
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,440px)_1fr] lg:gap-16">
@@ -57,6 +59,28 @@ export function ArchiveClient({ batches }: { batches: Strain[] }) {
               priority
             />
           </NugZoom>
+        </div>
+
+        <div className="mt-4 flex items-center justify-center gap-5 sm:hidden">
+          <button
+            type="button"
+            onClick={goToPrev}
+            aria-label="Previous strain"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-neutral-700 bg-neutral-800/50 text-neutral-200 transition-colors active:border-neutral-500 active:bg-neutral-700 active:text-neutral-50"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <span className="min-w-[3rem] text-center text-xs tracking-[0.16em] text-neutral-500 tabular-nums">
+            {activeIndex + 1} / {batches.length}
+          </span>
+          <button
+            type="button"
+            onClick={goToNext}
+            aria-label="Next strain"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-neutral-700 bg-neutral-800/50 text-neutral-200 transition-colors active:border-neutral-500 active:bg-neutral-700 active:text-neutral-50"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
         </div>
 
         <div className="mt-5 flex flex-col gap-2">

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -34,8 +35,18 @@ export function Navbar() {
   // rendered, same as a plain <Link href={`/#${id}`}> would.
   const scrollTo = (id: string) => {
     setOpen(false);
-    if (!isHome) return;
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const scrollToContact = () => {
+    setOpen(false);
+
+    if (isHome) {
+      document.getElementById("wholesale")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    router.push("/#wholesale");
   };
 
   return (
@@ -121,7 +132,7 @@ export function Navbar() {
 
           <Button
             size="lg"
-            onClick={() => scrollTo("wholesale")}
+            onClick={scrollToContact}
             className="ml-3 rounded-full bg-neutral-50 px-7 text-base font-normal text-neutral-900 hover:bg-neutral-200"
           >
             Get in touch
@@ -140,14 +151,14 @@ export function Navbar() {
           </SheetTrigger>
           <SheetContent
             side="right"
-            className="w-full overflow-y-auto border-l-0 bg-neutral-900 text-neutral-50 sm:w-96"
+            className="w-full overflow-y-auto border-l-0 bg-neutral-900 text-neutral-50 sm:w-[28rem]"
           >
             <SheetTitle className="sr-only">Navigation</SheetTitle>
-            <div className="mt-8 flex flex-col px-6 pb-4">
+            <div className="mt-12 flex flex-col px-8 pb-8 sm:px-10">
               <Link
                 href="/"
                 onClick={() => setOpen(false)}
-                className="block border-b border-neutral-700 py-2.5 font-display text-lg leading-tight text-neutral-50"
+                className="block border-b border-neutral-700 py-4 font-display text-2xl leading-tight text-neutral-50"
               >
                 Home
               </Link>
@@ -155,7 +166,7 @@ export function Navbar() {
               <Link
                 href="/strains"
                 onClick={() => setOpen(false)}
-                className="block border-b border-neutral-700 py-2.5 font-display text-lg leading-tight text-neutral-50"
+                className="block border-b border-neutral-700 py-4 font-display text-2xl leading-tight text-neutral-50"
               >
                 Strains
               </Link>
@@ -163,25 +174,33 @@ export function Navbar() {
               <Link
                 href="/learn"
                 onClick={() => setOpen(false)}
-                className="block border-b border-neutral-700 py-2.5 font-display text-lg leading-tight text-neutral-50"
+                className="block border-b border-neutral-700 py-4 font-display text-2xl leading-tight text-neutral-50"
               >
                 Learn
               </Link>
 
+              <Link
+                href="/merch"
+                onClick={() => setOpen(false)}
+                className="block border-b border-neutral-700 py-4 font-display text-2xl leading-tight text-neutral-50"
+              >
+                Merch
+              </Link>
+
               <button
                 onClick={() => scrollTo("subscribe")}
-                className="cursor-pointer border-b border-neutral-700 py-2.5 text-left font-display text-lg leading-tight text-neutral-50"
+                className="cursor-pointer border-b border-neutral-700 py-4 text-left font-display text-2xl leading-tight text-neutral-50"
               >
                 Subscribe
               </button>
 
-              <Link
-                href="/merch"
-                onClick={() => setOpen(false)}
-                className="block py-2.5 font-display text-lg leading-tight text-neutral-50"
+              <button
+                onClick={scrollToContact}
+                className="cursor-pointer border-b border-neutral-700 py-4 text-left font-display text-2xl leading-tight text-neutral-50"
               >
-                Merch
-              </Link>
+                Get in touch
+              </button>
+
             </div>
           </SheetContent>
         </Sheet>
