@@ -25,6 +25,7 @@ export function SiteFooter() {
                 ["Contact", "/#wholesale"],
                 ["Find Us", "/#find-us"],
                 ["The Knowledge", "/learn/the-knowledge"],
+                ["Merch", "/merch"],
               ].map(([label, href]) => (
                 <li key={label}>
                   <Link
@@ -35,9 +36,6 @@ export function SiteFooter() {
                   </Link>
                 </li>
               ))}
-              <li className="cursor-not-allowed text-neutral-600">
-                Merch (soon)
-              </li>
             </ul>
           </div>
 

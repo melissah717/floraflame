@@ -149,6 +149,8 @@ export function FarmMediaPlayer() {
   const [outgoingIndex, setOutgoingIndex] = useState<number | null>(null)
   const activeIndexRef = useRef(0)
   const lastProgressRef = useRef(0)
+  const jumpTargetRef = useRef<number | null>(null)
+  const jumpTimeoutRef = useRef<number | null>(null)
   const reduce = useReducedMotion()
   const spans: { start: number; weight: number }[] = []
   let totalScrollWeight = 0
@@ -172,11 +174,21 @@ export function FarmMediaPlayer() {
     const direction: ScrollDirection = v >= lastProgressRef.current ? "down" : "up"
     lastProgressRef.current = v
 
+    if (jumpTargetRef.current !== null && idx !== jumpTargetRef.current) return
+
     if (idx !== activeIndexRef.current) {
       setOutgoingIndex(activeIndexRef.current)
       setEntryDirection(direction)
       activeIndexRef.current = idx
       setActiveIndex(idx)
+    }
+
+    if (idx === jumpTargetRef.current) {
+      jumpTargetRef.current = null
+      if (jumpTimeoutRef.current !== null) {
+        window.clearTimeout(jumpTimeoutRef.current)
+        jumpTimeoutRef.current = null
+      }
     }
   })
 
@@ -189,6 +201,40 @@ export function FarmMediaPlayer() {
       return current.map((weight, i) => (i === index ? nextWeight : weight))
     })
   }
+
+  const selectMedia = (index: number) => {
+    const wrapperEl = wrapperRef.current
+    const span = spans[index]
+    if (!wrapperEl || !span || !totalScrollWeight) return
+    if (index === activeIndexRef.current) return
+
+    jumpTargetRef.current = index
+    if (jumpTimeoutRef.current !== null) window.clearTimeout(jumpTimeoutRef.current)
+    jumpTimeoutRef.current = window.setTimeout(() => {
+      jumpTargetRef.current = null
+      jumpTimeoutRef.current = null
+    }, 1800)
+
+    const isMovingDown = index >= activeIndexRef.current
+    const segmentOffset = isMovingDown ? 0.02 : Math.max(span.weight - 0.02, 0)
+    const targetProgress = Math.min(
+      Math.max((span.start + segmentOffset) / totalScrollWeight, 0),
+      1
+    )
+    const wrapperTop = wrapperEl.getBoundingClientRect().top + window.scrollY
+    const scrollableDistance = Math.max(wrapperEl.offsetHeight - window.innerHeight, 0)
+
+    window.scrollTo({
+      top: wrapperTop + scrollableDistance * targetProgress,
+      behavior: reduce ? "auto" : "smooth",
+    })
+  }
+
+  useEffect(() => {
+    return () => {
+      if (jumpTimeoutRef.current !== null) window.clearTimeout(jumpTimeoutRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     if (outgoingIndex == null) return
@@ -261,15 +307,17 @@ export function FarmMediaPlayer() {
           ))}
         </div>
 
-        <div className="flex shrink-0 flex-col">
+        <div className="relative z-20 flex shrink-0 flex-col">
           {MEDIA.map((item, index) => (
             <Thumbnail
               key={item.src}
               item={item}
+              index={index}
               isLast={index === MEDIA.length - 1}
               isActive={index === activeIndex}
               isOutgoing={index === outgoingIndex}
               disabled={!!reduce}
+              onSelect={selectMedia}
               elRef={(el) => {
                 thumbRefs.current[index] = el
               }}
@@ -426,7 +474,7 @@ function HeroFrame({
               zIndex: isActive ? 3 : isOutgoing ? 2 : 1,
             }
       }
-      className="absolute inset-0 overflow-hidden border border-neutral-800 bg-neutral-950 shadow-[0_30px_80px_rgb(0_0_0_/_0.45)]"
+      className="pointer-events-none absolute inset-0 overflow-hidden border border-neutral-800 bg-neutral-950 shadow-[0_30px_80px_rgb(0_0_0_/_0.45)]"
     >
       {item.type === "video" ? (
         <video className="h-full w-full object-cover" src={item.src} autoPlay muted loop playsInline />
@@ -459,17 +507,21 @@ const THUMB_SHOW_DELAY = 0.02
 
 function Thumbnail({
   item,
+  index,
   isLast,
   isActive,
   isOutgoing,
   disabled,
+  onSelect,
   elRef,
 }: {
   item: MediaItem
+  index: number
   isLast: boolean
   isActive: boolean
   isOutgoing: boolean
   disabled: boolean
+  onSelect: (index: number) => void
   elRef: (el: HTMLDivElement | null) => void
 }) {
   const idleMargin = isLast ? 0 : THUMB_GAP_PX
@@ -518,11 +570,19 @@ function Thumbnail({
         style={disabled ? undefined : { opacity, scale }}
         className="relative h-12 w-12 overflow-hidden rounded-lg border border-neutral-700 bg-neutral-900 sm:h-14 sm:w-14"
       >
-        {item.type === "video" ? (
-          <video className="h-full w-full object-cover" src={item.src} muted loop playsInline />
-        ) : (
-          <Image src={item.src} alt="" fill sizes="56px" className="object-cover" />
-        )}
+        <button
+          type="button"
+          aria-label={`Show farm media ${index + 1}`}
+          aria-current={isActive ? "true" : undefined}
+          onClick={() => onSelect(index)}
+          className="relative block h-full w-full cursor-pointer overflow-hidden rounded-lg opacity-90 transition-opacity duration-200 hover:opacity-45 focus:outline-none focus-visible:opacity-55"
+        >
+          {item.type === "video" ? (
+            <video className="h-full w-full object-cover" src={item.src} muted loop playsInline />
+          ) : (
+            <Image src={item.src} alt="" fill sizes="56px" className="object-cover" />
+          )}
+        </button>
       </motion.div>
     </motion.div>
   )
