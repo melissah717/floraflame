@@ -118,6 +118,34 @@ function getWeightedIndex(progress: number, weights: number[]) {
   return Math.max(weights.length - 1, 0)
 }
 
+// Native `window.scrollTo({ behavior: "smooth" })` is unreliable on mobile
+// Safari/Chrome when it fires while a touch-driven scroll still has
+// residual momentum — the browser can silently ignore or cut short the
+// programmatic scroll, which is exactly the "sometimes it works, sometimes
+// it doesn't" symptom tapping a thumbnail right after a swipe produces.
+// Driving the scroll position every frame ourselves can't be dropped that
+// way, since each frame just forces an instant scrollTo regardless of
+// whatever native momentum is doing.
+let scrollAnimationId = 0
+function animateScrollTo(targetY: number, duration: number) {
+  scrollAnimationId += 1
+  const runId = scrollAnimationId
+  const startY = window.scrollY
+  const distance = targetY - startY
+  if (Math.abs(distance) < 1) return
+
+  const startTime = performance.now()
+  const step = (now: number) => {
+    if (runId !== scrollAnimationId) return
+    const t = Math.min((now - startTime) / duration, 1)
+    const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
+    window.scrollTo(0, startY + distance * eased)
+    if (t < 1) requestAnimationFrame(step)
+  }
+
+  requestAnimationFrame(step)
+}
+
 function getTallImageWeight(width: number, height: number) {
   if (!width || !height) return 1
 
@@ -223,11 +251,13 @@ export function FarmMediaPlayer() {
     )
     const wrapperTop = wrapperEl.getBoundingClientRect().top + window.scrollY
     const scrollableDistance = Math.max(wrapperEl.offsetHeight - window.innerHeight, 0)
+    const targetY = wrapperTop + scrollableDistance * targetProgress
 
-    window.scrollTo({
-      top: wrapperTop + scrollableDistance * targetProgress,
-      behavior: reduce ? "auto" : "smooth",
-    })
+    if (reduce) {
+      window.scrollTo({ top: targetY, behavior: "auto" })
+    } else {
+      animateScrollTo(targetY, 700)
+    }
   }
 
   useEffect(() => {

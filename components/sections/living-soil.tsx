@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
 import { Recycle, Microscope, Sprout, Gem, Layers } from "lucide-react";
@@ -130,7 +130,7 @@ export function LivingSoil() {
     <section ref={sectionRef} id="living-soil" className="scroll-mt-20 bg-neutral-900 text-neutral-50">
       <div
         ref={heroRef}
-        className={`relative overflow-hidden pt-32 pb-20 sm:pt-44 sm:pb-28 ${GUTTER}`}
+        className={`relative overflow-hidden pt-20 pb-20 sm:pt-28 sm:pb-28 ${GUTTER}`}
       >
         <SoilAtmosphere />
 
@@ -141,14 +141,19 @@ export function LivingSoil() {
             </SectionLabel>
 
             <h1 className="mt-6 max-w-4xl font-display text-5xl leading-[0.9] uppercase sm:text-7xl lg:text-8xl">
-              {HEADLINE.split(" ").map((word, index) => (
-                <HeroWord
-                  key={`${word}-${index}`}
-                  word={word}
-                  index={index}
-                  progress={heroProgress}
-                  disabled={!!reduce}
-                />
+              {HEADLINE.split(" ").map((word, index, words) => (
+                <Fragment key={`${word}-${index}`}>
+                  <HeroWord word={word} index={index} disabled={!!reduce} />
+                  {/* Each word is its own inline-block span (for the
+                      slide-up reveal) with no actual whitespace text node
+                      between them, so browsers have nowhere to break the
+                      line — invisible on desktop where the sentence fits
+                      on one line anyway, but on mobile it can't wrap and
+                      silently overflows past the hero's overflow-hidden.
+                      wbr is an explicit, invisible break opportunity —
+                      exactly this case — without adding real spacing. */}
+                  {index < words.length - 1 && <wbr />}
+                </Fragment>
               ))}
             </h1>
 
@@ -682,18 +687,12 @@ function ClosingSoilLine({
 function HeroWord({
   word,
   index,
-  progress,
   disabled,
 }: {
   word: string;
   index: number;
-  progress: MotionValue<number>;
   disabled: boolean;
 }) {
-  const start = 0.02 + index * 0.055;
-  const end = start + 0.14;
-  const y = useTransform(progress, [start, end], ["110%", "0%"]);
-
   if (disabled) {
     return (
       <span className="inline-block whitespace-nowrap">
@@ -703,9 +702,21 @@ function HeroWord({
     );
   }
 
+  // A one-time mount animation, not scroll-linked — this headline sits at
+  // the very top of the page with nothing above it, so there's no "scroll
+  // it into view" moment for a progress value to track: at mount, scroll
+  // position (and so the derived progress) could be anywhere, catching a
+  // word mid-slide with no scrolling ever having happened. initial/animate
+  // always starts from a known hidden state regardless, same pattern as
+  // hero.tsx's own headline reveal.
   return (
     <span className="inline-block overflow-hidden align-bottom">
-      <motion.span style={{ y }} className="inline-block whitespace-nowrap">
+      <motion.span
+        initial={{ y: "110%" }}
+        animate={{ y: "0%" }}
+        transition={{ duration: 0.9, delay: 0.15 + index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+        className="inline-block whitespace-nowrap"
+      >
         {word}
         <span className="inline-block w-[0.24em]" />
       </motion.span>
