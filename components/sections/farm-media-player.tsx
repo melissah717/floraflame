@@ -7,9 +7,16 @@ import {
   useScroll,
   useSpring,
   useTransform,
+  useMotionTemplate,
   useReducedMotion,
   type MotionValue,
 } from "motion/react"
+
+// Next's <Image> is a plain component — a MotionValue passed into its
+// style prop directly wouldn't update reactively, only re-stringify once.
+// Wrapping it via motion.create() makes it a proper motion component that
+// actually subscribes to MotionValue changes, same as any motion.div.
+const MotionImage = motion.create(Image)
 
 type MediaItem =
   | { type: "video"; src: string }
@@ -27,6 +34,11 @@ const MEDIA: MediaItem[] = [
   },
   {
     type: "image",
+    src: "https://res.cloudinary.com/g0mcdcfr/image/upload/v1786498062/plant-pots.jpg",
+    alt: "Plant pots, Oakland facility",
+  },
+  {
+    type: "image",
     src: "https://res.cloudinary.com/g0mcdcfr/image/upload/v1786484376/aisle-center-view.jpg",
     alt: "Center aisle, Oakland facility",
   },
@@ -39,6 +51,16 @@ const MEDIA: MediaItem[] = [
     type: "image",
     src: "https://res.cloudinary.com/g0mcdcfr/image/upload/v1786484376/top-aisle-view.jpg",
     alt: "Top of the aisle, Oakland facility",
+  },
+  {
+    type: "image",
+    src: "https://res.cloudinary.com/g0mcdcfr/image/upload/v1786492144/guy-work.jpg",
+    alt: "Hands at work, Oakland facility",
+  },
+  {
+    type: "image",
+    src: "https://res.cloudinary.com/g0mcdcfr/image/upload/v1786497578/forklift-work-guy.jpg",
+    alt: "Moving product with the forklift, Oakland facility",
   },
 ]
 
@@ -114,30 +136,34 @@ export function FarmMediaPlayer() {
 
   return (
     <div ref={wrapperRef} className="relative" style={{ height: `${MEDIA.length * 100}vh` }}>
-      <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
-        {/* Invisible — exists only so its rect gives HeroFrame something
-            real to measure against (the actual rendered heroes are
-            absolutely positioned and start scaled down, so they can't
-            report their own "natural" size). */}
-        <div
-          ref={heroRef}
-          aria-hidden
-          className="pointer-events-none invisible absolute h-[82vh] w-[92vw] sm:w-[min(80vw,1100px)]"
-        />
+      <div className="sticky top-0 flex h-screen w-full items-center justify-center gap-4 overflow-hidden px-4 sm:gap-6 sm:px-8">
+        {/* A real flex column, not an absolute overlay pinned to the
+            viewport edge — the rail sitting alongside the hero (rather
+            than on top of it) is what actually guarantees no overlap,
+            instead of chasing breakpoint-specific offsets that only
+            happened to leave enough margin at some widths and not
+            others. */}
+        {/* No overflow-hidden here — the hero frame's "closed" state sits
+            over in the rail's territory (that's the whole FLIP effect),
+            so clipping to this column's own bounds would cut it off
+            mid-transition. The outer stage below already clips to the
+            viewport. */}
+        <div ref={heroRef} className="relative h-[78vh] max-h-[820px] w-full max-w-[1000px] flex-1">
 
-        {MEDIA.map((item, index) => (
-          <HeroFrame
-            key={item.src}
-            item={item}
-            index={index}
-            total={MEDIA.length}
-            progress={progress}
-            disabled={!!reduce}
-            delta={deltas[index]}
-          />
-        ))}
+          {MEDIA.map((item, index) => (
+            <HeroFrame
+              key={item.src}
+              item={item}
+              index={index}
+              total={MEDIA.length}
+              progress={progress}
+              disabled={!!reduce}
+              delta={deltas[index]}
+            />
+          ))}
+        </div>
 
-        <div className="absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col sm:right-6">
+        <div className="flex shrink-0 flex-col">
           {MEDIA.map((item, index) => (
             <Thumbnail
               key={item.src}
@@ -215,6 +241,16 @@ function HeroFrame({
     [`${delta.dy}px`, `${delta.dy}px`, "0px", "0px", `${delta.dy}px`, `${delta.dy}px`]
   )
 
+  // Pans the crop from top to bottom across the hold phase (points[2] to
+  // points[3], i.e. while it's actually fully open on stage) — self-
+  // adjusting rather than needing to know which images are unusually
+  // tall: object-cover crops less the closer the photo's own aspect ratio
+  // is to the frame's, so a normal photo barely moves, while a portrait
+  // shot that would otherwise only ever show its dead center pans through
+  // its whole height instead.
+  const panY = useTransform(progress, [points[2], points[3]], [0, 100])
+  const objectPosition = useMotionTemplate`50% ${panY}%`
+
   return (
     <motion.div
       style={disabled ? undefined : { scaleX, scaleY, x, y, opacity }}
@@ -223,12 +259,13 @@ function HeroFrame({
       {item.type === "video" ? (
         <video className="h-full w-full object-cover" src={item.src} autoPlay muted loop playsInline />
       ) : (
-        <Image
+        <MotionImage
           src={item.src}
           alt={item.alt}
           fill
           sizes="92vw"
           className="object-cover"
+          style={disabled ? undefined : { objectPosition }}
           priority={index === 0}
         />
       )}
