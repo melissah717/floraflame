@@ -1,329 +1,713 @@
 "use client";
 
-import { useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { Flip } from "gsap/Flip";
+import { Recycle, Microscope, Sprout, Gem, Layers } from "lucide-react";
 import {
   motion,
+  useReducedMotion,
   useScroll,
   useTransform,
-  useReducedMotion,
   type MotionValue,
 } from "motion/react";
+import { SectionLabel } from "@/components/scroll-primitives";
+import { RGB } from "@/lib/spectrum";
 
-/**
- * Full-bleed dark section, head then body.
- *
- * WIDTH: no max-w container. Obscura's type gets that big because the
- * column is the viewport minus ~4.5% padding, not a centred 1280px box.
- * That also makes vw-based type sizing behave — vw inside a capped
- * container is what caused the earlier overflow, because the text kept
- * growing after the column stopped.
- */
+gsap.registerPlugin(Flip);
 
-const HEADLINE = "What is living soil?";
+const HEADLINE = "Living soil is a whole system.";
 
 const LEAD =
-  "An ecosystem, not a growing medium. A self sustaining web of microbes, organic matter and biology that feeds the plant the way the earth always has.";
+  "Not a bag of dirt. A living root zone built from compost, minerals, fungi, bacteria, worms, mulch, and time.";
 
-const POINTS = [
+const PRINCIPLES = [
   {
     n: "01",
-    title: "Microbes feed the plant",
-    body: "Beneficial bacteria, mycorrhizal fungi, and microorganisms colonize the root zone. They unlock nutrients the plant can't reach alone and provide the metabolic fuel for terpene synthesis.",
+    eyebrow: "Feed the soil",
+    title: "The plant eats through biology",
+    body: "Microbes break down organic matter and make nutrients available near the roots. The grower feeds that ecosystem, then the ecosystem feeds the plant.",
   },
   {
     n: "02",
-    title: "The plant defends itself",
-      body: "Sensing those microbes triggers induced systemic resistance, the plant's own defense response. That's what drives higher cannabinoid and flavonoid production, without anything sprayed on it.",
+    eyebrow: "Keep the bed alive",
+    title: "No till means no reset button",
+    body: "The soil is reused cycle after cycle. Roots, mulch, cover crop, and compost keep structure intact so fungal networks and microbial life can keep building.",
   },
   {
     n: "03",
-    title: "Hydro feeds plants, soil feeds biology",
-      body: "Most cannabis is grown hydroponically: inert media, synthetic liquid nutrients. Fast, scalable, and one dimensional. Chemical fertilizers feed the plant directly. Living soil feeds the microbes that feed the plant.",
+    eyebrow: "Let the plant speak",
+    title: "Less force, more expression",
+    body: "Living soil gives the plant a wider pantry to pull from. That supports fuller aroma, cleaner flavor, and a finish that feels less one dimensional.",
   },
 ];
 
-/** Shared side padding. Roughly 4.5% at desktop, like the reference. */
+const SOIL_SIGILS = [
+  {
+    label: "Mulch",
+    note: "protect",
+    detail: "Keeps the surface covered so moisture stays steady and the bed does not dry out between waterings. It also breaks down slowly on its own, adding another layer of organic matter back into the system over time.",
+    color: RGB.hybrid,
+  },
+  {
+    label: "Compost",
+    note: "feed",
+    detail: "Adds slow-release organic matter that microbes can break down into plant-available nutrition. Built from food scraps, plant material, and manure, it is the base layer everything else in the bed builds on.",
+    color: RGB.slate,
+  },
+  {
+    label: "Fungi",
+    note: "connect",
+    detail: "Mycorrhizal networks help roots reach water and nutrients beyond the root zone itself. In exchange, the plant feeds the fungi sugars it makes through photosynthesis, a trade that keeps both sides healthy.",
+    color: RGB.indica,
+  },
+  {
+    label: "Worms",
+    note: "aerate",
+    detail: "Worm movement opens tiny air channels and turns organic matter into rich castings. Those castings end up some of the most nutrient dense material anywhere in the bed.",
+    color: RGB.red,
+  },
+  {
+    label: "Minerals",
+    note: "balance",
+    detail: "Rock dust and mineral amendments support trace elements that shape plant health and expression. Even small amounts can round out flavor and help the plant handle stress.",
+    color: RGB.sativa,
+  },
+];
+
+const SOIL_FLOW = [
+  {
+    label: "Compost",
+    note: "Organic matter breaks down",
+    icon: Recycle,
+    color: RGB.slate,
+  },
+  {
+    label: "Microbes",
+    note: "Biology unlocks the nutrients",
+    icon: Microscope,
+    color: RGB.hybrid,
+  },
+  {
+    label: "Roots",
+    note: "The plant takes up what it needs",
+    icon: Sprout,
+    color: RGB.sativa,
+  },
+  {
+    label: "Minerals",
+    note: "Trace elements round it out",
+    icon: Gem,
+    color: RGB.indica,
+  },
+];
+
 const GUTTER = "px-5 sm:px-8 lg:px-14";
 
+function withAlpha(rgb: string, alpha: number) {
+  return rgb.replace(/\)$/, ` / ${alpha})`);
+}
+
 export function LivingSoil() {
-  const headRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
 
-  const { scrollYProgress: headProgress } = useScroll({
-    target: headRef,
+  const { scrollYProgress: heroProgress } = useScroll({
+    target: heroRef,
+    offset: ["start end", "end start"],
+  });
+  const { scrollYProgress: bodyProgress } = useScroll({
+    target: bodyRef,
     offset: ["start end", "end center"],
   });
 
-  const { scrollYProgress: bodyProgress } = useScroll({
-    target: bodyRef,
-    offset: ["start end", "center center"],
-  });
-
-  const totalLetters = HEADLINE.replace(/\s+/g, "").length;
-  let cursor = 0;
+  const heroY = useTransform(heroProgress, [0, 1], [28, -36]);
+  const heroOpacity = useTransform(heroProgress, [0, 0.08, 0.82, 1], [0, 1, 1, 0.52]);
 
   return (
-    <section id="living-soil" className="scroll-mt-20">
-      {/* ---------- HEAD ---------- */}
+    <section ref={sectionRef} id="living-soil" className="scroll-mt-20 bg-neutral-900 text-neutral-50">
       <div
-        ref={headRef}
-        // pb-0: the headline's baseline sits on the boundary.
-        className={`bg-neutral-900 pb-0 pt-36 sm:pt-56 ${GUTTER}`}
+        ref={heroRef}
+        className={`relative overflow-hidden pt-32 pb-20 sm:pt-44 sm:pb-28 ${GUTTER}`}
       >
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="order-2 pb-3 lg:order-1 lg:w-72 lg:shrink-0">
-            <div className="flex items-center gap-3 text-xs tracking-[0.08em] text-neutral-400">
-              <span className="tabular-nums">—</span>
-              <span className="h-px w-8 bg-neutral-700" />
-              <span>The Method</span>
-            </div>
-            <p className="mt-5 text-base leading-relaxed text-neutral-400">
-              No till. No synthetics. No pesticides. The whole method comes
-              down to one idea, and it isn&apos;t a shortcut.
-            </p>
-          </div>
+        <SoilAtmosphere />
 
-          <h2
-            className={[
-              "order-1 font-display uppercase leading-[0.82] tracking-[-0.04em] lg:order-2",
-              // Wraps between words on phones, forced to one line from sm up.
-              "sm:whitespace-nowrap",
-              "text-[clamp(2.5rem,6.6vw,12rem)]",
-            ].join(" ")}
-            // Pulls the line-box's descender space below the cut so the
-            // letterforms meet the edge instead of floating above it.
-            style={{ marginBottom: "-0.09em" }}
-          >
-            {HEADLINE.split(" ").map((word) => (
-              <span key={word} className="inline-block whitespace-nowrap">
-                {word.split("").map((char) => {
-                  const i = cursor++;
-                  return (
-                    <Letter
-                      key={`${char}-${i}`}
-                      char={char}
-                      index={i}
-                      total={totalLetters}
-                      progress={headProgress}
-                      disabled={!!reduce}
-                    />
-                  );
-                })}
-                {/* Real space — inline-block collapses whitespace */}
-                <span className="inline-block w-[0.24em]" />
-              </span>
-            ))}
-          </h2>
+        <div className="relative grid min-h-[calc(100vh-9rem)] gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.9fr)] lg:items-center">
+          <motion.div style={reduce ? undefined : { y: heroY, opacity: heroOpacity }}>
+            <SectionLabel number="01" tone="light">
+              The Method
+            </SectionLabel>
+
+            <h1 className="mt-6 max-w-4xl font-display text-5xl leading-[0.9] uppercase sm:text-7xl lg:text-8xl">
+              {HEADLINE.split(" ").map((word, index) => (
+                <HeroWord
+                  key={`${word}-${index}`}
+                  word={word}
+                  index={index}
+                  progress={heroProgress}
+                  disabled={!!reduce}
+                />
+              ))}
+            </h1>
+
+            <p className="mt-7 max-w-2xl text-xl leading-relaxed text-neutral-300 sm:text-2xl">
+              {LEAD}
+            </p>
+          </motion.div>
+
+          <SoilProfile progress={heroProgress} disabled={!!reduce} />
         </div>
       </div>
 
-      {/* ---------- BODY ---------- */}
-      <div
-        ref={bodyRef}
-        className={`bg-neutral-900 py-32 text-neutral-50 sm:py-48 ${GUTTER}`}
-      >
-        {/* Lead — assembles word by word */}
-        <p className="max-w-5xl text-2xl leading-[1.35] sm:text-3xl lg:text-4xl">
-          {LEAD.split(" ").map((word, i, arr) => (
-            <Word
-              key={`${word}-${i}`}
-              word={word}
-              index={i}
-              total={arr.length}
-              progress={bodyProgress}
-              disabled={!!reduce}
-            />
-          ))}
-        </p>
+      <div ref={bodyRef} className={`relative py-20 sm:py-28 ${GUTTER}`}>
+        <div className="grid gap-12 lg:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
+          <div className="relative min-h-[28rem] lg:min-h-[72rem]">
+            <div className="lg:sticky lg:top-28">
+              <SoilSystemVisual progress={bodyProgress} disabled={!!reduce} />
+            </div>
+          </div>
 
-        <div className="mt-32 sm:mt-44">
-          {POINTS.map((p, i) => (
-            <PointRow
-              key={p.n}
-              point={p}
-              index={i}
-              total={POINTS.length}
-              progress={bodyProgress}
-              disabled={!!reduce}
-            />
-          ))}
+          <div>
+            <p className="max-w-3xl font-display text-3xl leading-[1.05] sm:text-5xl">
+              No shortcuts, no synthetic push. Just a bed that gets better when it is cared for.
+            </p>
+
+            <div className="mt-16 sm:mt-20">
+              {PRINCIPLES.map((point, index) => (
+                <PrincipleRow
+                  key={point.n}
+                  point={point}
+                  index={index}
+                  total={PRINCIPLES.length}
+                  progress={bodyProgress}
+                  disabled={!!reduce}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
-        <p className="mt-32 max-w-4xl font-display sm:mt-44 text-3xl leading-[1.1] sm:text-5xl">
-          Richer, fuller flavor, and flower that tastes clean because
-          nothing synthetic ever touched it.
-        </p>
+        <ClosingSoilLine progress={bodyProgress} disabled={!!reduce} />
       </div>
     </section>
   );
 }
 
-/* ------------------------------------------------------------------ */
+function SoilAtmosphere() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div
+        className="absolute top-16 right-[-10rem] h-80 w-80 rounded-full blur-3xl sm:h-[32rem] sm:w-[32rem]"
+        style={{ backgroundColor: withAlpha(RGB.hybrid, 0.12) }}
+      />
+      <div
+        className="absolute bottom-[-10rem] left-[-12rem] h-96 w-96 rounded-full blur-3xl"
+        style={{ backgroundColor: withAlpha(RGB.sativa, 0.1) }}
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-px"
+        style={{
+          backgroundImage: `linear-gradient(90deg, transparent, ${withAlpha(RGB.hybrid, 0.55)}, transparent)`,
+        }}
+      />
+    </div>
+  );
+}
 
-/**
- * One row, three depths.
- *
- * The number, title and body each travel a different distance on the same
- * scroll — 20px, 45px, 80px. Objects that move more read as closer, so the
- * row assembles with a sense of depth instead of sliding up as one slab.
- * Keep the ratios; increase all three together if you want it stronger.
- */
-function PointRow({
+function SoilProfile({
+  progress,
+  disabled,
+}: {
+  progress: MotionValue<number>;
+  disabled: boolean;
+}) {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const flipStateRef = useRef<Flip.FlipState | null>(null);
+  const isShufflingRef = useRef(false);
+  const returningIndexRef = useRef<number | null>(null);
+  const y = useTransform(progress, [0, 1], [18, -18]);
+  const rotate = useTransform(progress, [0, 1], [-0.8, 0.8]);
+  const ringScale = useTransform(progress, [0.05, 0.28], [0.9, 1]);
+  const ringOpacity = useTransform(progress, [0.04, 0.2], [0, 1]);
+
+  useLayoutEffect(() => {
+    if (disabled || !gridRef.current || !flipStateRef.current) {
+      flipStateRef.current = null;
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      const cardFaces = gridRef.current!.querySelectorAll("[data-soil-token-inner]");
+      const returningCard = gridRef.current!.querySelector("[data-soil-returning='true']");
+
+      Flip.from(flipStateRef.current!, {
+        absolute: false,
+        duration: 0.5,
+        ease: "power2.inOut",
+        nested: true,
+        prune: true,
+        stagger: {
+          amount: 0.04,
+          from: "start",
+        },
+        onStart: () => {
+          if (returningCard) {
+            gsap.set(returningCard, { zIndex: 0 });
+          }
+
+          gsap.to(cardFaces, {
+            opacity: 0.34,
+            scale: 0.9,
+            duration: 0.12,
+            ease: "power2.out",
+          });
+        },
+        onComplete: () => {
+          flipStateRef.current = null;
+          gsap.to(cardFaces, {
+            scale: 1,
+            opacity: 1,
+            duration: 0.28,
+            ease: "power2.out",
+            onComplete: () => {
+              gsap.set(gridRef.current!.querySelectorAll("[data-soil-token]"), {
+                clearProps: "zIndex",
+              });
+              returningIndexRef.current = null;
+              isShufflingRef.current = false;
+            },
+          });
+        },
+      });
+    }, gridRef);
+
+    return () => {
+      isShufflingRef.current = false;
+      ctx.revert();
+    };
+  }, [selectedIndex, disabled]);
+
+  function handleSigilSelect(index: number) {
+    if (isShufflingRef.current) return;
+
+    returningIndexRef.current = selectedIndex;
+    const cards = gridRef.current?.querySelectorAll("[data-soil-token]");
+    const cardFaces = gridRef.current?.querySelectorAll("[data-soil-token-inner]");
+
+    if (disabled || !cards?.length || !cardFaces?.length) {
+      setSelectedIndex((current) => (current === index ? null : index));
+      return;
+    }
+
+    isShufflingRef.current = true;
+    gsap.killTweensOf(cardFaces);
+    gsap.to(cardFaces, {
+      scale: 0.92,
+      opacity: 0.28,
+      duration: 0.12,
+      ease: "power2.out",
+      transformOrigin: "50% 50%",
+      onComplete: () => {
+        flipStateRef.current = Flip.getState(cards);
+        setSelectedIndex((current) => (current === index ? null : index));
+      },
+    });
+  }
+
+  return (
+    <motion.div
+      style={disabled ? undefined : { y, rotate }}
+      className="relative mx-auto w-full max-w-[29rem]"
+    >
+      <div className="relative overflow-hidden rounded-[1.5rem] border border-neutral-800 bg-[#0b0a08] p-4 shadow-[0_32px_90px_rgb(0_0_0_/_0.5)] sm:p-5">
+        <div className="flex items-center justify-between text-[10px] tracking-[0.22em] text-neutral-500 uppercase">
+          <span>Living Soil</span>
+          <span>Ingredients</span>
+        </div>
+
+        <div className="relative mt-5 overflow-hidden rounded-[1rem] border border-neutral-800 bg-[#090805] p-4 sm:p-5">
+          <div aria-hidden className="absolute inset-0 opacity-80">
+            <div
+              className="absolute left-1/2 top-8 h-56 w-56 -translate-x-1/2 rounded-full blur-3xl"
+              style={{ backgroundColor: withAlpha(RGB.hybrid, 0.18) }}
+            />
+            <div
+              className="absolute bottom-[-5rem] right-[-4rem] h-48 w-48 rounded-full blur-3xl"
+              style={{ backgroundColor: withAlpha(RGB.sativa, 0.14) }}
+            />
+          </div>
+
+          <motion.div
+            style={disabled ? undefined : { scale: ringScale, opacity: ringOpacity }}
+            className="relative mb-5 min-h-32 overflow-hidden rounded-[1rem] border border-neutral-800 bg-neutral-950/70 p-5 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.04),0_0_50px_rgb(251_176_58_/_0.1)]"
+          >
+            <div
+              aria-hidden
+              className="absolute inset-x-0 top-0 h-px"
+              style={{ backgroundColor: withAlpha(RGB.hybrid, 0.8) }}
+            />
+            <div
+              aria-hidden
+              className="absolute right-[-2rem] top-[-2rem] h-28 w-28 rounded-full blur-2xl"
+              style={{ backgroundColor: withAlpha(RGB.hybrid, 0.2) }}
+            />
+            <div className="relative flex h-full items-center justify-between gap-5">
+              <div>
+                <p className="font-display text-3xl leading-none">Soil</p>
+                <p className="mt-2 text-[10px] tracking-[0.22em] text-neutral-500 uppercase">
+                  Living inputs
+                </p>
+              </div>
+              <div
+                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border"
+                style={{
+                  borderColor: withAlpha(RGB.hybrid, 0.62),
+                  backgroundColor: withAlpha(RGB.hybrid, 0.12),
+                  color: RGB.hybrid,
+                }}
+              >
+                <Layers className="h-6 w-6" strokeWidth={1.75} />
+              </div>
+            </div>
+            <span
+              aria-hidden
+              className="absolute bottom-0 left-5 h-1 w-28 rounded-full blur-sm"
+              style={{ backgroundColor: withAlpha(RGB.hybrid, 0.42) }}
+            />
+          </motion.div>
+
+          <div ref={gridRef} className="relative grid h-[32rem] grid-cols-2 grid-rows-4 gap-3">
+            {SOIL_SIGILS.map((sigil, index) => (
+              <SoilSigil
+                key={sigil.label}
+                sigil={sigil}
+                index={index}
+                isSelected={selectedIndex === index}
+                hasSelection={selectedIndex !== null}
+                isReturning={returningIndexRef.current === index}
+                slotClass={soilSlotClass(index, selectedIndex)}
+                onSelect={() => handleSigilSelect(index)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function SoilSigil({
+  sigil,
+  index,
+  isSelected,
+  hasSelection,
+  isReturning,
+  slotClass,
+  onSelect,
+}: {
+  sigil: (typeof SOIL_SIGILS)[number];
+  index: number;
+  isSelected: boolean;
+  hasSelection: boolean;
+  isReturning: boolean;
+  slotClass: string;
+  onSelect: () => void;
+}) {
+  return (
+    <div
+      data-soil-token={sigil.label}
+      data-soil-returning={isReturning ? "true" : undefined}
+      className={`
+        relative min-h-0 ${isReturning ? "z-0" : "z-10"} ${slotClass}
+      `}
+    >
+      <button
+        type="button"
+        aria-expanded={isSelected}
+        onClick={onSelect}
+        data-soil-token-inner
+        className={`
+          group relative h-full w-full overflow-hidden rounded-[1rem] border border-neutral-800
+          bg-neutral-950/70 text-left shadow-[inset_0_1px_0_rgb(255_255_255_/_0.04)]
+          transition-colors duration-300 hover:border-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500
+          ${hasSelection && !isSelected ? "p-3" : "p-4"}
+        `}
+      >
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-1"
+          style={{ backgroundColor: sigil.color }}
+        />
+        <div
+          aria-hidden
+          className="absolute right-[-3rem] top-[-3rem] h-28 w-28 rounded-full blur-2xl"
+          style={{ backgroundColor: withAlpha(sigil.color, 0.16) }}
+        />
+
+        <div className="relative flex h-full flex-col justify-between">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: sigil.color }} />
+              <span
+                className={hasSelection && !isSelected ? "h-px w-6" : "h-px w-10"}
+                style={{ backgroundColor: withAlpha(sigil.color, 0.62) }}
+              />
+            </div>
+            <span className="text-[10px] tracking-[0.2em] text-neutral-600 tabular-nums">
+              0{index + 1}
+            </span>
+          </div>
+
+          <div>
+            <div
+              aria-hidden
+              className={hasSelection && !isSelected ? "mb-3 h-1.5 w-10 rounded-full" : "mb-4 h-2 w-16 rounded-full"}
+              style={{ backgroundColor: sigil.color }}
+            />
+            <p className={hasSelection && !isSelected ? "font-display text-xl leading-none" : "font-display text-2xl leading-none"}>
+              {sigil.label}
+            </p>
+            <p className="mt-2 text-[10px] tracking-[0.22em] text-neutral-500 uppercase">
+              {sigil.note}
+            </p>
+            {isSelected && (
+              <motion.p
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-5 max-w-sm text-sm leading-relaxed text-neutral-400"
+              >
+                {sigil.detail}
+              </motion.p>
+            )}
+          </div>
+        </div>
+      </button>
+    </div>
+  );
+}
+
+function soilSlotClass(index: number, selectedIndex: number | null) {
+  if (selectedIndex === null) {
+    return [
+      "col-start-1 row-start-1",
+      "col-start-2 row-start-1",
+      "col-start-1 row-start-2",
+      "col-start-2 row-start-2",
+      "col-start-1 col-span-2 row-start-3 row-span-2",
+    ][index];
+  }
+
+  if (index === selectedIndex) {
+    return "col-start-1 col-span-2 row-start-1 row-span-2";
+  }
+
+  const slot = SOIL_SIGILS.map((_, sigilIndex) => sigilIndex)
+    .filter((sigilIndex) => sigilIndex !== selectedIndex)
+    .indexOf(index);
+
+  return [
+    "col-start-1 row-start-3",
+    "col-start-2 row-start-3",
+    "col-start-1 row-start-4",
+    "col-start-2 row-start-4",
+  ][slot];
+}
+
+function SoilSystemVisual({
+  progress,
+  disabled,
+}: {
+  progress: MotionValue<number>;
+  disabled: boolean;
+}) {
+  const reveal = useTransform(progress, [0.01, 0.26], [0.94, 1]);
+  const opacity = useTransform(progress, [0.01, 0.18], [0, 1]);
+
+  return (
+    <motion.div
+      style={disabled ? undefined : { scale: reveal, opacity }}
+      className="relative mx-auto w-full max-w-[20rem] overflow-hidden rounded-[1.5rem] border border-neutral-800 bg-[#0c0b09] p-6 shadow-[0_26px_80px_rgb(0_0_0_/_0.42)] sm:p-7"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at 20% 0%, ${withAlpha(RGB.hybrid, 0.16)}, transparent 60%)`,
+        }}
+      />
+
+      <p className="relative text-[10px] tracking-[0.22em] text-neutral-500 uppercase">
+        The cycle
+      </p>
+
+      <div className="relative mt-5 flex flex-col">
+        {SOIL_FLOW.map((step, index) => (
+          <SoilFlowStep
+            key={step.label}
+            step={step}
+            index={index}
+            isLast={index === SOIL_FLOW.length - 1}
+            progress={progress}
+            disabled={disabled}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+/** One stop in the cycle, connected to the next by a thin vertical line
+ * running behind the icons — compost breaks down, microbes unlock it,
+ * roots take it up, minerals round it out. A straight read top to bottom
+ * instead of a diagram trying to force a literal circle. */
+function SoilFlowStep({
+  step,
+  index,
+  isLast,
+  progress,
+  disabled,
+}: {
+  step: (typeof SOIL_FLOW)[number];
+  index: number;
+  isLast: boolean;
+  progress: MotionValue<number>;
+  disabled: boolean;
+}) {
+  const Icon = step.icon;
+  const start = 0.02 + index * 0.05;
+  const opacity = useTransform(progress, [start, start + 0.12], [0, 1]);
+  const x = useTransform(progress, [start, start + 0.12], [-12, 0]);
+
+  return (
+    <motion.div
+      style={disabled ? undefined : { opacity, x }}
+      className="relative flex items-start gap-4 py-2.5"
+    >
+      {!isLast && (
+        <div
+          aria-hidden
+          className="absolute top-[3.1rem] left-[1.5rem] h-[calc(100%-1.6rem)] w-px"
+          style={{ backgroundColor: withAlpha(RGB.hybrid, 0.28) }}
+        />
+      )}
+      <div
+        className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border bg-neutral-950"
+        style={{ borderColor: withAlpha(step.color, 0.55), color: step.color }}
+      >
+        <Icon className="h-5 w-5" strokeWidth={1.75} />
+      </div>
+      <div className="pt-1.5">
+        <p className="font-display text-lg leading-none">{step.label}</p>
+        <p className="mt-1.5 text-xs leading-relaxed text-neutral-500">{step.note}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+function PrincipleRow({
   point,
   index,
   total,
   progress,
   disabled,
 }: {
-  point: { n: string; title: string; body: string };
+  point: (typeof PRINCIPLES)[number];
   index: number;
   total: number;
   progress: MotionValue<number>;
   disabled: boolean;
 }) {
-  const start = 0.25 + (index / total) * 0.4;
-  const end = start + 0.35;
-
-  const numY = useTransform(progress, [start, end], [30, 0]);
-  const titleY = useTransform(progress, [start, end], [65, 0]);
-  const bodyY = useTransform(progress, [start, end], [110, 0]);
-  const opacity = useTransform(progress, [start, start + 0.18], [0, 1]);
+  const start = 0.02 + (index / total) * 0.42;
+  const end = start + 0.18;
+  const y = useTransform(progress, [start, end], [42, 0]);
+  const opacity = useTransform(progress, [start, start + 0.12], [0, 1]);
   const ruleScale = useTransform(progress, [start, end], [0, 1]);
 
-  if (disabled) {
-    return (
-      <div className="grid gap-6 border-t border-neutral-800 py-16 sm:py-24 lg:grid-cols-12 lg:gap-12">
-        <span className="text-xs tabular-nums text-neutral-500 lg:col-span-1">
-          {point.n}
-        </span>
-        <h3 className="font-display text-2xl sm:text-3xl lg:col-span-4">
-          {point.title}
-        </h3>
-        <p className="text-lg leading-relaxed text-neutral-400 lg:col-span-7">
-          {point.body}
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="relative py-16 sm:py-24">
-      {/* Rule draws itself from the left as the row arrives */}
+    <div className="relative py-10 sm:py-14">
       <motion.div
-        style={{ scaleX: ruleScale }}
-        className="absolute inset-x-0 top-0 h-px origin-left bg-neutral-800"
+        style={{
+          scaleX: disabled ? 1 : ruleScale,
+          backgroundColor: index === 0 ? RGB.hybrid : index === 1 ? RGB.sativa : RGB.red,
+        }}
+        className="absolute inset-x-0 top-0 h-px origin-left"
       />
 
       <motion.div
-        style={{ opacity }}
-        className="grid gap-6 lg:grid-cols-12 lg:gap-12"
+        style={disabled ? undefined : { y, opacity }}
+        className="grid gap-5 lg:grid-cols-[5rem_minmax(0,0.9fr)_minmax(0,1.2fr)] lg:gap-8"
       >
-        <motion.span
-          style={{ y: numY }}
-          className="text-xs tabular-nums tracking-[0.04em] text-neutral-500 lg:col-span-1"
-        >
+        <span className="text-xs tabular-nums tracking-[0.16em] text-neutral-500">
           {point.n}
-        </motion.span>
-
-        <motion.h3
-          style={{ y: titleY }}
-          className="font-display text-2xl leading-tight sm:text-3xl lg:col-span-4"
-        >
-          {point.title}
-        </motion.h3>
-
-        <motion.p
-          style={{ y: bodyY }}
-          className="text-lg leading-relaxed text-neutral-400 lg:col-span-7"
-        >
-          {point.body}
-        </motion.p>
+        </span>
+        <div>
+          <p className="text-[10px] tracking-[0.18em] text-neutral-500 uppercase">
+            {point.eyebrow}
+          </p>
+          <h3 className="mt-2 font-display text-3xl leading-tight">
+            {point.title}
+          </h3>
+        </div>
+        <p className="text-lg leading-relaxed text-neutral-400">{point.body}</p>
       </motion.div>
     </div>
   );
 }
 
-/**
- * One word of the lead. Words rather than letters here — letter-by-letter
- * on a 25-word paragraph reads as a gimmick and takes too long to resolve.
- */
-function Word({
+function ClosingSoilLine({
+  progress,
+  disabled,
+}: {
+  progress: MotionValue<number>;
+  disabled: boolean;
+}) {
+  const y = useTransform(progress, [0.54, 0.7], [28, 0]);
+  const opacity = useTransform(progress, [0.54, 0.7], [0, 1]);
+
+  return (
+    <motion.p
+      style={disabled ? undefined : { y, opacity }}
+      className="mt-24 max-w-4xl font-display text-4xl leading-[1.05] sm:mt-32 sm:text-6xl"
+    >
+      The flavor starts before the flower. It starts in the bed.
+    </motion.p>
+  );
+}
+
+function HeroWord({
   word,
   index,
-  total,
   progress,
   disabled,
 }: {
   word: string;
   index: number;
-  total: number;
   progress: MotionValue<number>;
   disabled: boolean;
 }) {
-  const start = (index / total) * 0.35;
-  const end = start + 0.2;
+  const start = 0.02 + index * 0.055;
+  const end = start + 0.14;
+  const y = useTransform(progress, [start, end], ["110%", "0%"]);
 
-  const y = useTransform(progress, [start, end], [22, 0]);
-  const opacity = useTransform(progress, [start, end], [0, 1]);
-
-  if (disabled) return <>{word} </>;
-
-  return (
-    <motion.span
-      style={{ y, opacity }}
-      className="inline-block will-change-transform"
-    >
-      {word}
-      <span className="inline-block w-[0.26em]" />
-    </motion.span>
-  );
-}
-
-/**
- * One character of the headline. Uppercase only — overflow-hidden on the
- * slot clips descenders on lowercase g, y, p.
- */
-function Letter({
-  char,
-  index,
-  total,
-  progress,
-  disabled,
-}: {
-  char: string;
-  index: number;
-  total: number;
-  progress: MotionValue<number>;
-  disabled: boolean;
-}) {
-  const start = 0.12 + (index / total) * 0.55;
-  // Short window per letter. A long one leaves half the word mid-flight at
-  // any moment, which reads as mush rather than a wave.
-  const end = start + 0.16;
-
-  /**
-   * NO OPACITY. The overflow-hidden slot is the entire effect: a letter is
-   * either behind the mask or it isn't. Fading as well produces grey
-   * half-present letters sitting on the background — visible partial states
-   * that make it look broken rather than deliberate.
-   *
-   * The three-stop mapping approximates an ease-out: most of the distance
-   * covered early, then a settle. Doing it here avoids importing an easing
-   * function and keeps the curve visible where the values are.
-   */
-  const y = useTransform(
-    progress,
-    [start, start + (end - start) * 0.45, end],
-    ["115%", "28%", "0%"]
-  );
-
-  if (disabled) return <span className="inline-block">{char}</span>;
+  if (disabled) {
+    return (
+      <span className="inline-block whitespace-nowrap">
+        {word}
+        <span className="inline-block w-[0.24em]" />
+      </span>
+    );
+  }
 
   return (
-    <span className="inline-block overflow-hidden align-bottom leading-[1.05]">
-      <motion.span style={{ y }} className="inline-block will-change-transform">
-        {char}
+    <span className="inline-block overflow-hidden align-bottom">
+      <motion.span style={{ y }} className="inline-block whitespace-nowrap">
+        {word}
+        <span className="inline-block w-[0.24em]" />
       </motion.span>
     </span>
   );
