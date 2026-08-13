@@ -157,8 +157,8 @@ export function About() {
 
       {/* ── MOBILE: text + image pin together while the pictures cycle ── */}
       <div ref={mobileRef} className="relative h-[220vh] lg:hidden">
-        <div className="sticky top-0 flex min-h-screen flex-col justify-center gap-10 px-5">
-          <p className="font-display text-[clamp(1.9rem,7vw,2.75rem)] font-medium leading-[1.22] tracking-[-0.01em]">
+        <div className="sticky top-0 flex h-screen flex-col justify-center gap-6 overflow-hidden px-5 py-16">
+          <p className="font-display text-[clamp(1.35rem,5.2vw,2rem)] font-medium leading-[1.2] tracking-[-0.01em]">
             {words.map((word, i) => {
               const start = (i / words.length) * MOBILE_REVEAL_SPAN;
               const end = Math.min(
