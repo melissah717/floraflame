@@ -168,7 +168,13 @@ export function LivingSoil() {
 
       <div ref={bodyRef} className={`relative py-20 sm:py-28 ${GUTTER}`}>
         <div className="grid gap-12 lg:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
-          <div className="relative min-h-[28rem] lg:min-h-[72rem]">
+          {/* This min-height sets how long the sticky graphic stays
+              pinned before it releases and scrolls away with the rest of
+              the row — sized (by hand, against the actual description
+              copy) so release lands around the graphic's own vertical
+              midpoint rather than continuing long after the description
+              text has already ended, which just left a dead gap below. */}
+          <div className="relative min-h-[28rem] lg:min-h-[65rem]">
             <div className="lg:sticky lg:top-28">
               <SoilSystemVisual progress={bodyProgress} disabled={!!reduce} />
             </div>

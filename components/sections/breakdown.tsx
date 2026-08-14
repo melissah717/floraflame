@@ -760,6 +760,12 @@ export function Breakdown() {
                         isDimmed={
                           activeIndex !== null && activeIndex !== indexInChapter
                         }
+                        // Chapter 1's graphic (TerpeneStackVisual) doesn't
+                        // consume activeIndex at all, so clicking a row
+                        // there does nothing to the visual — a pointer
+                        // cursor would misleadingly promise an effect the
+                        // other two chapters actually have.
+                        isInteractive={chapterIndex !== 0}
                         onHover={() => onHover(indexInChapter)}
                         onLeave={onLeave}
                         onSelect={() => onSelect(indexInChapter)}
@@ -1288,6 +1294,7 @@ function ItemRow({
   disabled,
   isActive,
   isDimmed,
+  isInteractive,
   onHover,
   onLeave,
   onSelect,
@@ -1301,6 +1308,7 @@ function ItemRow({
   disabled: boolean
   isActive: boolean
   isDimmed: boolean
+  isInteractive: boolean
   onHover: () => void
   onLeave: () => void
   onSelect: () => void
@@ -1356,7 +1364,15 @@ function ItemRow({
 
   const content = (
     <div
-      onMouseEnter={onHover}
+      onMouseEnter={() => {
+        // Chrome re-hit-tests under a stationary cursor as content moves
+        // during scroll, so a row can receive a real mouseenter while it's
+        // still mid "stamp in" — before it's actually visible enough to
+        // read as hovered. Only trigger the hover effect once it's close
+        // enough to fully revealed for that to make sense.
+        if (!disabled && entranceOpacity.get() < 0.98) return
+        onHover()
+      }}
       onMouseLeave={onLeave}
       onClick={onSelect}
       onKeyDown={(e) => {
@@ -1372,7 +1388,10 @@ function ItemRow({
         backgroundColor: isActive ? withAlpha(accent, 0.08) : "transparent",
         boxShadow: isActive ? `inset 3px 0 0 0 ${accent}` : undefined,
       }}
-      className="-mx-3 cursor-pointer rounded-r-md px-3 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      className={cn(
+        "-mx-3 rounded-r-md px-3 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
+        isInteractive && "cursor-pointer"
+      )}
     >
       {disabled ? (
         <div

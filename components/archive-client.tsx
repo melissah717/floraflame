@@ -196,7 +196,7 @@ function Thumbnail({
       aria-label={batch.name}
       title={batch.name}
       className={cn(
-        "relative aspect-square overflow-hidden rounded-lg bg-neutral-800 transition-all",
+        "relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-neutral-800 transition-all",
         isActive
           ? "ring-2 ring-neutral-50 ring-offset-2 ring-offset-neutral-900"
           : "opacity-60 hover:opacity-100"
