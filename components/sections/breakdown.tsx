@@ -4,8 +4,11 @@ import { useEffect, useRef, useState, type ReactNode } from "react"
 import Image from "next/image"
 import {
   motion,
+  animate,
   useScroll,
   useTransform,
+  useMotionValue,
+  useMotionTemplate,
   useReducedMotion,
   type MotionValue,
 } from "motion/react"
@@ -619,6 +622,13 @@ export function Breakdown() {
             const rowLead = chapterIndex === 0 ? 0.16 : 0.045
             const activeIndex =
               active && active.chapter === chapterIndex ? active.index : null
+            // Separate from activeIndex (which also stays "on" while an
+            // item is click-pinned) — the bud zoom/peephole should only
+            // ever be live while the pointer is actually over a row, so it
+            // always clears the instant you move the mouse away instead of
+            // sticking around because something was clicked earlier.
+            const hoverIndex =
+              hovered && hovered.chapter === chapterIndex ? hovered.index : null
             const onHover = (index: number) =>
               setHovered({ chapter: chapterIndex, index })
             const onLeave = () => setHovered(null)
@@ -650,6 +660,7 @@ export function Breakdown() {
                   progress={bodyProgress}
                   disabled={!!reduce}
                   activeIndex={activeIndex}
+                  hoverIndex={hoverIndex}
                   onHover={onHover}
                   onLeave={onLeave}
                   onSelect={onSelect}
@@ -1301,11 +1312,6 @@ function ItemRow({
     [start, snapEnd, input[2], input[3]],
     [0.92, 1, 1, 0.96]
   )
-  const rotate = useTransform(
-    progress,
-    [start, snapEnd, input[2], input[3]],
-    [-1.5, 0, 0, 1.2]
-  )
   // Icon travels the least of anything in the row — it reads as the
   // closest, heaviest element, with the number a step behind it and title
   // /body receding further — four depths instead of three.
@@ -1385,7 +1391,7 @@ function ItemRow({
         </div>
       ) : (
         <motion.div
-          style={{ scale, rotate }}
+          style={{ scale }}
           className="relative origin-left py-6 sm:py-8"
         >
           {!isFirstInChapter && (
@@ -1690,6 +1696,22 @@ const BUD_TERMINALS = [
   { x: 282, y: 160 },
 ]
 
+// Where each part actually sits in the current bud photo (as % of the
+// image box), hand-picked by eye against that exact image — Trichome,
+// Calyx, Pistil, Cola, matching CHAPTERS[1].items order. Hovering/selecting
+// a row zooms the image and re-centers it on the matching point instead of
+// the old leader-line pointer overlay. Scale is per-part rather than one
+// shared constant — trichomes/pistils are tiny relative to the frame and
+// need a much tighter zoom to actually read as "that specific thing",
+// while the cola is already a large cluster that only needs a light push.
+const ANATOMY_FOCUS_POINTS = [
+  { x: 55, y: 30, scale: 2.3 }, // Trichome — individual frost crystals, very small
+  { x: 42, y: 80, scale: 1.75 }, // Calyx — the swirled teardrop-shaped pod
+  { x: 68, y: 30, scale: 2.1 }, // Pistil — thin curling hair strands, very small
+  { x: 42, y: 10, scale: 1.3 }, // Cola — the whole flowering cluster tip, already large
+]
+const ANATOMY_FOCUS_TRANSITION = { type: "spring" as const, stiffness: 170, damping: 26, mass: 0.8 }
+
 function AnatomyVisual({
   items,
   windows,
@@ -1697,7 +1719,7 @@ function AnatomyVisual({
   span,
   progress,
   disabled,
-  activeIndex,
+  hoverIndex,
   onHover,
   onLeave,
   onSelect,
@@ -1708,6 +1730,7 @@ function AnatomyVisual({
   span: Span
   progress: MotionValue<number>
   disabled: boolean
+  hoverIndex: number | null
 } & VisualInteraction) {
   const budSettleEnd = span.start + (span.end - span.start) * 0.12
   const budScale = useTransform(
@@ -1733,6 +1756,41 @@ function AnatomyVisual({
     end: anatomyRevealStart + index * anatomyRevealStep + anatomyRevealDuration,
   }))
 
+  const focusScale = useMotionValue(1)
+  const focusX = useMotionValue(50)
+  const focusY = useMotionValue(50)
+  const peepholeOpacity = useMotionValue(0)
+  const transformOrigin = useMotionTemplate`${focusX}% ${focusY}%`
+  // A fixed-radius circle (not a %-of-box one) so it reads as the same
+  // physical "peephole" size wherever the focus point lands, rather than
+  // ballooning out near a corner the way a keyword-sized radial-gradient
+  // (farthest-corner, etc.) would.
+  const peepholeBackground = useMotionTemplate`radial-gradient(circle clamp(190px, 50vw, 320px) at ${focusX}% ${focusY}%, transparent 0px, transparent clamp(64px, 18vw, 120px), rgba(6, 6, 8, 0.55) clamp(110px, 30vw, 200px), rgba(6, 6, 8, 0.92) clamp(170px, 46vw, 300px))`
+
+  useEffect(() => {
+    const point = hoverIndex != null ? ANATOMY_FOCUS_POINTS[hoverIndex] : null
+    const targetScale = point ? point.scale : 1
+    const targetX = point ? point.x : 50
+    const targetY = point ? point.y : 50
+    const targetPeephole = point ? 1 : 0
+
+    if (disabled) {
+      focusScale.set(targetScale)
+      focusX.set(targetX)
+      focusY.set(targetY)
+      peepholeOpacity.set(targetPeephole)
+      return
+    }
+
+    const controls = [
+      animate(focusScale, targetScale, ANATOMY_FOCUS_TRANSITION),
+      animate(focusX, targetX, ANATOMY_FOCUS_TRANSITION),
+      animate(focusY, targetY, ANATOMY_FOCUS_TRANSITION),
+      animate(peepholeOpacity, targetPeephole, { duration: 0.35, ease: "easeInOut" }),
+    ]
+    return () => controls.forEach((c) => c.stop())
+  }, [hoverIndex, disabled, focusScale, focusX, focusY, peepholeOpacity])
+
   return (
     <motion.div
       style={disabled ? undefined : { scale: budScale, opacity: budOpacity }}
@@ -1755,22 +1813,37 @@ function AnatomyVisual({
       className="relative mx-auto aspect-[4/5] w-full max-w-[378px] lg:h-full lg:w-full lg:aspect-auto lg:max-w-none"
     >
       <div className="absolute inset-0 overflow-hidden rounded-2xl">
-        <Image
-          src="https://res.cloudinary.com/g0mcdcfr/image/upload/v1786335991/Transparent_Background_Design_pmmnq5.svg"
-          alt="Cannabis flower close-up"
-          fill
-          sizes="(min-width: 1024px) 560px, 80vw"
-          className="object-contain object-left"
-          // SVG source — next/image's optimizer refuses to transform SVGs
-          // unless next.config.ts opts in globally, so this bypasses
-          // optimization for just this image instead. Same pattern as the
-          // navbar's Cloudinary SVG logo.
-          unoptimized
+        <motion.div
+          style={disabled ? undefined : { scale: focusScale, transformOrigin }}
+          className="absolute inset-0"
+        >
+          <Image
+            src="https://res.cloudinary.com/g0mcdcfr/image/upload/v1786335991/Transparent_Background_Design_pmmnq5.svg"
+            alt="Cannabis flower close-up"
+            fill
+            sizes="(min-width: 1024px) 560px, 80vw"
+            className="object-contain object-left"
+            // SVG source — next/image's optimizer refuses to transform SVGs
+            // unless next.config.ts opts in globally, so this bypasses
+            // optimization for just this image instead. Same pattern as the
+            // navbar's Cloudinary SVG logo.
+            unoptimized
+          />
+        </motion.div>
+        {/* Peephole vignette — sits outside the scaled/panned wrapper
+            above so the circle itself never stretches or scales with the
+            zoom, just dims around it. */}
+        <motion.div
+          aria-hidden
+          style={disabled ? undefined : { opacity: peepholeOpacity, background: peepholeBackground }}
+          className="pointer-events-none absolute inset-0"
         />
       </div>
-      {/* Leader-line pointers removed for now — just the photo while we
-          settle on the right image. See LeaderLine below to bring them
-          back (anatomyWindows/BUD_ANCHORS/BUD_TERMINALS are untouched). */}
+      {/* Leader-line pointers removed for now — hovering/selecting a row
+          zooms and re-centers the photo on that part instead (see
+          ANATOMY_FOCUS_POINTS above). See LeaderLine below to bring the
+          old overlay back (anatomyWindows/BUD_ANCHORS/BUD_TERMINALS are
+          untouched). */}
     </motion.div>
   )
 }
