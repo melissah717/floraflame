@@ -66,8 +66,6 @@ export type Strain = {
   idealTime?: string;
   /** Total THC from the COA, e.g. "19.8%". */
   thc?: string;
-  /** Path to the strain's COA PDF. Not all batches have one on file yet. */
-  labReport?: string;
   /** METRC/COA batch code, e.g. "CB040326". */
   batchNumber?: string;
 };
@@ -107,7 +105,6 @@ type DropBatchRow = {
   terpenes: string[] | null;
   ideal_time: string | null;
   thc_percent: number | string | null;
-  lab_report_url: string | null;
   batch_number: string | null;
 };
 
@@ -135,13 +132,12 @@ function rowToStrain(row: DropBatchRow): Strain | null {
     terpenes: row.terpenes ?? undefined,
     idealTime: row.ideal_time ?? undefined,
     thc: row.thc_percent != null ? `${Number(row.thc_percent).toFixed(1)}%` : undefined,
-    labReport: row.lab_report_url ?? undefined,
     batchNumber: row.batch_number ?? undefined,
   };
 }
 
 const SELECT_COLUMNS =
-  "slug, name, image, nug_image, spectrum, is_current, tags, description, genetics, terpenes, ideal_time, thc_percent, lab_report_url, batch_number";
+  "slug, name, image, nug_image, spectrum, is_current, tags, description, genetics, terpenes, ideal_time, thc_percent, batch_number";
 
 /** The batches shown in the homepage's "Latest Drops" section. */
 export async function getCurrentDrops(): Promise<Strain[]> {

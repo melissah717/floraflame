@@ -76,41 +76,52 @@ function EmberDriftBackdrop({ color, intensity = 1 }: { color: string; intensity
 // between each pass. Fast and sharp rather than ambient, to read as the
 // energetic, cerebral, daytime end of the shelf.
 function EnergyStreakBackdrop({ color, intensity = 1 }: { color: string; intensity?: number }) {
-  const streaks = Array.from({ length: Math.round(55 * intensity) }, (_, i) => ({
-    top: 1 + ((i * 11) % 98),
-    length: 90 + ((i * 41) % 550),
-    duration: 1.8 + ((i % 4) * 0.3),
-    delay: (i % 20) * 0.32,
-    repeatDelay: 1.8 + ((i % 3) * 1.1),
-    peak: 0.12 + ((i * 7) % 9) * 0.055,
-  }));
+  const streaks = Array.from({ length: Math.round(55 * intensity) }, (_, i) => {
+    // Every so often a streak flares noticeably brighter than the rest —
+    // a few standout passes among the dimmer ones, not a uniform brightening.
+    const bright = i % 8 === 0;
+    const peak = 0.12 + ((i * 7) % 9) * 0.055;
+    return {
+      top: 1 + ((i * 11) % 98),
+      length: 90 + ((i * 41) % 550),
+      duration: 1.8 + ((i % 4) * 0.3),
+      delay: (i % 20) * 0.32,
+      repeatDelay: 1.8 + ((i % 3) * 1.1),
+      peak: bright ? Math.min(1, peak + 0.32) : peak,
+      glow: bright ? 10 : 5,
+    };
+  });
   return (
-    <div className="absolute inset-0 overflow-hidden" style={{ opacity: 0.3 * intensity }}>
+    <div className="absolute inset-0 overflow-hidden">
+      {/* Ambient aura — kept outside the streaks' own intensity-scaled
+          opacity below, or this got capped down to barely visible. */}
       <div
         className="absolute inset-x-0 bottom-0 h-full blur-3xl"
-        style={{ background: `linear-gradient(to top, ${color}, transparent)`, opacity: 0.28 }}
+        style={{ background: `linear-gradient(to top, ${color}, transparent)`, opacity: 0.25 * intensity }}
       />
-      {streaks.map((s, i) => (
-        <motion.div
-          key={i}
-          className="absolute left-[-40%] rounded-full"
-          style={{
-            top: `${s.top}%`,
-            width: s.length,
-            height: 1,
-            background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
-            boxShadow: `0 0 5px ${color}`,
-          }}
-          animate={{ x: ["0vw", "140vw"], opacity: [0, s.peak, 0] }}
-          transition={{
-            duration: s.duration,
-            repeat: Infinity,
-            repeatDelay: s.repeatDelay,
-            ease: "easeIn",
-            delay: s.delay,
-          }}
-        />
-      ))}
+      <div style={{ opacity: 0.3 * intensity }}>
+        {streaks.map((s, i) => (
+          <motion.div
+            key={i}
+            className="absolute left-[-40%] rounded-full"
+            style={{
+              top: `${s.top}%`,
+              width: s.length,
+              height: 1,
+              background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+              boxShadow: `0 0 ${s.glow}px ${color}`,
+            }}
+            animate={{ x: ["0vw", "140vw"], opacity: [0, s.peak, 0] }}
+            transition={{
+              duration: s.duration,
+              repeat: Infinity,
+              repeatDelay: s.repeatDelay,
+              ease: "easeIn",
+              delay: s.delay,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

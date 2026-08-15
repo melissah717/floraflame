@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
 import { SpectrumBackdrop } from "@/components/spectrum-backdrop";
@@ -118,18 +118,6 @@ export function ArchiveClient({ batches }: { batches: Strain[] }) {
           <p className="mt-1 text-sm leading-relaxed text-neutral-300 sm:text-base">
             {active.description}
           </p>
-
-          {active.labReport && (
-            <a
-              href={active.labReport}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-full border border-neutral-700 px-3 py-1.5 text-xs tracking-[0.04em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50"
-            >
-              <FileText className="h-3.5 w-3.5" />
-              Lab report
-            </a>
-          )}
         </div>
       </div>
 

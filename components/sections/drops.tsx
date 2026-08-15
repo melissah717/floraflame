@@ -1,19 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import {
-  Fragment,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronLeft, ChevronRight, FileText, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { type Strain } from "@/lib/strains";
-import { INDICA, HYBRID, SATIVA, RGB, anchorForSpectrum, colorForHybrid } from "@/lib/spectrum";
+import { RGB, anchorForSpectrum, colorForHybrid } from "@/lib/spectrum";
 import { SpectrumBackdrop } from "@/components/spectrum-backdrop";
 import { NugZoom } from "@/components/nug-zoom";
 import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
@@ -33,13 +25,34 @@ function sortBySpectrum(strains: Strain[]) {
   );
 }
 
-const RAIL_GRADIENT = `linear-gradient(90deg, rgb(${INDICA.join(" ")}), rgb(${HYBRID.join(" ")}), rgb(${SATIVA.join(" ")}))`;
+// Coverflow math for the strain carousel — each card's depth/tilt/fade is
+// purely a function of how far it sits from the active index, so the same
+// formula works whether there are 3 strains or 30.
+const CARD_STEP_PX = 136;
 
-// Icons closer than this (in px) would visually overlap on the rail, so they
-// fan into a compact pile instead of sitting exactly on top of each other.
-const COLLISION_PX = 40;
-const PILE_OFFSET_PX = 5;
-const POP_LIFT_PX = 64;
+function coverflowTransform(offset: number) {
+  const abs = Math.abs(offset);
+  return {
+    x: `calc(-50% + ${offset * CARD_STEP_PX}px)`,
+    y: "-50%",
+    z: -abs * 60,
+    rotateY: Math.max(-42, Math.min(42, offset * -30)),
+    scale: Math.max(0.4, 1 - abs * 0.24),
+    opacity: Math.max(0, 1 - abs * 0.28),
+    zIndex: 100 - abs,
+  };
+}
+
+// The carousel loops — index 0 sits right after the last card, not off in
+// the distance. Wrapping the raw index difference to its shortest signed
+// path around the loop is what makes that read as a continuous loop
+// instead of the deck jumping across itself when you cross the seam.
+function circularOffset(i: number, activeIndex: number, length: number) {
+  let diff = i - activeIndex;
+  if (diff > length / 2) diff -= length;
+  if (diff < -length / 2) diff += length;
+  return diff;
+}
 
 /**
  * Name, tags, and (optionally) the expanded description/dl block for one
@@ -95,17 +108,6 @@ function StrainInfo({
           <Info className="h-3.5 w-3.5" />
           {showDescription ? "Less" : "More"}
         </button>
-        {strain.labReport && (
-          <a
-            href={strain.labReport}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50 sm:px-3 sm:py-1.5 sm:text-xs"
-          >
-            <FileText className="h-3.5 w-3.5" />
-            Lab Report
-          </a>
-        )}
       </div>
 
       {showDescription && (
@@ -152,13 +154,11 @@ export function Drops({ strains }: { strains: Strain[] }) {
   const [activeSlug, setActiveSlug] = useState(
     () => SORTED[Math.floor(SORTED.length / 2)]?.slug ?? ""
   );
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [trackWidth, setTrackWidth] = useState(0);
   const [descriptionOpen, setDescriptionOpen] = useState(false);
-  // Below `sm`, the active rail icon expands in place instead of popping up
-  // above the pile — there's no room for it to lift without overlapping the
-  // content above.
-  const [isMobile, setIsMobile] = useState(false);
+  // Which carousel card is currently hovered, if any — shown in the
+  // control bar between PREV/NEXT so hovering previews a name without
+  // needing a tooltip floating over the (often tilted) card itself.
+  const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
 
   // Reserves enough height for the longest strain's content in the current
   // toggle state, so switching strains never resizes the section — only
@@ -196,97 +196,24 @@ export function Drops({ strains }: { strains: Strain[] }) {
     return () => ro.disconnect();
   }, []);
 
-  useEffect(() => {
-    const mql = window.matchMedia("(max-width: 639px)");
-    setIsMobile(mql.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-
   const active = strains.find((s) => s.slug === activeSlug) ?? strains[0];
   const activeAnchor = anchorForSpectrum(active.spectrum);
   const color = colorForHybrid(activeAnchor);
   const activeIndex = SORTED.findIndex((s) => s.slug === activeSlug);
-
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setTrackWidth(entry.contentRect.width));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  // Strains whose rail position would overlap fan into a compact pile —
-  // pileIndex 0 sits on the rail, 1 peeks out just above-right of it, etc.
-  // Whichever one is active pops out above the whole pile instead.
-  const { pileIndexBySlug, inPileBySlug } = useMemo(() => {
-    const pileIndexBySlug = new Map<string, number>();
-    const clusterIdBySlug = new Map<string, number>();
-    let lastPx = -Infinity;
-    let pileIndex = 0;
-    let clusterId = -1;
-    for (const s of SORTED) {
-      const px = (anchorForSpectrum(s.spectrum) / 100) * trackWidth;
-      const sameCluster = trackWidth > 0 && px - lastPx <= COLLISION_PX;
-      pileIndex = sameCluster ? pileIndex + 1 : 0;
-      if (!sameCluster) clusterId += 1;
-      lastPx = px;
-      pileIndexBySlug.set(s.slug, pileIndex);
-      clusterIdBySlug.set(s.slug, clusterId);
-    }
-
-    const clusterSizes = new Map<number, number>();
-    for (const id of clusterIdBySlug.values()) {
-      clusterSizes.set(id, (clusterSizes.get(id) ?? 0) + 1);
-    }
-    const inPileBySlug = new Map<string, boolean>();
-    for (const [slug, id] of clusterIdBySlug) {
-      inPileBySlug.set(slug, (clusterSizes.get(id) ?? 1) > 1);
-    }
-
-    return { pileIndexBySlug, inPileBySlug };
-  }, [trackWidth]);
-
-  const scrub = (clientX: number) => {
-    const el = trackRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const pct = Math.min(
-      100,
-      Math.max(0, ((clientX - rect.left) / rect.width) * 100)
-    );
-
-    let nearest = SORTED[0];
-    let best = Infinity;
-    for (const s of SORTED) {
-      const d = Math.abs(anchorForSpectrum(s.spectrum) - pct);
-      if (d < best) {
-        best = d;
-        nearest = s;
-      }
-    }
-    setActiveSlug(nearest.slug);
-  };
+  const previewName = hoveredSlug
+    ? (strains.find((s) => s.slug === hoveredSlug)?.name ?? active.name)
+    : active.name;
 
   const step = (dir: 1 | -1) => {
-    const next = SORTED[Math.min(SORTED.length - 1, Math.max(0, activeIndex + dir))];
+    // Loops — past the last strain wraps to the first, and vice versa.
+    const next = SORTED[(activeIndex + dir + SORTED.length) % SORTED.length];
     setActiveSlug(next.slug);
-  };
-
-  const onTrackPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    scrub(e.clientX);
-  };
-
-  const onTrackPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (e.buttons === 1) scrub(e.clientX);
   };
 
   return (
     <section
       id="drops"
-      className="relative isolate scroll-mt-20 overflow-hidden bg-neutral-900 py-12 text-neutral-50 sm:py-24 lg:py-32"
+      className="relative isolate scroll-mt-20 overflow-hidden bg-neutral-900 py-10 text-neutral-50 sm:py-16 lg:py-20"
     >
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
         <AnimatePresence mode="wait">
@@ -319,9 +246,9 @@ export function Drops({ strains }: { strains: Strain[] }) {
       </div>
 
       {/* Stage */}
-      <div className="mx-auto mt-6 max-w-7xl px-5 sm:mt-16 sm:px-8">
+      <div className="mx-auto mt-6 max-w-7xl px-5 sm:mt-10 sm:px-8">
         <div className="grid items-center gap-4 lg:grid-cols-[minmax(0,440px)_1fr] lg:gap-36 xl:gap-48">
-          <div className="relative mx-auto aspect-square w-full max-w-[180px] sm:max-w-[280px] lg:max-w-[380px]">
+          <div className="relative mx-auto aspect-square w-full max-w-[200px] sm:max-w-[310px] lg:max-w-[420px]">
             <div
               className="absolute inset-0 scale-90 rounded-full blur-3xl transition-colors duration-500"
               style={{ backgroundColor: color, opacity: 0.35 }}
@@ -403,18 +330,38 @@ export function Drops({ strains }: { strains: Strain[] }) {
               ))}
             </div>
 
-            {/* Hidden on mobile — the small dot next to the strain name above
-                covers this, and this bar's position collides with the rail's
-                popped-up active bubble once the section is compact. */}
-            <div className="mt-8 hidden w-full max-w-sm items-center justify-between text-sm tracking-[0.06em] text-neutral-400 sm:flex">
+            <div className="mx-auto mt-4 flex w-full max-w-sm items-center justify-between text-sm tracking-[0.06em] text-neutral-400 sm:mt-8 lg:mx-0">
               <span>Indica</span>
               <span>Sativa</span>
             </div>
-            <div className="mt-2 hidden h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-neutral-700 sm:block">
+            {/* Tug of war — indica and sativa each pull their own colour in
+                from their end; the knot marks where the rope currently
+                sits, rather than one flat fill against a plain track. Now
+                the carousel loops, this is the only place left that shows
+                where a strain actually sits on the spectrum. */}
+            <div className="relative mx-auto mt-2 h-2 w-full max-w-sm sm:mt-3 lg:mx-0">
+              <div className="absolute inset-0 overflow-hidden rounded-full bg-neutral-800 ring-1 ring-inset ring-white/5">
+                <motion.div
+                  className="absolute inset-y-0 left-0 overflow-hidden"
+                  style={{ backgroundColor: RGB.indica }}
+                  animate={{ width: `${activeAnchor}%` }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/35 via-transparent to-black/15" />
+                </motion.div>
+                <motion.div
+                  className="absolute inset-y-0 right-0 overflow-hidden"
+                  style={{ backgroundColor: RGB.sativa }}
+                  animate={{ width: `${100 - activeAnchor}%` }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/35 via-transparent to-black/15" />
+                </motion.div>
+              </div>
               <motion.div
-                className="h-full rounded-full"
-                style={{ backgroundColor: color }}
-                animate={{ width: `${activeAnchor}%` }}
+                className="pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-neutral-900 transition-colors duration-500"
+                style={{ backgroundColor: color, boxShadow: `0 0 12px 1px ${color}` }}
+                animate={{ left: `${activeAnchor}%` }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
               />
             </div>
@@ -422,120 +369,179 @@ export function Drops({ strains }: { strains: Strain[] }) {
         </div>
       </div>
 
-      {/* Spectrum rail */}
-      <div className="mx-auto mt-10 max-w-7xl px-5 sm:mt-20 sm:px-8">
-        <div
-          ref={trackRef}
-          onDragStart={(e) => e.preventDefault()}
-          onPointerDown={onTrackPointerDown}
-          onPointerMove={onTrackPointerMove}
-          role="slider"
-          tabIndex={0}
-          aria-label="Indica to sativa spectrum"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={activeAnchor}
-          aria-valuetext={`${active.name}, ${active.spectrum}`}
-          onKeyDown={(e) => {
-            if (e.key === "ArrowLeft") step(-1);
-            if (e.key === "ArrowRight") step(1);
-          }}
-          className="relative h-16 cursor-grab touch-none select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-neutral-50 active:cursor-grabbing sm:h-20"
-        >
+      {/* Strain carousel — a real 3D coverflow, full-bleed edge to edge. A
+          frosted glass pane sits behind the cards (backdrop-blur over the
+          section's own ambient backdrop), and every card's depth, tilt and
+          fade is purely a function of its distance from the active one, so
+          it scales to any strain count without ever squishing. */}
+      <div className="mt-5 sm:mt-6">
+        <div className="relative overflow-hidden">
+          {/* Glass surface — frosts whatever ambient backdrop is behind it
+              instead of sitting on a flat color, with a top/bottom edge
+              that catches light like a real pane, so the carousel reads
+              as sitting in its own enclosure rather than floating loose. */}
           <div
-            className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full opacity-50"
-            style={{ background: RAIL_GRADIENT }}
+            className="pointer-events-none absolute inset-0 border-t border-b border-neutral-50/20 bg-gradient-to-b from-neutral-50/[0.09] via-neutral-50/[0.02] to-neutral-50/[0.06] shadow-[inset_0_1px_0_0_rgba(250,248,244,0.3),inset_0_-1px_0_0_rgba(250,248,244,0.1)] backdrop-blur-2xl"
+            aria-hidden
+          />
+
+          {/* Spotlight on the active card — one soft glow in its color,
+              fading to dark at the edges, rather than a full-width band. */}
+          <div
+            className="pointer-events-none absolute left-1/2 top-1/2 h-[140%] w-[65%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-colors duration-700"
+            style={{ backgroundColor: color, opacity: 0.4 }}
             aria-hidden
           />
 
           <motion.div
-            className="pointer-events-none absolute top-1/2 h-3 w-0.5 -translate-y-[calc(50%+12px)] rounded-full"
-            style={{ backgroundColor: color, x: "-50%" }}
-            animate={{ left: `${activeAnchor}%` }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            aria-hidden
-          />
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.15}
+            onDragEnd={(_, info) => {
+              if (info.offset.x < -50) step(1);
+              else if (info.offset.x > 50) step(-1);
+            }}
+            role="listbox"
+            aria-orientation="horizontal"
+            aria-label="Strains, indica to sativa"
+            aria-activedescendant={`strain-option-${active.slug}`}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowLeft") step(-1);
+              if (e.key === "ArrowRight") step(1);
+            }}
+            className="relative h-24 cursor-grab touch-none select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-50 active:cursor-grabbing sm:h-32"
+            style={{ perspective: 1200 }}
+          >
+            {/* Glow behind the active card — same blur-3xl language as the
+                Stage's nug glow above, tying the two together. */}
+            <div
+              className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-colors duration-500 sm:h-32 sm:w-32"
+              style={{ backgroundColor: color, opacity: 0.5, zIndex: 1 }}
+              aria-hidden
+            />
 
-          {strains.map((s) => {
-            const isActive = s.slug === activeSlug;
-            const pileIndex = pileIndexBySlug.get(s.slug) ?? 0;
-            const piled = inPileBySlug.get(s.slug) ?? false;
-            const anchor = anchorForSpectrum(s.spectrum);
-            return (
-              <Fragment key={s.slug}>
-                {isActive && piled && !isMobile && (
-                  <div
-                    aria-hidden
-                    className="pointer-events-none absolute bottom-1/2 w-px -translate-x-1/2 bg-neutral-700/60"
-                    style={{ left: `${anchor}%`, height: `${POP_LIFT_PX}px` }}
-                  />
-                )}
-                <button
+            {SORTED.map((s, i) => {
+              const isActive = s.slug === activeSlug;
+              const t = coverflowTransform(circularOffset(i, activeIndex, SORTED.length));
+              return (
+                <motion.button
+                  key={s.slug}
+                  id={`strain-option-${s.slug}`}
                   type="button"
-                  onPointerDown={(e) => e.stopPropagation()}
+                  role="option"
+                  aria-selected={isActive}
+                  aria-label={s.name}
                   onClick={() => setActiveSlug(s.slug)}
+                  onHoverStart={() => setHoveredSlug(s.slug)}
+                  onHoverEnd={() =>
+                    setHoveredSlug((current) => (current === s.slug ? null : current))
+                  }
+                  animate={{
+                    x: t.x,
+                    y: t.y,
+                    z: t.z,
+                    rotateY: t.rotateY,
+                    scale: t.scale,
+                    opacity: t.opacity,
+                    zIndex: t.zIndex,
+                  }}
+                  whileHover={
+                    isActive
+                      ? undefined
+                      : {
+                          scale: t.scale * 1.12,
+                          opacity: Math.min(1, t.opacity + 0.3),
+                          rotateY: 0,
+                        }
+                  }
+                  whileTap={isActive ? undefined : { scale: t.scale * 0.96 }}
+                  transition={{
+                    default: { type: "spring", stiffness: 260, damping: 28 },
+                    // zIndex can't visually interpolate — it snaps — so
+                    // delay the snap until the cards are most of the way
+                    // through their move instead of re-stacking instantly
+                    // while several are still mid-flight past each other.
+                    zIndex: { delay: 0.15, duration: 0 },
+                  }}
                   style={{
-                    left: `${anchor}%`,
-                    zIndex: isActive ? 30 : 10 + pileIndex,
-                    transform: isActive
-                      ? isMobile
-                        ? "translate(-50%, -50%)"
-                        : `translate(-50%, calc(-50% - ${POP_LIFT_PX}px))`
-                      : `translate(calc(-50% + ${pileIndex * PILE_OFFSET_PX}px), calc(-50% - ${pileIndex * PILE_OFFSET_PX}px))`,
-                    ...(isActive
-                      ? ({ "--tw-ring-color": color } as Record<string, string>)
-                      : {}),
+                    left: "50%",
+                    top: "50%",
+                    willChange: "transform",
+                    ...(isActive ? ({ "--tw-ring-color": color } as Record<string, string>) : {}),
                   }}
                   className={cn(
-                    "absolute top-1/2 overflow-hidden rounded-full bg-neutral-800 transition-all duration-300",
+                    "absolute cursor-pointer rounded-full",
                     isActive
-                      ? "h-14 w-14 ring-2 ring-offset-4 ring-offset-neutral-900 sm:h-16 sm:w-16"
-                      : "h-8 w-8 opacity-45 hover:opacity-75 sm:h-9 sm:w-9"
+                      ? "h-[4.5rem] w-[4.5rem] ring-2 ring-offset-4 ring-offset-neutral-900 sm:h-[5.5rem] sm:w-[5.5rem]"
+                      : "h-16 w-16 sm:h-20 sm:w-20"
                   )}
-                  aria-label={s.name}
-                  aria-pressed={isActive}
                 >
-                  <Image
-                    src={s.image}
-                    alt=""
-                    fill
-                    sizes="64px"
-                    draggable={false}
-                    priority={isActive}
-                    className="pointer-events-none object-cover"
-                  />
-                </button>
-              </Fragment>
-            );
-          })}
+                  <div className="relative h-full w-full overflow-hidden rounded-full bg-neutral-800">
+                    <div className="absolute inset-1.5 overflow-hidden rounded-full">
+                      <Image
+                        src={s.image}
+                        alt=""
+                        fill
+                        // Requested well above the card's actual on-screen
+                        // size so the hover scale-up (and the coverflow's
+                        // own scale/rotateY transforms) has real pixel
+                        // detail to sample from instead of stretching an
+                        // exact-fit image and going soft mid-animation.
+                        sizes="240px"
+                        draggable={false}
+                        priority={isActive}
+                        className="pointer-events-none object-cover"
+                      />
+                    </div>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </motion.div>
+
+          {/* Controls — the bottom of the same glass pane, a hairline
+              above separating "cards" from "controls". */}
+          <div className="relative z-10 flex items-center justify-between border-t border-neutral-50/10 px-5 py-1.5 sm:px-8">
+            <button
+              type="button"
+              onClick={() => step(-1)}
+              aria-label="Previous strain"
+              className="flex cursor-pointer items-center gap-1.5 text-xs font-medium tracking-[0.1em] text-neutral-300 transition-colors hover:text-neutral-50"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              PREV
+            </button>
+
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={previewName}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
+                className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-xs font-medium tracking-[0.04em] text-neutral-50"
+                style={{ textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}
+              >
+                {previewName}
+              </motion.span>
+            </AnimatePresence>
+
+            <button
+              type="button"
+              onClick={() => step(1)}
+              aria-label="Next strain"
+              className="flex cursor-pointer items-center gap-1.5 text-xs font-medium tracking-[0.1em] text-neutral-300 transition-colors hover:text-neutral-50"
+            >
+              NEXT
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
 
-        <div className="mt-3 flex justify-between text-xs tracking-[0.08em] text-neutral-500 sm:mt-4">
-          <span>INDICA</span>
-          <span>HYBRID</span>
-          <span>SATIVA</span>
-        </div>
-
-        <div className="mt-4 flex justify-center gap-2 sm:mt-6">
-          <button
-            type="button"
-            onClick={() => step(-1)}
-            disabled={activeIndex === 0}
-            aria-label="Previous strain"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 text-neutral-300 transition-colors hover:border-neutral-500 hover:text-neutral-50 disabled:opacity-30 disabled:hover:border-neutral-700 disabled:hover:text-neutral-300"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => step(1)}
-            disabled={activeIndex === SORTED.length - 1}
-            aria-label="Next strain"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 text-neutral-300 transition-colors hover:border-neutral-500 hover:text-neutral-50 disabled:opacity-30 disabled:hover:border-neutral-700 disabled:hover:text-neutral-300"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+        <p className="mt-2 text-center text-[11px] tabular-nums tracking-[0.18em] text-neutral-500">
+          {String(activeIndex + 1).padStart(2, "0")} / {String(SORTED.length).padStart(2, "0")}
+        </p>
       </div>
     </section>
   );
