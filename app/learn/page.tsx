@@ -72,6 +72,10 @@ export default function LearnPage() {
           <h1 className="mt-5 max-w-[16ch] font-display uppercase leading-[0.88] tracking-[-0.03em] text-[clamp(2.5rem,7vw,6.5rem)]">
             More than what&apos;s on the label
           </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-neutral-400 sm:text-xl">
+            Good flower deserves more than lazy numbers and buzzwords. Learn what matters,
+            what changes the high, and what separates real care from marketing.
+          </p>
         </Reveal>
       </div>
 

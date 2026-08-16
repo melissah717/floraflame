@@ -187,10 +187,22 @@ html {
   }
 }
 
-/* Mapbox's dark-v11 style (stockist-map.tsx) leans warm/brown rather than
-   true black. Desaturating just the tile canvas — not markers or popups,
-   which are separate overlaid elements, not children of the canvas — pulls
-   it toward neutral dark so it matches the site's black backgrounds. */
-.mapboxgl-canvas {
-  filter: saturate(0.15) brightness(0.9);
+.mapboxgl-popup {
+  filter: none;
 }
+
+.mapboxgl-popup-content {
+  padding: 0;
+  border-radius: 16px;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.mapboxgl-popup-tip {
+  border-color: transparent !important;
+}
+
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+  border-top-color: #0f0e0c !important;
+}
+

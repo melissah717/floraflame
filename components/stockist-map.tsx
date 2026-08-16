@@ -88,7 +88,7 @@ export function StockistMap({
       try {
         map.current = new mapboxgl.Map({
           container: container.current,
-          style: "mapbox://styles/mapbox/dark-v11",
+          style: "mapbox://styles/mapbox/light-v11",
           center: [-121.5, 37.5],
           zoom: 5,
           cooperativeGestures: true, // don't hijack page scroll
@@ -188,18 +188,18 @@ export function StockistMap({
            */
           focusAfterOpen: false,
         }).setHTML(
-          `<div style="font-family:inherit;padding:2px 4px;min-width:170px">
-             <strong style="display:block;font-size:14px;margin-bottom:2px">
+          `<div style="font-family:inherit;min-width:210px;padding:14px 16px;background:#0f0e0c;color:#faf8f4;border:1px solid rgba(28,25,21,0.16);border-radius:16px;box-shadow:0 18px 45px rgba(0,0,0,0.28)">
+             <strong style="display:block;font-size:15px;line-height:1.15;margin-bottom:6px;color:#faf8f4">
                ${escapeHtml(s.name)}
              </strong>
-             <span style="font-size:12px;color:#7a7263;display:block;margin-bottom:6px">
+             <span style="font-size:12px;line-height:1.45;color:#cfc7b8;display:block;margin-bottom:10px">
                ${escapeHtml([s.address, s.city].filter(Boolean).join(", "))}
              </span>
              <a href="${directionsUrl(s)}" target="_blank" rel="noopener noreferrer"
-                style="font-size:12px;color:#1c1915;text-decoration:underline">
+                style="display:inline-flex;align-items:center;font-size:12px;letter-spacing:0.03em;color:#fbb03a;text-decoration:underline;text-underline-offset:3px">
                Directions →
              </a>
-           </div>`
+           </div>`.replace(/Directions[^<]*/, "Directions")
         );
 
         markers.current.set(

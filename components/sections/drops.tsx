@@ -37,8 +37,8 @@ function coverflowTransform(offset: number) {
     y: "-50%",
     z: -abs * 60,
     rotateY: Math.max(-42, Math.min(42, offset * -30)),
-    scale: Math.max(0.4, 1 - abs * 0.24),
-    opacity: Math.max(0, 1 - abs * 0.28),
+    scale: Math.max(0.72, 1 - abs * 0.08),
+    opacity: Math.max(0.58, 1 - abs * 0.09),
     zIndex: 100 - abs,
   };
 }
@@ -196,6 +196,10 @@ export function Drops({ strains }: { strains: Strain[] }) {
     return () => ro.disconnect();
   }, []);
 
+  useEffect(() => {
+    setHoveredSlug(null);
+  }, [activeSlug]);
+
   const active = strains.find((s) => s.slug === activeSlug) ?? strains[0];
   const activeAnchor = anchorForSpectrum(active.spectrum);
   const color = colorForHybrid(activeAnchor);
@@ -347,7 +351,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
                   animate={{ width: `${activeAnchor}%` }}
                   transition={{ duration: 0.4, ease: "easeOut" }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/35 via-transparent to-black/15" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-black/15" />
                 </motion.div>
                 <motion.div
                   className="absolute inset-y-0 right-0 overflow-hidden"
@@ -355,12 +359,12 @@ export function Drops({ strains }: { strains: Strain[] }) {
                   animate={{ width: `${100 - activeAnchor}%` }}
                   transition={{ duration: 0.4, ease: "easeOut" }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/35 via-transparent to-black/15" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-black/15" />
                 </motion.div>
               </div>
               <motion.div
                 className="pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-neutral-900 transition-colors duration-500"
-                style={{ backgroundColor: color, boxShadow: `0 0 12px 1px ${color}` }}
+                style={{ backgroundColor: color, boxShadow: `0 0 2px 0 ${color}` }}
                 animate={{ left: `${activeAnchor}%` }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
               />
@@ -369,30 +373,13 @@ export function Drops({ strains }: { strains: Strain[] }) {
         </div>
       </div>
 
-      {/* Strain carousel — a real 3D coverflow, full-bleed edge to edge. A
-          frosted glass pane sits behind the cards (backdrop-blur over the
-          section's own ambient backdrop), and every card's depth, tilt and
-          fade is purely a function of its distance from the active one, so
-          it scales to any strain count without ever squishing. */}
+      {/* Strain carousel — a real 3D coverflow, full-bleed edge to edge.
+          The cards float directly over the section backdrop, and every
+          card's depth, tilt and fade is purely a function of its distance
+          from the active one, so it scales to any strain count without
+          ever squishing. */}
       <div className="mt-5 sm:mt-6">
-        <div className="relative overflow-hidden">
-          {/* Glass surface — frosts whatever ambient backdrop is behind it
-              instead of sitting on a flat color, with a top/bottom edge
-              that catches light like a real pane, so the carousel reads
-              as sitting in its own enclosure rather than floating loose. */}
-          <div
-            className="pointer-events-none absolute inset-0 border-t border-b border-neutral-50/20 bg-gradient-to-b from-neutral-50/[0.09] via-neutral-50/[0.02] to-neutral-50/[0.06] shadow-[inset_0_1px_0_0_rgba(250,248,244,0.3),inset_0_-1px_0_0_rgba(250,248,244,0.1)] backdrop-blur-2xl"
-            aria-hidden
-          />
-
-          {/* Spotlight on the active card — one soft glow in its color,
-              fading to dark at the edges, rather than a full-width band. */}
-          <div
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[140%] w-[65%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-colors duration-700"
-            style={{ backgroundColor: color, opacity: 0.4 }}
-            aria-hidden
-          />
-
+        <div className="relative">
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
@@ -413,17 +400,19 @@ export function Drops({ strains }: { strains: Strain[] }) {
             className="relative h-24 cursor-grab touch-none select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-50 active:cursor-grabbing sm:h-32"
             style={{ perspective: 1200 }}
           >
-            {/* Glow behind the active card — same blur-3xl language as the
-                Stage's nug glow above, tying the two together. */}
+            {/* Glow behind the active card only. The carousel frame stays
+                transparent so the weed itself carries the focus. */}
             <div
-              className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-colors duration-500 sm:h-32 sm:w-32"
-              style={{ backgroundColor: color, opacity: 0.5, zIndex: 1 }}
+              className="pointer-events-none absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-colors duration-500 sm:h-36 sm:w-36"
+              style={{ backgroundColor: color, opacity: 0.46, zIndex: 1 }}
               aria-hidden
             />
 
             {SORTED.map((s, i) => {
               const isActive = s.slug === activeSlug;
               const t = coverflowTransform(circularOffset(i, activeIndex, SORTED.length));
+              const isHovered = hoveredSlug === s.slug && !isActive && t.opacity > 0.5;
+              const hoverColor = colorForHybrid(anchorForSpectrum(s.spectrum));
               return (
                 <motion.button
                   key={s.slug}
@@ -458,6 +447,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
                   whileTap={isActive ? undefined : { scale: t.scale * 0.96 }}
                   transition={{
                     default: { type: "spring", stiffness: 260, damping: 28 },
+                    opacity: { duration: 0.28, ease: "easeOut" },
                     // zIndex can't visually interpolate — it snaps — so
                     // delay the snap until the cards are most of the way
                     // through their move instead of re-stacking instantly
@@ -468,16 +458,31 @@ export function Drops({ strains }: { strains: Strain[] }) {
                     left: "50%",
                     top: "50%",
                     willChange: "transform",
-                    ...(isActive ? ({ "--tw-ring-color": color } as Record<string, string>) : {}),
                   }}
                   className={cn(
                     "absolute cursor-pointer rounded-full",
                     isActive
-                      ? "h-[4.5rem] w-[4.5rem] ring-2 ring-offset-4 ring-offset-neutral-900 sm:h-[5.5rem] sm:w-[5.5rem]"
+                      ? "h-[4.5rem] w-[4.5rem] ring-2 ring-neutral-50/35 ring-offset-4 ring-offset-neutral-900 sm:h-[5.5rem] sm:w-[5.5rem]"
                       : "h-16 w-16 sm:h-20 sm:w-20"
                   )}
                 >
-                  <div className="relative h-full w-full overflow-hidden rounded-full bg-neutral-800">
+                  <motion.span
+                    aria-hidden
+                    className="pointer-events-none absolute left-1/2 top-1/2 h-[4.75rem] w-[4.75rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-md sm:h-[5.75rem] sm:w-[5.75rem]"
+                    animate={{
+                      opacity: isActive ? 1 : isHovered ? 0.64 : 0,
+                      scale: isActive ? 1 : isHovered ? 0.64 : 0.48,
+                      background: isActive
+                        ? `radial-gradient(circle, transparent 30%, ${color} 43%, ${color} 60%, transparent 78%)`
+                        : `radial-gradient(circle, transparent 34%, ${hoverColor} 48%, ${hoverColor} 58%, transparent 74%)`,
+                    }}
+                    transition={{
+                      opacity: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+                      scale: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+                      background: { duration: 0.35, ease: "easeOut" },
+                    }}
+                  />
+                  <div className="relative z-10 h-full w-full overflow-hidden rounded-full bg-neutral-800">
                     <div className="absolute inset-1.5 overflow-hidden rounded-full">
                       <Image
                         src={s.image}
@@ -500,9 +505,9 @@ export function Drops({ strains }: { strains: Strain[] }) {
             })}
           </motion.div>
 
-          {/* Controls — the bottom of the same glass pane, a hairline
-              above separating "cards" from "controls". */}
-          <div className="relative z-10 flex items-center justify-between border-t border-neutral-50/10 px-5 py-1.5 sm:px-8">
+          {/* Controls stay transparent so the coverflow reads as floating
+              over the section, not sitting inside a glass tray. */}
+          <div className="relative z-10 flex items-center justify-between px-5 py-1.5 sm:px-8">
             <button
               type="button"
               onClick={() => step(-1)}
