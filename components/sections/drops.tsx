@@ -252,7 +252,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
       {/* Stage */}
       <div className="mx-auto mt-6 max-w-7xl px-5 sm:mt-10 sm:px-8">
         <div className="grid items-center gap-4 lg:grid-cols-[minmax(0,440px)_1fr] lg:gap-36 xl:gap-48">
-          <div className="relative mx-auto aspect-square w-full max-w-[200px] sm:max-w-[310px] lg:max-w-[420px]">
+          <div className="relative mx-auto aspect-square w-full max-w-[180px] sm:max-w-[280px] lg:max-w-[380px]">
             <div
               className="absolute inset-0 scale-90 rounded-full blur-3xl transition-colors duration-500"
               style={{ backgroundColor: color, opacity: 0.35 }}
@@ -272,7 +272,11 @@ export function Drops({ strains }: { strains: Strain[] }) {
                     src={active.image}
                     alt={active.name}
                     fill
-                    sizes="(max-width: 640px) 180px, (max-width: 1024px) 280px, 380px"
+                    // NugZoom scales this image up 1.5x on hover via a CSS
+                    // transform — the fetched source needs headroom above
+                    // the resting container size or the zoom just magnifies
+                    // a soft, undersized raster.
+                    sizes="(max-width: 640px) 280px, (max-width: 1024px) 420px, 600px"
                     draggable={false}
                     className="object-contain"
                     priority
