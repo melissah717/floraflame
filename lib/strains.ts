@@ -54,6 +54,8 @@ export type Strain = {
   spectrum: SpectrumPosition;
   /** True if this batch is part of the current rotation (shown on the homepage). */
   isCurrent: boolean;
+  /** True if `new_until` is set and still in the future — shown as a "New" badge. */
+  isNew: boolean;
   /** Flavor/effect keywords, shown as chips. */
   tags: string[];
   /** One or two sentences, revealed on demand rather than shown up front. */
@@ -83,6 +85,7 @@ const FALLBACK_STRAINS: Strain[] = [
     image: "/Crunch_Berries.png",
     spectrum: "Indica",
     isCurrent: true,
+    isNew: false,
     tags: ["Berry", "Dessert", "Relaxing"],
     description:
       "A dessert leaning indica with a jammy berry nose and a slow, heavy lidded body high built for the end of the day.",
@@ -106,6 +109,7 @@ type DropBatchRow = {
   ideal_time: string | null;
   thc_percent: number | string | null;
   batch_number: string | null;
+  new_until: string | null;
 };
 
 function isSpectrumPosition(value: string): value is SpectrumPosition {
@@ -126,6 +130,9 @@ function rowToStrain(row: DropBatchRow): Strain | null {
     nugImage: row.nug_image ?? undefined,
     spectrum,
     isCurrent: row.is_current ?? false,
+    // String comparison works here since both sides are "YYYY-MM-DD" —
+    // that format sorts the same lexically as chronologically.
+    isNew: row.new_until != null && row.new_until >= new Date().toISOString().slice(0, 10),
     tags: row.tags ?? [],
     description: row.description,
     genetics: row.genetics ?? undefined,
@@ -137,7 +144,7 @@ function rowToStrain(row: DropBatchRow): Strain | null {
 }
 
 const SELECT_COLUMNS =
-  "slug, name, image, nug_image, spectrum, is_current, tags, description, genetics, terpenes, ideal_time, thc_percent, batch_number";
+  "slug, name, image, nug_image, spectrum, is_current, tags, description, genetics, terpenes, ideal_time, thc_percent, batch_number, new_until";
 
 /** The batches shown in the homepage's "Latest Drops" section. */
 export async function getCurrentDrops(): Promise<Strain[]> {

@@ -35,10 +35,10 @@ function coverflowTransform(offset: number) {
   return {
     x: `calc(-50% + ${offset * CARD_STEP_PX}px)`,
     y: "-50%",
-    z: -abs * 60,
-    rotateY: Math.max(-42, Math.min(42, offset * -30)),
-    scale: Math.max(0.72, 1 - abs * 0.08),
-    opacity: Math.max(0.58, 1 - abs * 0.09),
+    z: -abs * 48,
+    rotateY: Math.max(-34, Math.min(34, offset * -24)),
+    scale: Math.max(0.82, 1 - abs * 0.045),
+    opacity: Math.max(0.72, 1 - abs * 0.05),
     zIndex: 100 - abs,
   };
 }
@@ -88,6 +88,12 @@ function StrainInfo({
             {strain.spectrum}
           </span>
         </div>
+        {strain.isNew && (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-sky-400" aria-hidden />
+            New
+          </span>
+        )}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:mt-5 sm:gap-2.5 lg:justify-start">
@@ -462,6 +468,9 @@ export function Drops({ strains }: { strains: Strain[] }) {
                     left: "50%",
                     top: "50%",
                     willChange: "transform",
+                    ...(!isActive && s.isNew
+                      ? { boxShadow: "0 0 16px 3px rgba(250,248,244,0.45)" }
+                      : {}),
                   }}
                   className={cn(
                     "absolute cursor-pointer rounded-full",

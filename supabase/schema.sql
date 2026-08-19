@@ -58,6 +58,13 @@ alter table public.drop_batches drop column if exists year;
 -- this adds it; harmless no-op on a fresh install.
 alter table public.drop_batches add column if not exists nug_image text;
 
+-- If you already ran an earlier version of this file without new_until,
+-- this adds it; harmless no-op on a fresh install. Marks a batch "new"
+-- until this date. Set by hand per row for now, since collected_at isn't
+-- reliably chronological while older strains are still being backfilled —
+-- once that settles, this can be dropped in favor of date-based logic.
+alter table public.drop_batches add column if not exists new_until date;
+
 -- Anyone can read (the site fetches this with the public anon key);
 -- nobody can write through the app. Add/edit batches from the Supabase
 -- table editor or a service-role script, same trust model as editing the
