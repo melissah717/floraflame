@@ -468,8 +468,17 @@ export function Drops({ strains }: { strains: Strain[] }) {
                     left: "50%",
                     top: "50%",
                     willChange: "transform",
+                    // filter: drop-shadow, not boxShadow — this card also
+                    // carries a 3D rotateY (the coverflow tilt) plus
+                    // will-change:transform, which promotes it to its own
+                    // GPU layer. Safari clips a plain box-shadow's blur to
+                    // that layer's rectangular bounds in that situation,
+                    // showing up as a hard box around the glow instead of
+                    // a soft round one. drop-shadow is computed against the
+                    // actual rendered/composited shape instead, so it
+                    // doesn't have that failure mode.
                     ...(!isActive && s.isNew
-                      ? { boxShadow: "0 0 16px 3px rgba(250,248,244,0.45)" }
+                      ? { filter: "drop-shadow(0 0 11px rgba(250,248,244,0.45))" }
                       : {}),
                   }}
                   className={cn(
