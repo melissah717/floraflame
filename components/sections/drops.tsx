@@ -38,7 +38,10 @@ function coverflowTransform(offset: number) {
     z: -abs * 48,
     rotateY: Math.max(-34, Math.min(34, offset * -24)),
     scale: Math.max(0.82, 1 - abs * 0.045),
-    opacity: Math.max(0.72, 1 - abs * 0.05),
+    // Steeper falloff + lower floor than before — cards further back were
+    // staying too visible (0.72 floor), so a card coming from behind the
+    // active one barely faded at all on the way in/out.
+    opacity: Math.max(0.2, 1 - abs * 0.25),
     zIndex: 100 - abs,
   };
 }
