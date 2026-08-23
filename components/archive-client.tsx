@@ -159,14 +159,18 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
   const newBatches = batches.filter((b) => b.isNew);
   const isDesktop = useIsDesktop();
 
-  // No strain is auto-selected on load — the viewer starts on generic
-  // copy and only shows a specific strain once one is actually picked
-  // (a thumbnail click, or a just-dropped spotlight below settling into
-  // one). Previously this defaulted to "first current strain," which
-  // looked like the page swapping to a random card once any spotlight
-  // sequence finished, since that default was never itself synced to
-  // whatever had just been spotlighted.
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  // Only skip auto-selecting when there's actually an intro cycle about to
+  // run — that's the case the "stays null" behavior was protecting against
+  // (the viewer snapping to some default once the spotlight finished,
+  // since that default was never synced to whatever had just been
+  // spotlighted). When there's nothing new to spotlight, there's no such
+  // handoff to protect, so defaulting straight to the first current strain
+  // avoids showing an empty "pick a strain" card with nothing to pick from.
+  const [activeIndex, setActiveIndex] = useState<number | null>(() => {
+    if (newBatches.length > 0) return null;
+    const idx = batches.findIndex((b) => b.isCurrent);
+    return idx !== -1 ? idx : 0;
+  });
 
   // Every visit, not just the first — as long as a strain is still within
   // its new_until window, spotlight it on top of the viewer. It fades out
