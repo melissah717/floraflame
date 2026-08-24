@@ -10,40 +10,25 @@ type Pin = Stockist & { miles?: number };
 /**
  * Mapbox map with a pin per stockist.
  *
- * mapbox-gl is imported dynamically inside useEffect, not at module scope.
- * Client components still render on the server for the initial HTML, and
- * mapbox-gl touches `window` while loading — a top-level import crashes the
- * server render. The CSS import is safe at module scope.
- *
  * Effects, deliberately separate:
  *   1. create the map (once), then flip `ready` on its 'load' event
- *   2. rebuild pins + fit bounds (when the list changes)
+ *   2. rebuild pins + attach click handlers (when the list changes)
  *   2b. frame the focus set (when a search reframes)
- *   3. fly to a selection (when `selected` changes)
- * Merging 2 and 2b/3 would refit the bounds every time someone clicks a shop,
- * yanking the view back out instead of zooming in.
- *
- * Effects 2/2b/3 gate on `ready` (the map's 'load' event) rather than on the
- * dynamic import resolving in a particular order — see effect 1.
+ *   3. fly to + bloom the selection (when `selected` changes)
  */
 export function StockistMap({
   stockists,
   focus,
   origin,
   selected,
+  onSelectPin,
   className,
 }: {
-  /** Every shop — all of these get a pin. */
   stockists: Pin[];
-  /**
-   * Subset to frame. Defaults to everything, so the first view shows the
-   * full California footprint rather than just whichever handful the list
-   * happens to be showing.
-   */
   focus?: Pin[];
   origin?: { lat: number; lng: number } | null;
-  /** Key of the shop to zoom to — see stockistKey(). */
   selected?: string | null;
+  onSelectPin?: (key: string) => void;
   className?: string;
 }) {
   const container = useRef<HTMLDivElement>(null);
@@ -51,16 +36,16 @@ export function StockistMap({
   const markers = useRef<globalThis.Map<string, Marker>>(new globalThis.Map());
   const originMarker = useRef<Marker | null>(null);
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-  // Mapbox needs WebGL. It's usually there, but not always — GPU
-  // acceleration disabled, some VPN/privacy browser setups, older
-  // hardware, or (in dev) WebGL contexts exhausted by a long hot-reload
-  // session. new mapboxgl.Map() throws synchronously when the canvas
-  // can't get a context, so without this the whole thing surfaces as an
-  // unhandled error instead of just... not showing a map.
   const [mapFailed, setMapFailed] = useState(false);
-  // Flipped on the map's 'load' event. Effects 2/2b/3 wait for this instead
-  // of assuming the map already exists — the map is created asynchronously.
   const [ready, setReady] = useState(false);
+
+  // Latest onSelectPin, held in a ref so effect 2 doesn't need it in its deps
+  // — otherwise every parent render rebuilds all 45 markers and cancels any
+  // in-flight flyTo.
+  const onSelectRef = useRef(onSelectPin);
+  useEffect(() => {
+    onSelectRef.current = onSelectPin;
+  }, [onSelectPin]);
 
   // --- 1. create the map once ------------------------------------------
   useEffect(() => {
@@ -71,12 +56,6 @@ export function StockistMap({
       const mapboxgl = (await import("mapbox-gl")).default;
       if (cancelled || !container.current || map.current) return;
 
-      // Preflight. new mapboxgl.Map() both throws AND logs its own
-      // console.error("Failed to initialize WebGL.") when it can't get a
-      // context — which is a red dev overlay for a case we already handle.
-      // Checking first lets us drop to the fallback quietly. A null context
-      // in dev usually means contexts are exhausted from hot-reloading;
-      // fully restarting the browser frees them.
       if (!hasWebGL()) {
         console.warn("[stockist-map] WebGL unavailable — showing fallback");
         if (!cancelled) setMapFailed(true);
@@ -99,18 +78,10 @@ export function StockistMap({
         return;
       }
 
-      // Signal readiness once the style has loaded, so markers and bounds
-      // build against a map that's actually ready for them.
       map.current.on("load", () => {
         if (!cancelled) setReady(true);
       });
 
-      // NOT also listening on the map's 'error' event here — Mapbox fires
-      // that for plenty of non-fatal stuff (a flaky tile fetch, a style
-      // hiccup), not just fatal WebGL loss. Escalating all of those to the
-      // "unavailable" fallback would kill a map that's actually working.
-      // The synchronous throw above is the real, documented WebGL failure
-      // mode; that's the one worth guarding.
       map.current.addControl(
         new mapboxgl.NavigationControl({ showCompass: false }),
         "top-right"
@@ -119,13 +90,11 @@ export function StockistMap({
 
     return () => {
       cancelled = true;
-      // Full teardown so a Strict-Mode remount or hot-reload starts clean
-      // instead of leaking a WebGL context (and its markers) each time.
       markers.current.forEach((m) => m.remove());
       markers.current.clear();
       originMarker.current?.remove();
       originMarker.current = null;
-      map.current?.remove(); // frees the WebGL context
+      map.current?.remove();
       map.current = null;
       setReady(false);
     };
@@ -149,57 +118,42 @@ export function StockistMap({
       if (!valid.length) return;
 
       valid.forEach((s) => {
-        /**
-         * TWO elements, not one.
-         *
-         * Mapbox positions a marker by writing `transform` onto its
-         * element. Any CSS that also sets transform on that element —
-         * a Tailwind scale class, say — fights it, and the dot renders
-         * offset from the coordinate Mapbox is anchoring the popup to.
-         *
-         * So the outer div belongs to Mapbox and we never style it. All
-         * appearance and animation goes on the inner dot.
-         */
+        // Outer element belongs to Mapbox (it writes `transform` for
+        // positioning) — never style it. Appearance goes on the inner dot.
         const el = document.createElement("div");
         el.style.cursor = "pointer";
         el.style.width = "14px";
         el.style.height = "14px";
+        // Lift the selection up to the parent so effect 3 can fly + bloom.
+        el.addEventListener("click", () => onSelectRef.current?.(stockistKey(s)));
 
         const dot = document.createElement("div");
         dot.className =
-          "h-full w-full rounded-full border-2 border-neutral-900 bg-neutral-50 shadow-md transition-transform duration-300 hover:scale-125";
+          "pin-dot h-full w-full rounded-full border-2 border-neutral-900 bg-neutral-50 shadow-md transition-transform duration-300 hover:scale-125";
         el.appendChild(dot);
 
         const popup = new mapboxgl.Popup({
           offset: 18,
           closeButton: false,
-          anchor: "bottom", // sit directly above the pin, never over it
-          /**
-           * THE SCROLL BUG.
-           *
-           * Mapbox focuses a popup when it opens (this defaults to true),
-           * and focusing an element makes the browser scroll it into view.
-           * The map sits above the list, so clicking a shop name scrolled
-           * the page up to reveal the whole map.
-           *
-           * Off is right here: the popup opens in response to a click the
-           * user just made on a control they can see, so focus is already
-           * where it should be.
-           */
-          focusAfterOpen: false,
+          anchor: "bottom",
+          focusAfterOpen: false, // stops the click from scroll-jumping the page
         }).setHTML(
-          `<div style="font-family:inherit;min-width:210px;padding:14px 16px;background:#0f0e0c;color:#faf8f4;border:1px solid rgba(28,25,21,0.16);border-radius:16px;box-shadow:0 18px 45px rgba(0,0,0,0.28)">
-             <strong style="display:block;font-size:15px;line-height:1.15;margin-bottom:6px;color:#faf8f4">
+          `<div style="font-family:'Cabinet Grotesk',system-ui,sans-serif;position:relative;min-width:222px;padding:16px 18px;background:#0f0e0c;color:#faf8f4;border-radius:14px;box-shadow:0 22px 55px rgba(0,0,0,0.5);outline:1px solid rgba(250,248,244,0.14)">
+             <div style="position:absolute;inset:4px;border:1px solid rgba(250,248,244,0.08);border-radius:10px;pointer-events:none"></div>
+             <strong style="display:block;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:17px;line-height:1.1;letter-spacing:-0.01em;color:#faf8f4">
                ${escapeHtml(s.name)}
              </strong>
-             <span style="font-size:12px;line-height:1.45;color:#cfc7b8;display:block;margin-bottom:10px">
+             <svg width="52" height="8" viewBox="0 0 52 8" fill="none" style="display:block;margin:9px 0 10px">
+               <path d="M1 5.5C10 2 16 2 24 4.2 32 6.4 42 6 51 2.2" stroke="#e07a2e" stroke-width="2.4" stroke-linecap="round"/>
+             </svg>
+             <span style="font-size:12.5px;line-height:1.5;color:#cfc7b8;display:block">
                ${escapeHtml([s.address, s.city].filter(Boolean).join(", "))}
              </span>
              <a href="${directionsUrl(s)}" target="_blank" rel="noopener noreferrer"
-                style="display:inline-flex;align-items:center;font-size:12px;letter-spacing:0.03em;color:#fbb03a;text-decoration:underline;text-underline-offset:3px">
+                style="display:inline-block;margin-top:12px;font-size:12px;letter-spacing:0.03em;color:#e0a94a;text-decoration:underline;text-underline-offset:3px">
                Directions →
              </a>
-           </div>`.replace(/Directions[^<]*/, "Directions")
+           </div>`
         );
 
         markers.current.set(
@@ -229,7 +183,6 @@ export function StockistMap({
           .setLngLat([origin.lng, origin.lat])
           .addTo(map.current);
       }
-
     })();
 
     return () => {
@@ -238,8 +191,6 @@ export function StockistMap({
   }, [stockists, origin, token, ready]);
 
   // --- 2b. frame the focus set -----------------------------------------
-  // Separate from marker building so a search can reframe without tearing
-  // down and rebuilding all 45 pins.
   useEffect(() => {
     if (!token || !ready) return;
     let cancelled = false;
@@ -253,21 +204,8 @@ export function StockistMap({
       );
       if (!set.length) return;
 
-      /**
-       * With an origin we frame the origin plus the nearest few, so a search
-       * lands on that neighbourhood. Without one we frame every shop, which
-       * is the whole-state footprint on first load.
-       *
-       * Capping at the 4 nearest matters: including all 45 would stretch
-       * the bounds statewide again and the search would appear to do
-       * nothing, which is exactly the failure this replaced.
-       */
-      const points = origin
-        ? [...set.slice(0, 4), origin as Pin]
-        : set;
+      const points = origin ? [...set.slice(0, 4), origin as Pin] : set;
 
-      // One point has no bounds to fit — without this special case Mapbox
-      // zooms to maximum and shows an empty residential street.
       if (points.length === 1) {
         map.current.easeTo({
           center: [points[0].lng, points[0].lat],
@@ -281,8 +219,6 @@ export function StockistMap({
       points.forEach((p) => bounds.extend([p.lng, p.lat]));
       map.current.fitBounds(bounds, {
         padding: origin ? 80 : 56,
-        // Looser cap when framing everything, tighter when zoomed to a
-        // search — otherwise a dense cluster like SF stays too far out.
         maxZoom: origin ? 13 : 9,
         duration: 900,
       });
@@ -293,9 +229,24 @@ export function StockistMap({
     };
   }, [focus, stockists, origin, token, ready]);
 
-  // --- 3. fly to the selected shop -------------------------------------
+  // --- 3. fly to + bloom the selected shop -----------------------------
   useEffect(() => {
-    if (!ready || !map.current || !selected) return;
+    if (!ready || !map.current) return;
+
+    // Nothing selected — clear the bloom/popups and stop.
+    if (!selected) {
+      markers.current.forEach((m) => {
+        const dot = m.getElement().firstElementChild as HTMLElement | null;
+        if (dot) {
+          dot.classList.remove("is-selected");
+          dot.style.backgroundColor = "";
+          dot.style.borderColor = "";
+        }
+        m.getElement().style.zIndex = "";
+        if (m.getPopup()?.isOpen()) m.togglePopup();
+      });
+      return;
+    }
 
     const shop = stockists.find((s) => stockistKey(s) === selected);
     const marker = markers.current.get(selected);
@@ -305,36 +256,27 @@ export function StockistMap({
       center: [shop.lng, shop.lat],
       zoom: 14,
       duration: 1200,
-      essential: true, // still runs for prefers-reduced-motion users
+      essential: true,
     });
 
-    // The canvas is focusable, and a focused element gets scrolled into
-    // view. Nothing here needs keyboard focus, so hand it back.
     const canvas = map.current.getCanvas();
     if (document.activeElement === canvas) canvas.blur();
 
-    // Close any other popup first, or you get several open at once.
     markers.current.forEach((m, key) => {
       if (key !== selected && m.getPopup()?.isOpen()) m.togglePopup();
     });
     if (!marker.getPopup()?.isOpen()) marker.togglePopup();
 
-    // Highlight the inner dot. Styling the outer element would overwrite
-    // Mapbox's positioning transform and shift the pin off its coordinate.
+    // Bloom the active pin (orange ripple lives in .pin-dot.is-selected::before/::after).
     markers.current.forEach((m, key) => {
       const el = m.getElement();
       const dot = el.firstElementChild as HTMLElement | null;
       const active = key === selected;
-
       if (dot) {
-        dot.classList.toggle("scale-[1.6]", active);
-        dot.classList.toggle("ring-4", active);
-        dot.classList.toggle("ring-[#a83c1b]/20", active);
-        // Same accent as the selected name in the list, so the two read
-        // as one highlighted thing rather than two separate states.
-        dot.style.backgroundColor = active ? "#a83c1b" : "";
+        dot.classList.toggle("is-selected", active);
+        dot.style.backgroundColor = active ? "#e07a2e" : "";
+        dot.style.borderColor = active ? "#e07a2e" : "";
       }
-      // Raise the active pin so its ring isn't clipped by neighbours.
       el.style.zIndex = active ? "10" : "";
     });
   }, [selected, stockists, ready]);
@@ -353,16 +295,25 @@ export function StockistMap({
     );
   }
 
-  return <div ref={container} className={className} />;
+  // Wrapper carries the sizing/overflow className; the map fills it, and the
+  // purple vignette sits on top as the "fog" (real setFog is a globe/3D
+  // feature and barely shows on a flat top-down map).
+  return (
+    <div className={`relative ${className ?? ""}`}>
+      <div ref={container} className="h-full w-full" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(125% 105% at 50% 40%, transparent 50%, rgba(72,46,96,0.5) 100%)",
+        }}
+      />
+    </div>
+  );
 }
 
-/**
- * WebGL preflight. Mapbox GL needs a WebGL context (v3 wants WebGL 2, with a
- * WebGL 1 fallback), and asking for one when the pool is exhausted returns
- * null. We probe, then immediately release the probe context so we don't hold
- * one ourselves. Returns false only when no context is available at all —
- * borderline cases are left to Mapbox + the try/catch backstop.
- */
+/** WebGL preflight so a missing context drops to the fallback quietly. */
 function hasWebGL(): boolean {
   try {
     const canvas = document.createElement("canvas");

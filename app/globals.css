@@ -206,3 +206,25 @@ html {
   border-top-color: #0f0e0c !important;
 }
 
+@keyframes pin-ripple {
+  0%   { transform: translate(-50%, -50%) scale(0.6); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(3);   opacity: 0; }
+}
+.pin-dot { position: relative; }
+.pin-dot.is-selected::before,
+.pin-dot.is-selected::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  height: 100%; width: 100%;
+  border-radius: 9999px;
+  border: 2px solid #e07a2e;
+  transform: translate(-50%, -50%);
+  animation: pin-ripple 2.4s ease-out infinite;
+  pointer-events: none;
+}
+.pin-dot.is-selected::after { animation-delay: 1.2s; }
+@media (prefers-reduced-motion: reduce) {
+  .pin-dot.is-selected::before,
+  .pin-dot.is-selected::after { animation: none; opacity: 0; }
+}

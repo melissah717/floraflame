@@ -260,6 +260,7 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
               focus={focusSet}
               origin={origin}
               selected={selected}
+              onSelectPin={selectShop}
               className="aspect-[16/9] w-full overflow-hidden bg-neutral-700 sm:aspect-[16/7]"
             />
           </div>

@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { NewsletterSignup } from "@/components/newsletter-signup";
 import { PrivacyPolicyModal, TermsModal } from "@/components/legal-modals";
+import { MarqueeReel } from "@/components/sections/marquee-reel";
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-neutral-800">
+      {/* Full-bleed reel sits above the footer content. */}
+      <MarqueeReel />
+
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
           <div id="subscribe" className="scroll-mt-24 lg:col-span-2">
