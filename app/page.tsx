@@ -1,5 +1,4 @@
 import { Hero } from "@/components/sections/hero";
-import { MarqueeBand } from "@/components/sections/marquee-reel";
 import { Drops } from "@/components/sections/drops";
 import { About } from "@/components/sections/about";
 import { SectionTransition } from "@/components/sections/section-transition";
