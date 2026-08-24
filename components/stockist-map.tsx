@@ -139,22 +139,26 @@ export function StockistMap({
           focusAfterOpen: false, // stops the click from scroll-jumping the page
         }).setHTML(
           `<div style="font-family:'Cabinet Grotesk',system-ui,sans-serif;position:relative;min-width:222px;padding:16px 18px;background:#0f0e0c;color:#faf8f4;border-radius:14px;box-shadow:0 22px 55px rgba(0,0,0,0.5);outline:1px solid rgba(250,248,244,0.14)">
-             <div style="position:absolute;inset:4px;border:1px solid rgba(250,248,244,0.08);border-radius:10px;pointer-events:none"></div>
-             <strong style="display:block;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:17px;line-height:1.1;letter-spacing:-0.01em;color:#faf8f4">
-               ${escapeHtml(s.name)}
-             </strong>
-             <svg width="52" height="8" viewBox="0 0 52 8" fill="none" style="display:block;margin:9px 0 10px">
-               <path d="M1 5.5C10 2 16 2 24 4.2 32 6.4 42 6 51 2.2" stroke="#e07a2e" stroke-width="2.4" stroke-linecap="round"/>
-             </svg>
-             <span style="font-size:12.5px;line-height:1.5;color:#cfc7b8;display:block">
-               ${escapeHtml([s.address, s.city].filter(Boolean).join(", "))}
-             </span>
-             <a href="${directionsUrl(s)}" target="_blank" rel="noopener noreferrer"
+            <div style="position:absolute;inset:4px;border:1px solid rgba(250,248,244,0.08);border-radius:10px;pointer-events:none"></div>
+            <strong style="display:block;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:17px;line-height:1.1;letter-spacing:-0.01em;color:#faf8f4">
+              ${escapeHtml(s.name)}
+            </strong>
+            ${
+              s.city
+                ? `<div style="margin:8px 0 8px;font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;color:#8a847a">
+                      ${escapeHtml(s.city)}
+                    </div>`
+                : `<div style="height:8px"></div>`
+            }
+            <span style="font-size:12.5px;line-height:1.5;color:#cfc7b8;display:block">
+              ${escapeHtml(s.address ?? "")}
+            </span>
+            <a href="${directionsUrl(s)}" target="_blank" rel="noopener noreferrer"
                 style="display:inline-block;margin-top:12px;font-size:12px;letter-spacing:0.03em;color:#e0a94a;text-decoration:underline;text-underline-offset:3px">
-               Directions →
-             </a>
-           </div>`
-        );
+              Directions →
+            </a>
+          </div>`
+        )
 
         markers.current.set(
           stockistKey(s),

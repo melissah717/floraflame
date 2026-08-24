@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,24 +15,64 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
+/**
+ * Nav shows while the user is actively scrolling, then hides HIDE_DELAY ms
+ * after they stop. Two escape hatches so people can't get stranded:
+ *   – Mouse within HOVER_ZONE px of the top reveals it (desktop)
+ *   – An open mobile menu forces it visible
+ * Nav is also visible on first load (with the timer already running), so a
+ * fresh visitor sees it exists before it slips away.
+ */
+const HIDE_DELAY = 500;   // ms — dial up for longer lingers
+const HOVER_ZONE = 80;     // px — how close to the top counts as "near"
+
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(true); // visible on first load
   const [open, setOpen] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
+    const revealAndScheduleHide = () => {
+      setVisible(true);
+      if (hideTimer.current) clearTimeout(hideTimer.current);
+      hideTimer.current = setTimeout(() => setVisible(false), HIDE_DELAY);
+    };
+
+    const onScroll = () => {
+      setScrolled(window.scrollY > 24);
+      revealAndScheduleHide();
+    };
+
+    // Desktop-only in practice — pointermove near the top edge counts as
+    // "I want the nav back." Touch devices don't fire this while idle.
+    const onMove = (e: PointerEvent) => {
+      if (e.clientY < HOVER_ZONE) revealAndScheduleHide();
+    };
+
+    // Start the hide countdown on mount, so if the visitor doesn't scroll
+    // for HIDE_DELAY ms the nav folds away as intended.
+    revealAndScheduleHide();
+
+    // Sync the scrolled bg on mount in case we've hydrated mid-page.
+    setScrolled(window.scrollY > 24);
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("pointermove", onMove);
+      if (hideTimer.current) clearTimeout(hideTimer.current);
+    };
   }, []);
 
-  // "subscribe"/"wholesale" only exist on the homepage — off it, this just
-  // navigates there via the anchor and lets Next's built-in hash-scroll
-  // (every section already sets scroll-mt-* for this) land on it once
-  // rendered, same as a plain <Link href={`/#${id}`}> would.
+  // Keep the nav open while the mobile sheet is open — hiding the sheet's
+  // trigger would leave an open panel with no anchor and no way to close.
+  const showNav = visible || open;
+
   const scrollTo = (id: string) => {
     setOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -52,14 +92,9 @@ export function Navbar() {
   return (
     <motion.header
       initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, delay: 1.4, ease: "easeOut" }}
-      // borderBottomColor is set inline, not via the border-neutral-800
-      // utility class — something in the cascade (shadcn's base-layer
-      // `* { border-color: var(--border) }` reset, using its light-mode
-      // value since `.dark` is never toggled on this site) was winning
-      // over the utility on this specific element and rendering the strip
-      // below the nav as a near-white line instead of black.
+      animate={{ y: showNav ? 0 : -80, opacity: showNav ? 1 : 0 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      // borderBottomColor inline for the same shadcn-cascade reason as before.
       style={{ borderBottomColor: scrolled ? "#000000" : "transparent" }}
       className={cn(
         "fixed top-0 z-50 w-full border-b transition-colors duration-300",
@@ -141,8 +176,6 @@ export function Navbar() {
 
         {/* Mobile */}
         <Sheet open={open} onOpenChange={setOpen}>
-          {/* No asChild — SheetTrigger renders its own button and we style
-              it directly. Avoids the Radix/React 19 prop inference issue. */}
           <SheetTrigger
             aria-label="Open menu"
             className="inline-flex size-10 cursor-pointer items-center justify-center rounded-md text-neutral-50 transition-colors hover:bg-neutral-800 xl:hidden"
