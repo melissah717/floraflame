@@ -30,11 +30,13 @@ const NAV_LEFT = 20;
 const NAV_TOP = 22;
 const HERO_TOP_VH = 10;
 
-// BIG. Big big. Cap high, floor comfortable on phones.
+// BIG. Big big — but sized to fit on narrow viewports without clipping.
+// At 12vw ratio and 170px cap, "Flora & Flame" stays inside the viewport
+// from ~320px phones all the way up to 4K displays.
 const DOCKED_PX = 26;
-const HERO_VW = 15;
-const HERO_MIN = 72;
-const HERO_MAX = 200;
+const HERO_VW = 12;
+const HERO_MIN = 40;
+const HERO_MAX = 170;
 
 // Entrance stagger — how the letters swipe in from the right.
 const ENTRANCE_DELAY = 0.3;
