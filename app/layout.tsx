@@ -7,6 +7,7 @@ import { CookieConsent } from "@/components/cookie-consent";
 import { Preloader } from "@/components/preloader";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/footer";
+import { SmoothScroll } from "@/components/smooth-scroll"
 import "./globals.css";
 
 /**
@@ -107,6 +108,7 @@ export default function RootLayout({
         <AgeGate />
         <CookieConsent />
         <Preloader />
+        <SmoothScroll />
         <Navbar />
         <main id="main-content">{children}</main>
         <SiteFooter />

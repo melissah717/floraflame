@@ -255,10 +255,13 @@ export function StockistMap({
     const shop = stockists.find((s) => stockistKey(s) === selected);
     const marker = markers.current.get(selected);
     if (!shop || !marker) return;
+    const mapH = map.current.getContainer().clientHeight;
+    const yOffset = Math.min(120, mapH * 0.28);
 
     map.current.flyTo({
       center: [shop.lng, shop.lat],
       zoom: 14,
+      offset: [0, yOffset],
       duration: 1200,
       essential: true,
     });

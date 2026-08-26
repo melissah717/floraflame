@@ -12,12 +12,18 @@ import {
 } from "motion/react";
 
 /**
- * Hero with a mouse-tracked floating panel over a solid black background.
+ * Hero — three-phase entrance:
+ *   1. On load: FLORA & FLAME wordmark reveals letter-by-letter (~2.1s,
+ *      handled by <DockingLogo />).
+ *   2. Then the headline lines drop in (delay 2.4s, staggered).
+ *   3. Then the tiger panel slides in from the left (delay 3.4s).
+ *
+ * On scroll: the whole section pins for ~1.5 viewports thanks to the 250vh
+ * wrapper — hero gets its own scroll time before About starts covering.
+ * No fancy scale/opacity — just plain sticky pinning.
  */
 
-const LINES = ["Living Soil", "Full spectrum", "Grown in California"];
-
-/** Panel artwork. Files in /public need no next.config change. */
+const LINES = ["organic", "living soil", "oakland ca"];
 const PANEL_IMAGE = "/logo.png";
 
 export function Hero() {
@@ -58,73 +64,79 @@ export function Hero() {
   const cueOpacity = useTransform(scrollY, [0, h * 0.12], [1, 0]);
 
   return (
-    <section className="sticky top-0 h-svh overflow-hidden bg-neutral-900">
-      <motion.div
-        style={reduce ? undefined : { y: contentY }}
-        className="relative flex h-full items-center bg-neutral-900 will-change-transform"
-      >
-        {/* OUTER — pointer tracking only. */}
+    // Tall wrapper = longer sticky pin. Bump to 300vh (or higher) if you
+    // want even more scroll time before About begins to cover.
+    <div className="relative h-[180vh]">
+      <section className="sticky top-0 h-svh overflow-hidden bg-neutral-900">
         <motion.div
-          style={{ x: panelX, skewX: panelSkew }}
-          className="absolute left-1/2 top-1/2 z-0 aspect-square w-[56vw] max-w-[460px] -translate-x-1/2 -translate-y-1/2 will-change-transform sm:w-[28vw]"
+          style={reduce ? undefined : { y: contentY }}
+          className="relative flex h-full items-center bg-neutral-900 will-change-transform"
         >
-          {/* INNER — entrance. */}
+          {/* OUTER — pointer tracking only. */}
           <motion.div
-            initial={{ x: "-420%", opacity: 0 }}
-            animate={{ x: "0%", opacity: 1 }}
-            transition={{ duration: 1.1, delay: 2.6, ease: [0.22, 1, 0.36, 1] }}
-            className="relative h-full w-full"
+            style={{ x: panelX, skewX: panelSkew }}
+            className="absolute left-1/2 top-1/2 z-0 aspect-square w-[56vw] max-w-[460px] -translate-x-1/2 -translate-y-1/2 will-change-transform sm:w-[28vw]"
           >
-            <Image
-              src={PANEL_IMAGE}
-              alt="Flora & Flame"
-              fill
-              sizes="(max-width: 640px) 56vw, 28vw"
-              className="object-contain"
-              priority
-            />
+            {/* INNER — entrance. Slides in after the headline. */}
+            <motion.div
+              initial={{ x: "-420%", opacity: 0 }}
+              animate={{ x: "0%", opacity: 1 }}
+              transition={{ duration: 1.1, delay: 3.4, ease: [0.22, 1, 0.36, 1] }}
+              className="relative h-full w-full"
+            >
+              <Image
+                src={PANEL_IMAGE}
+                alt="Flora & Flame"
+                fill
+                sizes="(max-width: 640px) 56vw, 28vw"
+                className="object-contain"
+                priority
+              />
+            </motion.div>
           </motion.div>
+
+          {/* Headline — reveals AFTER the wordmark entrance finishes.
+              Wordmark ends at ~2.1s; base delay 2.4s gives a small beat
+              between them. */}
+          <div className="relative z-10 w-full px-5 sm:px-8">
+            <div className="mx-auto w-full max-w-7xl">
+              <h1 className="font-display uppercase leading-[0.85] tracking-[-0.035em] text-white">
+                {LINES.map((text, i) => (
+                  <span key={text} className="block overflow-hidden">
+                    <motion.span
+                      initial={{ y: "115%" }}
+                      animate={{ y: 0 }}
+                      transition={{
+                        duration: 1,
+                        delay: 2.4 + i * 0.13,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      className="block text-[clamp(2.25rem,11vw,7rem)]"
+                    >
+                      {text}
+                    </motion.span>
+                  </span>
+                ))}
+              </h1>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Type — plain white, left-aligned over the panel. */}
-        <div className="relative z-10 w-full px-5 sm:px-8">
-          <div className="mx-auto w-full max-w-7xl">
-            <h1 className="font-display uppercase leading-[0.85] tracking-[-0.035em] text-white">
-              {LINES.map((text, i) => (
-                <span key={text} className="block overflow-hidden">
-                  <motion.span
-                    initial={{ y: "115%" }}
-                    animate={{ y: 0 }}
-                    transition={{
-                      duration: 1,
-                      delay: 1.5 + i * 0.13,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
-                    className="block text-[clamp(2.25rem,11vw,7rem)]"
-                  >
-                    {text}
-                  </motion.span>
-                </span>
-              ))}
-            </h1>
+        {/* Footer row */}
+        <motion.div
+          style={reduce ? undefined : { opacity: cueOpacity }}
+          className="absolute inset-x-0 bottom-6 z-30 px-5 sm:px-8"
+        >
+          <div className="mx-auto flex w-full max-w-7xl items-end justify-between gap-8">
+            <p className="max-w-xl text-sm leading-relaxed text-neutral-500">
+              Grown by people who actually give a f*ck.
+            </p>
+            <span className="shrink-0 text-xs tracking-[0.04em] text-neutral-500">
+              Scroll ↓
+            </span>
           </div>
-        </div>
-      </motion.div>
-
-      {/* Footer row */}
-      <motion.div
-        style={reduce ? undefined : { opacity: cueOpacity }}
-        className="absolute inset-x-0 bottom-6 z-30 px-5 sm:px-8"
-      >
-        <div className="mx-auto flex w-full max-w-7xl items-end justify-between gap-8">
-          <p className="max-w-xl text-sm leading-relaxed text-neutral-500">
-            Grown by people who actually give a f*ck.
-          </p>
-          <span className="shrink-0 text-xs tracking-[0.04em] text-neutral-500">
-            Scroll ↓
-          </span>
-        </div>
-      </motion.div>
-    </section>
+        </motion.div>
+      </section>
+    </div>
   );
 }

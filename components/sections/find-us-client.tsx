@@ -253,22 +253,19 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
         <Reveal delay={0.1}>
           <div className="mt-10">
             <StockistMap
-              // All 45 pins always render — the map shows the full
-              // footprint while the list shows the nearest few.
               stockists={stockists}
-              // Frame everything until there's a search to narrow to.
               focus={focusSet}
               origin={origin}
               selected={selected}
               onSelectPin={selectShop}
-              className="aspect-[16/9] w-full overflow-hidden bg-neutral-700 sm:aspect-[16/7]"
+              className="h-[70vh] w-full overflow-hidden bg-neutral-700 sm:h-auto sm:aspect-[16/7]"
             />
           </div>
         </Reveal>
 
         {!hasOrigin ? (
           <p className="mt-8 text-sm text-neutral-400">
-            Every pin is a shop carrying Flora &amp; Flame. Search a city or
+            Search a city or
             use your location to find the closest ones.
           </p>
         ) : (
@@ -286,18 +283,6 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
                 );
               })}
             </div>
-
-            {results.length > VISIBLE && (
-              <button
-                type="button"
-                onClick={() => setExpanded((v) => !v)}
-                className="mt-8 text-sm tracking-[0.02em] underline-offset-4 hover:underline"
-              >
-                {expanded
-                  ? "Show fewer"
-                  : `Show all ${results.length} shops`}
-              </button>
-            )}
           </>
         )}
       </div>
@@ -385,7 +370,7 @@ function StockistCard({
             animate={{
               // Archivo is a variable font, so weight is a continuous
               // axis — 800 → 900 reads as emphasis, not a swap to a
-              // different typeface.
+              // different typeface.{}
               fontWeight: isSelected ? 900 : 800,
               color: isSelected ? ACCENT : "#faf8f4",
             }}
