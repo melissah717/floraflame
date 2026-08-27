@@ -59,12 +59,16 @@ const MOBILE_STACK_H = "20vh";
 const MOBILE_STACK_LEFT = "5vw";
 const MOBILE_STACK_W = "90vw";
 // Anchor (about-1) grows upward to fill the upper portion of the viewport.
+// Shorter than before to give the paragraph proper room below.
 const MOBILE_HERO_TOP = "5vh";
-const MOBILE_HERO_H = "58vh";
-// Text: narrow, left-aligned, bottom-right area — below the expanded hero.
-const MOBILE_TEXT_RIGHT = "5vw";
-const MOBILE_TEXT_TOP = "66vh";
-const MOBILE_TEXT_WIDTH = "55vw";
+const MOBILE_HERO_H = "48vh";
+// Text: wide, left-aligned paragraph below the photo. On portrait mobile a
+// "narrow right-hand column" (the desktop metaphor) reads as unbalanced —
+// the left half sits empty. Filling the width like a normal mobile
+// paragraph is cleaner.
+const MOBILE_TEXT_LEFT = "6vw";
+const MOBILE_TEXT_TOP = "60vh";
+const MOBILE_TEXT_WIDTH = "88vw";
 // Same phase shape as desktop, just remapped to the mobile scroll range.
 const MOBILE_EXIT_RANGE = [0.05, 0.3] as const;
 const MOBILE_MORPH_RANGE = [0.18, 0.45] as const;
@@ -244,18 +248,18 @@ export function About() {
             <Image src={IMAGES[0]} alt="" fill sizes="90vw" className="object-cover" />
           </motion.div>
 
-          {/* Text — narrow left-aligned column at bottom-right. Slides up
-              as one block from below the viewport. */}
+          {/* Text — full-width paragraph below the photo. Slides up as one
+              block from below the viewport. */}
           <motion.div
             style={
               reduce
                 ? {
-                    right: MOBILE_TEXT_RIGHT,
+                    left: MOBILE_TEXT_LEFT,
                     top: MOBILE_TEXT_TOP,
                     width: MOBILE_TEXT_WIDTH,
                   }
                 : {
-                    right: MOBILE_TEXT_RIGHT,
+                    left: MOBILE_TEXT_LEFT,
                     top: MOBILE_TEXT_TOP,
                     width: MOBILE_TEXT_WIDTH,
                     y: mTextY,
@@ -263,7 +267,7 @@ export function About() {
             }
             className="absolute text-left will-change-transform"
           >
-            <p className="font-display text-[clamp(0.85rem,3.2vw,1rem)] font-normal leading-[1.55] tracking-normal text-neutral-100">
+            <p className="font-display text-[clamp(0.95rem,3.6vw,1.15rem)] font-normal leading-[1.55] tracking-normal text-neutral-100">
               {ABOUT_TEXT}
             </p>
           </motion.div>
