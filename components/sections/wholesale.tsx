@@ -1,468 +1,294 @@
 "use client";
 
-import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import Image from "next/image";
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useReducedMotion,
-  type MotionValue,
-} from "motion/react";
-import { US_STATES } from "@/lib/us-states";
-import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
-import { Button } from "@/components/ui/button";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 
-const REQUEST_TO_EMAIL = "Matthew@floraandflame.co";
+/**
+ * Wholesale / press / collab inquiry form — Option E styling.
+ *
+ * Cream-tinted glassy boxes: each field's background is your ink cream
+ * (#f4f2ec) at 4% opacity over the card's dark base. Border is the same
+ * cream at 8%. Softer and warmer than a plain solid-filled box — feels
+ * like the inputs are made of the same material as the ink text.
+ *
+ * Focus state: bg lifts to 7%, border to 20% — subtle but clearly active.
+ *
+ * Error state: switches to your orange accent (#c25a1c) for border and
+ * tinted background, with the error text inline in the label.
+ *
+ * Fields: Name, Email, Business (optional), How can we help?, Message.
+ * Just the <form> — card, header, description are provided by <LetsTalk>.
+ */
 
-const HELP_OPTIONS = [
-  "Wholesale & retail partnership",
-  "Press & media",
+const REASONS = [
+  "Wholesale / Retail Inquiry",
+  "Press",
   "Collaboration",
-  "Product question",
-  "General inquiry",
   "Other",
-];
+] as const;
 
-type FormState = {
+const RECIPIENT = "Matthew@floraandflame.co";
+
+type FormValues = {
   name: string;
   email: string;
-  phone: string;
-  helpType: string;
-  state: string;
   business: string;
-  subject: string;
-  description: string;
+  reason: string;
+  message: string;
 };
 
-const EMPTY_FORM: FormState = {
+type Errors = Partial<Record<keyof FormValues, string>>;
+
+const EMPTY: FormValues = {
   name: "",
   email: "",
-  phone: "",
-  helpType: "",
-  state: "",
   business: "",
-  subject: "",
-  description: "",
+  reason: "",
+  message: "",
 };
 
-type FormErrors = Partial<Record<keyof FormState, string>>;
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_RE = /^[0-9()+\-.\s]{7,}$/;
-
-function validate(form: FormState): FormErrors {
-  const errors: FormErrors = {};
-
-  if (!form.name.trim()) errors.name = "Enter your name.";
-
-  if (!form.email.trim()) errors.email = "Enter your email.";
-  else if (!EMAIL_RE.test(form.email.trim())) errors.email = "Enter a valid email address.";
-
-  if (!form.phone.trim()) errors.phone = "Enter a phone number.";
-  else if (!PHONE_RE.test(form.phone.trim())) errors.phone = "Enter a valid phone number.";
-
-  if (!form.helpType) errors.helpType = "Pick one.";
-  if (!form.state) errors.state = "Select a state.";
-  if (!form.subject.trim()) errors.subject = "Enter a subject.";
-
-  if (!form.description.trim()) errors.description = "Tell us what's going on.";
-  else if (form.description.trim().length < 10)
-    errors.description = "A little more detail would help, at least 10 characters.";
-
-  return errors;
-}
-
-/**
- * Decorative linework flanking the form. Each one tracks the section's own
- * scroll-through progress (0 = section just entering from below, 1 = fully
- * scrolled past above) and windows its slide-in/slide-out around that, so
- * they parallax on as the section arrives and drift off again as it leaves
- * — never just appear/disappear.
- *
- * lg+ only: below that the form fills the width and there's no gutter for
- * them to live in without overlapping it.
- */
-const FORM_DECORS_LEFT = [
-  { top: "6%", size: 140, inAt: 0.02, rise: 24 },
-  { top: "40%", size: 220, inAt: 0.08, rise: -20 },
-  { top: "76%", size: 120, inAt: 0.14, rise: 28 },
-];
-const FORM_DECORS_RIGHT = [
-  { top: "12%", size: 180, inAt: 0.05, rise: -22 },
-  { top: "48%", size: 130, inAt: 0.11, rise: 30 },
-  { top: "80%", size: 170, inAt: 0.17, rise: -16 },
-];
-
-function FormDecor({
-  side,
-  top,
-  size,
-  inAt,
-  rise,
-  progress,
-}: {
-  side: "left" | "right";
-  top: string;
-  size: number;
-  /** Where in the section's 0–1 scroll-through this flower starts sliding in. */
-  inAt: number;
-  /** Extra vertical drift (px) while onscreen — gives each flower its own parallax speed. */
-  rise: number;
-  progress: MotionValue<number>;
-}) {
-  const inEnd = inAt + 0.16;
-  const outStart = 0.7 + inAt * 0.6;
-  const outEnd = outStart + 0.16;
-  const offscreen = side === "left" ? "-160%" : "160%";
-
-  const x = useTransform(
-    progress,
-    [0, inAt, inEnd, outStart, outEnd, 1],
-    [offscreen, offscreen, "0%", "0%", offscreen, offscreen]
-  );
-  const opacity = useTransform(
-    progress,
-    [inAt, inEnd, outStart, outEnd],
-    [0, 1, 1, 0]
-  );
-  const y = useTransform(progress, [0, 1], [rise, -rise]);
-
-  return (
-    <motion.div
-      aria-hidden
-      style={{
-        top,
-        [side]: "2%",
-        x,
-        y,
-        opacity,
-        width: size,
-        height: size,
-      }}
-      className="pointer-events-none absolute z-0 hidden text-neutral-700/50 will-change-transform xl:block"
-    >
-      <div className="flex h-full w-full items-center justify-center opacity-70">
-        <Image
-          src="/logo.png"
-          alt=""
-          width={240}
-          height={240}
-          className="h-full w-full object-contain invert"
-        />
-      </div>
-    </motion.div>
-  );
-}
-
-/**
- * No backend on this site, so "sending" the request means handing it to the
- * visitor's own email client via a mailto: link — zero accounts, zero API
- * keys, works today. REQUEST_TO_EMAIL is a placeholder until there's a real
- * inbox to point it at.
- */
 export function Wholesale() {
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [sent, setSent] = useState(false);
+  const [values, setValues] = useState<FormValues>(EMPTY);
+  const [errors, setErrors] = useState<Errors>({});
 
-  const sectionRef = useRef<HTMLElement>(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress: flowerProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
+  const update = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setValues((v) => ({ ...v, [name]: value }));
+    if (errors[name as keyof FormValues]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
 
-  const update =
-    (key: keyof FormState) =>
-      (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setForm((f) => ({ ...f, [key]: e.target.value }));
-        setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
-      };
+  const validate = (v: FormValues): Errors => {
+    const errs: Errors = {};
+    if (!v.name.trim()) errs.name = "Required";
+    if (!v.email.trim()) errs.email = "Required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email))
+      errs.email = "Invalid email";
+    if (!v.reason) errs.reason = "Pick one";
+    if (!v.message.trim()) errs.message = "Required";
+    return errs;
+  };
 
-  const onSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-
-    const nextErrors = validate(form);
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
+    const errs = validate(values);
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
       return;
     }
 
-    const bodyLines = [
-      `Name: ${form.name}`,
-      `Email: ${form.email}`,
-      `Phone: ${form.phone}`,
-      `How can we help: ${form.helpType}`,
-      `State: ${form.state}`,
-      `Business: ${form.business || "—"}`,
-      "",
-      form.description,
-    ];
+    const bodyLines = [`Name: ${values.name}`, `Email: ${values.email}`];
+    if (values.business.trim()) bodyLines.push(`Business: ${values.business}`);
+    bodyLines.push(`Reason: ${values.reason}`, "", values.message);
 
-    const mailto = `mailto:${REQUEST_TO_EMAIL}?subject=${encodeURIComponent(
-      form.subject
-    )}&body=${encodeURIComponent(bodyLines.join("\n"))}`;
-
-    window.location.href = mailto;
-    setSent(true);
+    const subject = `[Flora & Flame] ${values.reason}`;
+    const body = bodyLines.join("\n");
+    window.location.href = `mailto:${RECIPIENT}?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
   };
 
   return (
-    <section
-      ref={sectionRef}
-      id="wholesale"
-      className="scroll-mt-20 relative overflow-hidden bg-neutral-800 px-5 py-24 text-neutral-50 sm:px-8 sm:py-32"
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-[18px]"
+      noValidate
     >
-      {!reduce && (
-        <>
-          {FORM_DECORS_LEFT.map((f, i) => (
-            <FormDecor key={`left-${i}`} side="left" progress={flowerProgress} {...f} />
-          ))}
-          {FORM_DECORS_RIGHT.map((f, i) => (
-            <FormDecor key={`right-${i}`} side="right" progress={flowerProgress} {...f} />
-          ))}
-        </>
-      )}
-
-      <div className="relative z-10 mx-auto max-w-7xl">
-        <Reveal>
-          <div className="flex justify-center">
-            <SectionLabel number="03">Submit a Request</SectionLabel>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.05}>
-          <ParallaxText speed={16}>
-            <div className="mx-auto mt-4 flex justify-center">
-              <h2 className="max-w-[14ch] text-center font-display text-4xl leading-[1.05] tracking-[-0.01em] text-neutral-50 sm:text-5xl lg:text-6xl">
-                Tell us what you need.
-              </h2>
-            </div>
-          </ParallaxText>
-        </Reveal>
-
-        <div className="mx-auto mt-16 max-w-2xl">
-          <Reveal>
-            <p className="text-lg leading-relaxed text-neutral-400">
-              Questions about a drop, press, a collab, or getting Flora &amp;
-              Flame on your shelf. This goes straight to our inbox.
-            </p>
-          </Reveal>
-
-          <Reveal delay={0.08}>
-            <form onSubmit={onSubmit} noValidate className="mt-8 space-y-6">
-              <div className="grid gap-6 sm:grid-cols-2">
-                <Field
-                  label="Name"
-                  required
-                  value={form.name}
-                  onChange={update("name")}
-                  error={errors.name}
-                />
-                <Field
-                  label="Email"
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={update("email")}
-                  error={errors.email}
-                />
-              </div>
-
-              <div className="grid gap-6 sm:grid-cols-2">
-                <Field
-                  label="Phone number"
-                  type="tel"
-                  required
-                  value={form.phone}
-                  onChange={update("phone")}
-                  error={errors.phone}
-                />
-                <SelectField
-                  label="State"
-                  required
-                  value={form.state}
-                  onChange={update("state")}
-                  options={US_STATES}
-                  placeholder="Select a state"
-                  error={errors.state}
-                />
-              </div>
-
-              <div className="grid gap-6 sm:grid-cols-2">
-                <SelectField
-                  label="How can we help you?"
-                  required
-                  value={form.helpType}
-                  onChange={update("helpType")}
-                  options={HELP_OPTIONS}
-                  placeholder="Select one"
-                  error={errors.helpType}
-                />
-                <Field
-                  label="Business name (optional)"
-                  value={form.business}
-                  onChange={update("business")}
-                />
-              </div>
-
-              <Field
-                label="Subject"
-                required
-                value={form.subject}
-                onChange={update("subject")}
-                error={errors.subject}
-              />
-
-              <div>
-                <label htmlFor="field-description" className="text-xs tracking-[0.04em] text-neutral-400">
-                  Description
-                </label>
-                {/* Plain textarea — shadcn's defaults fight this section's
-                    custom underline styling. Not worth the override here. */}
-                <textarea
-                  id="field-description"
-                  required
-                  rows={5}
-                  value={form.description}
-                  onChange={update("description")}
-                  placeholder="What's going on?"
-                  aria-invalid={Boolean(errors.description)}
-                  aria-describedby={errors.description ? "field-description-error" : undefined}
-                  className={`mt-2 w-full resize-none border-0 border-b bg-transparent px-0 py-2 text-neutral-50 outline-none transition-colors placeholder:text-neutral-500 ${errors.description
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-neutral-600 focus:border-neutral-50"
-                    }`}
-                />
-                {errors.description && (
-                  <p id="field-description-error" className="mt-1 text-xs text-red-400">
-                    {errors.description}
-                  </p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                size="lg"
-                className="mt-4 w-full rounded-full bg-neutral-50 py-6 text-base font-normal text-neutral-900 hover:bg-neutral-200 sm:w-auto sm:px-10"
-              >
-                {sent ? "Opened your email client, send when ready" : "Send request"}
-              </Button>
-
-              <p className="text-xs text-neutral-400">
-                Opens your email app, addressed to {REQUEST_TO_EMAIL}.
-              </p>
-            </form>
-          </Reveal>
-        </div>
+      <div className="grid grid-cols-2 gap-4">
+        <Field
+          name="name"
+          label="Name"
+          value={values.name}
+          onChange={update}
+          error={errors.name}
+        />
+        <Field
+          name="email"
+          label="Email"
+          type="email"
+          value={values.email}
+          onChange={update}
+          error={errors.email}
+        />
       </div>
-    </section>
+
+      <Field
+        name="business"
+        label="Business name (optional)"
+        value={values.business}
+        onChange={update}
+      />
+
+      <SelectField
+        name="reason"
+        label="How can we help?"
+        value={values.reason}
+        onChange={update}
+        error={errors.reason}
+        options={REASONS}
+      />
+
+      <TextareaField
+        name="message"
+        label="Message"
+        value={values.message}
+        onChange={update}
+        error={errors.message}
+        rows={4}
+        placeholder="What's going on?"
+      />
+
+      <button
+        type="submit"
+        className="mt-2.5 cursor-pointer rounded-full bg-neutral-50 py-4 text-sm font-medium tracking-[0.02em] text-neutral-900 transition-colors hover:bg-neutral-200"
+      >
+        Send request
+      </button>
+
+      <p className="text-[11px] leading-[1.5] text-neutral-500">
+        Opens your email app, addressed to {RECIPIENT}.
+      </p>
+    </form>
   );
 }
 
-/** Deterministic id from a static label string — safe across server/client renders. */
-function idFor(label: string) {
-  return `field-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`;
+// ── field primitives — Option E cream-tinted glassy boxes ─────────────
+
+/**
+ * Base input styling — cream tint over dark card. Focus state lifts the
+ * background and border opacity so it's clearly active without being loud.
+ * Error state swaps to the brand orange for both border and background.
+ */
+function inputClasses(error?: string): string {
+  const base =
+    "w-full rounded-[12px] px-4 py-3.5 text-sm text-neutral-50 outline-none transition-[background-color,border-color] duration-150 placeholder:text-neutral-600";
+
+  if (error) {
+    return `${base} border border-[#c25a1c]/60 bg-[rgba(194,90,28,0.06)] focus:border-[#c25a1c]`;
+  }
+
+  return `${base} border border-[rgba(244,242,236,0.08)] bg-[rgba(244,242,236,0.04)] focus:border-[rgba(244,242,236,0.2)] focus:bg-[rgba(244,242,236,0.07)]`;
 }
 
-function Field({
-  label,
-  type = "text",
-  required = false,
-  value,
-  onChange,
-  error,
-}: {
+type BaseProps = {
+  name: keyof FormValues;
   label: string;
-  type?: string;
-  required?: boolean;
   value: string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onChange: (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => void;
   error?: string;
+};
+
+function FieldWrapper({
+  htmlFor,
+  label,
+  error,
+  children,
+}: {
+  htmlFor: string;
+  label: string;
+  error?: string;
+  children: React.ReactNode;
 }) {
-  const id = idFor(label);
-  const errorId = `${id}-error`;
   return (
     <div>
-      <label htmlFor={id} className="text-xs tracking-[0.04em] text-neutral-400">
-        {label}
+      <label
+        htmlFor={htmlFor}
+        className="mb-1.5 flex items-baseline justify-between text-[11px] font-medium uppercase tracking-[0.06em] text-[#a29886]"
+      >
+        <span>{label}</span>
+        {error && (
+          <span className="font-normal normal-case tracking-normal text-[#c25a1c]">
+            {error}
+          </span>
+        )}
       </label>
-      <input
-        id={id}
-        type={type}
-        required={required}
-        value={value}
-        onChange={onChange}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? errorId : undefined}
-        className={`mt-2 w-full border-0 border-b bg-transparent px-0 py-2 text-neutral-50 outline-none transition-colors ${error ? "border-red-500 focus:border-red-500" : "border-neutral-600 focus:border-neutral-50"
-          }`}
-      />
-      {error && (
-        <p id={errorId} className="mt-1 text-xs text-red-400">
-          {error}
-        </p>
-      )}
+      {children}
     </div>
   );
 }
 
-function SelectField({
+function Field({
+  name,
   label,
-  required = false,
   value,
   onChange,
-  options,
-  placeholder,
   error,
-}: {
-  label: string;
-  required?: boolean;
-  value: string;
-  onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
-  options: string[];
-  placeholder: string;
-  error?: string;
-}) {
-  const id = idFor(label);
-  const errorId = `${id}-error`;
+  type = "text",
+}: BaseProps & { type?: string }) {
+  const id = `wholesale-${name}`;
   return (
-    <div>
-      <label htmlFor={id} className="text-xs tracking-[0.04em] text-neutral-400">
-        {label}
-      </label>
-      <select
+    <FieldWrapper htmlFor={id} label={label} error={error}>
+      <input
         id={id}
-        required={required}
+        name={name}
+        type={type}
         value={value}
         onChange={onChange}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? errorId : undefined}
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23a29886'%3E%3Cpath d='M5.5 7.5l4.5 5 4.5-5z'/%3E%3C/svg%3E\")",
-          backgroundSize: "14px",
-          backgroundPosition: "right 2px center",
-          backgroundRepeat: "no-repeat",
-        }}
-        className={`mt-2 w-full appearance-none border-0 border-b bg-transparent px-0 py-2 pr-6 text-neutral-50 outline-none transition-colors ${error ? "border-red-500 focus:border-red-500" : "border-neutral-600 focus:border-neutral-50"
-          }`}
+        aria-invalid={!!error}
+        className={inputClasses(error)}
+      />
+    </FieldWrapper>
+  );
+}
+
+function SelectField({
+  name,
+  label,
+  value,
+  onChange,
+  error,
+  options,
+}: BaseProps & { options: readonly string[] }) {
+  const id = `wholesale-${name}`;
+  return (
+    <FieldWrapper htmlFor={id} label={label} error={error}>
+      <select
+        id={id}
+        name={name}
+        value={value}
+        onChange={onChange}
+        aria-invalid={!!error}
+        // Custom chevron inline via bg-image so it matches label color and
+        // isn't the ugly OS default. Padded right to leave room for it.
+        className={`${inputClasses(error)} cursor-pointer appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22 viewBox=%220 0 10 6%22 fill=%22none%22><path d=%22M1 1l4 4 4-4%22 stroke=%22%238a847a%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/></svg>')] bg-[length:10px_6px] bg-[position:right_16px_center] bg-no-repeat pr-10`}
       >
-        <option value="" disabled className="text-neutral-500">
-          {placeholder}
-        </option>
+        <option value="">Select one</option>
         {options.map((opt) => (
           <option key={opt} value={opt}>
             {opt}
           </option>
         ))}
       </select>
-      {error && (
-        <p id={errorId} className="mt-1 text-xs text-red-400">
-          {error}
-        </p>
-      )}
-    </div>
+    </FieldWrapper>
+  );
+}
+
+function TextareaField({
+  name,
+  label,
+  value,
+  onChange,
+  error,
+  rows = 3,
+  placeholder,
+}: BaseProps & { rows?: number; placeholder?: string }) {
+  const id = `wholesale-${name}`;
+  return (
+    <FieldWrapper htmlFor={id} label={label} error={error}>
+      <textarea
+        id={id}
+        name={name}
+        rows={rows}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        aria-invalid={!!error}
+        className={`${inputClasses(error)} resize-none`}
+      />
+    </FieldWrapper>
   );
 }

@@ -34,7 +34,7 @@ export function MarqueeReel() {
 
       <div className="relative [mix-blend-mode:multiply]">
         <div className="bg-black py-14 sm:py-16">
-          <ScrollMarquee baseVelocity={3}>
+          <ScrollMarquee baseVelocity={2}>
             {WORDS.map((w) => (
               <span key={w} className="flex items-center gap-[6vw] pr-[6vw]">
                 <span className="font-display font-black uppercase leading-[0.82] tracking-[-0.02em] text-white text-[clamp(4.5rem,22vw,13rem)]">
