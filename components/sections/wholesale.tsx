@@ -93,7 +93,7 @@ export function Wholesale() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-[18px]"
+      className="flex flex-col gap-3 xl:gap-[18px]"
       noValidate
     >
       <div className="grid grid-cols-2 gap-4">
@@ -136,13 +136,13 @@ export function Wholesale() {
         value={values.message}
         onChange={update}
         error={errors.message}
-        rows={4}
+        rows={3}
         placeholder="What's going on?"
       />
 
       <button
         type="submit"
-        className="mt-2.5 cursor-pointer rounded-full bg-neutral-50 py-4 text-sm font-medium tracking-[0.02em] text-neutral-900 transition-colors hover:bg-neutral-200"
+        className="mt-2.5 cursor-pointer rounded-full bg-neutral-50 py-3.5 text-sm font-medium tracking-[0.02em] text-neutral-900 transition-colors hover:bg-neutral-200 xl:py-4"
       >
         Send request
       </button>
@@ -163,7 +163,7 @@ export function Wholesale() {
  */
 function inputClasses(error?: string): string {
   const base =
-    "w-full rounded-[12px] px-4 py-3.5 text-sm text-neutral-50 outline-none transition-[background-color,border-color] duration-150 placeholder:text-neutral-600";
+    "w-full rounded-[12px] px-3.5 py-3 text-sm text-neutral-50 outline-none transition-[background-color,border-color] duration-150 placeholder:text-neutral-600 xl:px-4 xl:py-3.5";
 
   if (error) {
     return `${base} border border-[#c25a1c]/60 bg-[rgba(194,90,28,0.06)] focus:border-[#c25a1c]`;

@@ -86,9 +86,9 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
     <section
       ref={ref}
       id="wholesale"
-      // Shorter than before on both breakpoints — reduces the "empty
-      // scroll" tail between card fully settled and FindUs coming in.
-      className="relative h-[200vh] bg-neutral-900 xl:h-[350vh]"
+      // More scroll room on mobile so the sliding animations don't fly
+      // past — was 200vh, now 300vh gives each phase 50% more scroll.
+      className="relative h-[260vh] bg-neutral-900 xl:h-[350vh]"
     >
       <div className="sticky top-0 h-svh w-full overflow-hidden">
         {/* ── MOBILE/TABLET only (behind card, peeking) ─── */}
@@ -147,19 +147,19 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
         <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
           <motion.div
             style={{ y: cardY }}
-            className="w-[min(760px,calc(100vw-32px))] rounded-[24px] border border-[#2a2521] bg-[#1a1712] p-[clamp(32px,4.5vw,52px)] shadow-[0_50px_120px_rgba(0,0,0,0.7)] will-change-transform"
+            className="w-[calc(100vw-56px)] max-w-[760px] rounded-[24px] border border-[#2a2521] bg-[#1a1712] p-6 shadow-[0_50px_120px_rgba(0,0,0,0.7)] will-change-transform xl:p-[clamp(32px,4.5vw,52px)]"
           >
-            <p className="mb-4 text-[11px] uppercase tracking-[0.22em] text-neutral-500">
+            <p className="mb-3 text-[10px] uppercase tracking-[0.22em] text-neutral-500 xl:mb-4 xl:text-[11px]">
               03 · Submit a Request
             </p>
-            <h2 className="font-display text-[clamp(2rem,4vw,3rem)] font-black leading-[0.95] tracking-[-0.015em] text-neutral-50">
+            <h2 className="font-display text-[clamp(1.5rem,6vw,3rem)] font-black leading-[0.95] tracking-[-0.015em] text-neutral-50">
               Tell us what you need.
             </h2>
-            <p className="mt-4 max-w-[48ch] text-[14px] leading-[1.55] text-neutral-500">
+            <p className="mt-3 max-w-[48ch] text-[13px] leading-[1.5] text-neutral-500 xl:mt-4 xl:text-[14px] xl:leading-[1.55]">
               Questions about a drop, press, a collab, or getting Flora &amp;
               Flame on your shelf. This goes straight to our inbox.
             </p>
-            <div className="mt-8">{children ?? <PlaceholderForm />}</div>
+            <div className="mt-6 xl:mt-8">{children ?? <PlaceholderForm />}</div>
           </motion.div>
         </div>
 
