@@ -64,12 +64,14 @@ const MOBILE_STACK_TOP = ["68vh", "46vh", "24vh", "2vh"];
 const MOBILE_STACK_H = "20vh";
 const MOBILE_STACK_LEFT = "5vw";
 const MOBILE_STACK_W = "90vw";
-// Photo hero shrunk from 48vh to 40vh to leave room for three paragraphs.
+// Photo hero shrunk further so 3 paragraphs comfortably fit below within
+// the 100vh sticky viewport.
 const MOBILE_HERO_TOP = "5vh";
-const MOBILE_HERO_H = "40vh";
-// Text: full-width bottom column, three paragraphs stack with gap.
+const MOBILE_HERO_H = "32vh";
+// Text: full-width bottom column, three paragraphs stack with tight gap.
+// Higher top position + tighter styling to fit all 3 in the remaining space.
 const MOBILE_TEXT_LEFT = "6vw";
-const MOBILE_TEXT_TOP = "48vh";
+const MOBILE_TEXT_TOP = "40vh";
 const MOBILE_TEXT_WIDTH = "88vw";
 const MOBILE_EXIT_RANGE = [0.05, 0.3] as const;
 const MOBILE_MORPH_RANGE = [0.18, 0.45] as const;
@@ -98,7 +100,7 @@ const IMAGES = [
 const ABOUT_PARAGRAPHS = [
   "We're a small team of craft cultivators in Oakland, growing flower the way it's supposed to be grown. Living soil, by hand, pesticide-free, no shortcuts. Every bud hand-trimmed, because machines don't give a f*ck about trichomes.",
   "Living soil means a real ecosystem under every plant — worms, fungi, microbes doing what they've done for millions of years, now under our lights. We don't feed the plants. We feed the soil. The soil feeds them back. Takes longer. Costs more. Tastes like the plant.",
-  "We know the story behind every batch. No B-shelf. Just what we'd smoke ourselves.",
+  "Every batch is small enough that we know its story — who dropped the seed, when it flowered, whose hands trimmed it. If a run doesn't hit — terps flat, burn wrong, high not there — it doesn't get named. No B-shelf. Just what we'd smoke ourselves.",
 ];
 
 /**
@@ -324,7 +326,7 @@ export function About() {
 
           {/* Text column — three paragraphs stacked, each slides in from left. */}
           <div
-            className="absolute flex flex-col gap-4"
+            className="absolute flex flex-col gap-3"
             style={{ left: MOBILE_TEXT_LEFT, top: MOBILE_TEXT_TOP, width: MOBILE_TEXT_WIDTH }}
           >
             {ABOUT_PARAGRAPHS.map((text, i) => (
@@ -334,7 +336,7 @@ export function About() {
                 range={MOBILE_PARA_STAGGER[i]}
                 slideFrom={MOBILE_PARA_SLIDE_FROM}
                 reduce={!!reduce}
-                className="text-left font-display text-[clamp(1rem,3.5vw,1.15rem)] leading-[1.65] tracking-[0.005em] text-neutral-50"
+                className="text-left font-display text-[clamp(0.85rem,3vw,1rem)] leading-[1.5] tracking-[0.005em] text-neutral-50"
               >
                 {text}
               </SlidingParagraph>
