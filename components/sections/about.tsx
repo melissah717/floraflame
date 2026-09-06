@@ -161,6 +161,11 @@ export function About() {
   const mP1Top = useTransform(mobileProgress, [...MOBILE_MORPH_RANGE], [MOBILE_STACK_TOP[0], MOBILE_HERO_TOP]);
   const mP1Height = useTransform(mobileProgress, [...MOBILE_MORPH_RANGE], [MOBILE_STACK_H, MOBILE_HERO_H]);
   const mP1OverlayOp = useTransform(mobileProgress, [MOBILE_MORPH_RANGE[0], MOBILE_MORPH_RANGE[0] + 0.08], [1, 0]);
+  // Lift phase: as text paragraphs slide in, the photo lifts UP off screen
+  // and the text column shifts UP to fill the freed space — so all 3
+  // paragraphs fit without being clipped by the sticky viewport.
+  const mPhotoLiftY = useTransform(mobileProgress, [0.48, 0.7], ["0vh", "-45vh"]);
+  const mTextLiftY = useTransform(mobileProgress, [0.48, 0.7], ["0vh", "-25vh"]);
 
   return (
     <section id="about" className="scroll-mt-20 bg-neutral-900">
@@ -305,6 +310,7 @@ export function About() {
                     top: mP1Top,
                     width: MOBILE_STACK_W,
                     height: mP1Height,
+                    y: mPhotoLiftY,
                   }
             }
             className="absolute overflow-hidden rounded-md"
@@ -324,10 +330,17 @@ export function About() {
             </motion.div>
           </motion.div>
 
-          {/* Text column — three paragraphs stacked, each slides in from left. */}
-          <div
-            className="absolute flex flex-col gap-3"
-            style={{ left: MOBILE_TEXT_LEFT, top: MOBILE_TEXT_TOP, width: MOBILE_TEXT_WIDTH }}
+          {/* Text column — all three paragraphs. Column lifts UP as the
+              photo above slides off screen, giving the paragraphs the
+              full viewport to fit without being clipped. */}
+          <motion.div
+            className="absolute flex flex-col gap-4"
+            style={{
+              left: MOBILE_TEXT_LEFT,
+              top: MOBILE_TEXT_TOP,
+              width: MOBILE_TEXT_WIDTH,
+              y: reduce ? 0 : mTextLiftY,
+            }}
           >
             {ABOUT_PARAGRAPHS.map((text, i) => (
               <SlidingParagraph
@@ -336,12 +349,12 @@ export function About() {
                 range={MOBILE_PARA_STAGGER[i]}
                 slideFrom={MOBILE_PARA_SLIDE_FROM}
                 reduce={!!reduce}
-                className="text-left font-display text-[clamp(0.85rem,3vw,1rem)] leading-[1.5] tracking-[0.005em] text-neutral-50"
+                className="text-left font-display text-[clamp(0.95rem,3.3vw,1.1rem)] leading-[1.6] tracking-[0.005em] text-neutral-50"
               >
                 {text}
               </SlidingParagraph>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
