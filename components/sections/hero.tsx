@@ -23,7 +23,7 @@ import {
  * No fancy scale/opacity — just plain sticky pinning.
  */
 
-const LINES = ["organic", "living soil", "oakland ca"];
+const LINES = ["no till", "living soil", "oakland ca"];
 const PANEL_IMAGE = "/logo.png";
 
 export function Hero() {
@@ -101,22 +101,37 @@ export function Hero() {
           <div className="relative z-10 w-full px-5 sm:px-8">
             <div className="mx-auto w-full max-w-7xl">
               <h1 className="font-display uppercase leading-[0.85] tracking-[-0.035em] text-white">
-                {LINES.map((text, i) => (
-                  <span key={text} className="block overflow-hidden">
-                    <motion.span
-                      initial={{ y: "115%" }}
-                      animate={{ y: 0 }}
-                      transition={{
-                        duration: 1,
-                        delay: 2.4 + i * 0.13,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                      className="block text-[clamp(2.25rem,11vw,7rem)]"
-                    >
-                      {text}
-                    </motion.span>
-                  </span>
-                ))}
+                {LINES.map((text, i) => {
+                  // Per-line sizing so each line fills its width instead of
+                  // wrapping. Different character counts + character widths
+                  // need different font sizes to hit that goal.
+                  //   i=0 NO TILL      — 7 chars, narrow letters, can go BIG
+                  //   i=1 LIVING SOIL  — 11 chars, mixed
+                  //   i=2 OAKLAND CA   — 10 chars but wide letters (O/A/D),
+                  //                      also intentionally smaller as a
+                  //                      hierarchy footnote
+                  const perLineSize = [
+                    "text-[clamp(4.5rem,24vw,7rem)]",   // NO TILL
+                    "text-[clamp(3.5rem,18vw,7rem)]",   // LIVING SOIL
+                    "text-[clamp(2rem,10vw,4rem)]",     // OAKLAND CA
+                  ];
+                  return (
+                    <span key={text} className="block overflow-hidden">
+                      <motion.span
+                        initial={{ y: "115%" }}
+                        animate={{ y: 0 }}
+                        transition={{
+                          duration: 1,
+                          delay: 2.4 + i * 0.13,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                        className={`block ${perLineSize[i]}`}
+                      >
+                        {text}
+                      </motion.span>
+                    </span>
+                  );
+                })}
               </h1>
             </div>
           </div>

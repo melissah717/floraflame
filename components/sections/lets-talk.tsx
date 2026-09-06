@@ -39,9 +39,11 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
     offset: ["start start", "end end"],
   });
 
-  // Text and card — both breakpoints
-  const textY = useTransform(p, [0, 0.24], ["0vh", "-100vh"]);
-  const cardY = useTransform(p, [0.26, 0.4], ["100vh", "0vh"], { ease: easeOutCubic });
+  // Text and card — both breakpoints. Compressed so the card starts
+  // sliding in almost as soon as the text starts scrolling out, killing
+  // the "empty scroll" gap between phases.
+  const textY = useTransform(p, [0, 0.16], ["0vh", "-100vh"]);
+  const cardY = useTransform(p, [0.13, 0.24], ["100vh", "0vh"], { ease: easeOutCubic });
 
   // ── DESKTOP elements (5 total, xl:block) ──
 
@@ -84,9 +86,9 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
     <section
       ref={ref}
       id="wholesale"
-      // Shorter section on mobile/tablet, longer on desktop where full
-      // choreography plays out.
-      className="relative h-[280vh] bg-neutral-900 xl:h-[500vh]"
+      // Shorter than before on both breakpoints — reduces the "empty
+      // scroll" tail between card fully settled and FindUs coming in.
+      className="relative h-[200vh] bg-neutral-900 xl:h-[350vh]"
     >
       <div className="sticky top-0 h-svh w-full overflow-hidden">
         {/* ── MOBILE/TABLET only (behind card, peeking) ─── */}

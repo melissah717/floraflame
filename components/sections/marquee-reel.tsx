@@ -8,6 +8,13 @@ const WORDS = ["Living Soil", "By Hand", "No-Till", "Small Batch", "Oakland"];
  * Full-bleed reel for the top of the footer. Big letters, gradient (later:
  * video) showing through them via mix-blend-mode:multiply on a pure-black
  * text panel. `isolate` keeps the blend inside this section.
+ *
+ * Tuned for calmer, more refined feel:
+ *   – baseVelocity slowed 2 → 0.6 (roughly 3× slower)
+ *   – Text scaled down ~25% and font-black → font-bold (less shouty)
+ *   – Gaps tightened
+ *   – Separator swapped from bulky ✳ to a slim brand-appropriate ✿
+ *   – Separator dimmed via opacity so it reads as a marker, not a shape
  */
 export function MarqueeReel() {
   return (
@@ -33,15 +40,15 @@ export function MarqueeReel() {
       */}
 
       <div className="relative [mix-blend-mode:multiply]">
-        <div className="bg-black py-14 sm:py-16">
-          <ScrollMarquee baseVelocity={2}>
+        <div className="bg-black py-10 sm:py-14">
+          <ScrollMarquee baseVelocity={0.6}>
             {WORDS.map((w) => (
-              <span key={w} className="flex items-center gap-[6vw] pr-[6vw]">
-                <span className="font-display font-black uppercase leading-[0.82] tracking-[-0.02em] text-white text-[clamp(4.5rem,22vw,13rem)]">
+              <span key={w} className="flex items-center gap-[3vw] pr-[3vw]">
+                <span className="font-display font-bold uppercase leading-[0.85] tracking-[-0.015em] text-white text-[clamp(3.5rem,16vw,10rem)]">
                   {w}
                 </span>
-                <span className="text-white text-[clamp(2.5rem,8vw,5rem)] leading-none">
-                  ✳
+                <span className="text-white text-[clamp(1.25rem,3.5vw,2rem)] leading-none opacity-60">
+                  ✿
                 </span>
               </span>
             ))}
