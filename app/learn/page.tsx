@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { Reveal, SectionLabel } from "@/components/scroll-primitives";
+import { Reveal } from "@/components/scroll-primitives";
 import { RGB } from "@/lib/spectrum";
 
 const TITLE = "Learn"
@@ -66,10 +66,7 @@ export default function LearnPage() {
     <div className="bg-neutral-900 pb-24 pt-32 text-neutral-50 sm:pb-32 sm:pt-48">
       <div className={GUTTER}>
         <Reveal>
-          <SectionLabel number="—" tone="light">
-            Learn
-          </SectionLabel>
-          <h1 className="mt-5 max-w-[16ch] font-display uppercase leading-[0.88] tracking-[-0.03em] text-[clamp(2.5rem,7vw,6.5rem)]">
+          <h1 className="max-w-[16ch] font-display uppercase leading-[0.88] tracking-[-0.03em] text-[clamp(2.5rem,7vw,6.5rem)]">
             More than what&apos;s on the label
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-neutral-400 sm:text-xl">

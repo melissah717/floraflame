@@ -11,7 +11,6 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
-import { SectionLabel } from "@/components/scroll-primitives";
 import { RGB } from "@/lib/spectrum";
 
 gsap.registerPlugin(Flip);
@@ -136,11 +135,7 @@ export function LivingSoil() {
 
         <div className="relative grid min-h-[calc(100vh-9rem)] gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.9fr)] lg:items-center">
           <motion.div style={reduce ? undefined : { y: heroY, opacity: heroOpacity }}>
-            <SectionLabel number="01" tone="light">
-              The Method
-            </SectionLabel>
-
-            <h1 className="mt-6 max-w-4xl font-display text-5xl leading-[0.9] uppercase sm:text-7xl lg:text-8xl">
+            <h1 className="max-w-4xl font-display text-5xl leading-[0.9] uppercase sm:text-7xl lg:text-8xl">
               {HEADLINE.split(" ").map((word, index, words) => (
                 <Fragment key={`${word}-${index}`}>
                   <HeroWord word={word} index={index} disabled={!!reduce} />
@@ -334,7 +329,7 @@ function SoilProfile({
       className="relative mx-auto w-full max-w-[29rem]"
     >
       <div className="relative overflow-hidden rounded-[1.5rem] border border-neutral-800 bg-[#0b0a08] p-4 shadow-[0_32px_90px_rgb(0_0_0_/_0.5)] sm:p-5">
-        <div className="flex items-center justify-between text-[10px] tracking-[0.22em] text-neutral-500 uppercase">
+        <div className="flex items-center justify-between text-[13px] tracking-[0.22em] text-neutral-500 uppercase">
           <span>Living Soil</span>
           <span>Ingredients</span>
         </div>
@@ -368,7 +363,7 @@ function SoilProfile({
             <div className="relative flex h-full items-center justify-between gap-5">
               <div>
                 <p className="font-display text-3xl leading-none">Soil</p>
-                <p className="mt-2 text-[10px] tracking-[0.22em] text-neutral-500 uppercase">
+                <p className="mt-2 text-[13px] tracking-[0.22em] text-neutral-500 uppercase">
                   Living inputs
                 </p>
               </div>
@@ -467,7 +462,7 @@ function SoilSigil({
                 style={{ backgroundColor: withAlpha(sigil.color, 0.62) }}
               />
             </div>
-            <span className="text-[10px] tracking-[0.2em] text-neutral-600 tabular-nums">
+            <span className="text-[13px] tracking-[0.2em] text-neutral-600 tabular-nums">
               0{index + 1}
             </span>
           </div>
@@ -481,7 +476,7 @@ function SoilSigil({
             <p className={hasSelection && !isSelected ? "font-display text-xl leading-none" : "font-display text-2xl leading-none"}>
               {sigil.label}
             </p>
-            <p className="mt-2 text-[10px] tracking-[0.22em] text-neutral-500 uppercase">
+            <p className="mt-2 text-[13px] tracking-[0.22em] text-neutral-500 uppercase">
               {sigil.note}
             </p>
             {isSelected && (
@@ -552,7 +547,7 @@ function SoilSystemVisual({
         }}
       />
 
-      <p className="relative text-[10px] tracking-[0.22em] text-neutral-500 uppercase">
+      <p className="relative text-[13px] tracking-[0.22em] text-neutral-500 uppercase">
         The cycle
       </p>
 
@@ -657,7 +652,7 @@ function PrincipleRow({
           {point.n}
         </span>
         <div>
-          <p className="text-[10px] tracking-[0.18em] text-neutral-500 uppercase">
+          <p className="text-[13px] tracking-[0.18em] text-neutral-500 uppercase">
             {point.eyebrow}
           </p>
           <h3 className="mt-2 font-display text-3xl leading-tight">

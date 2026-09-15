@@ -142,12 +142,12 @@ export function Wholesale() {
 
       <button
         type="submit"
-        className="mt-2.5 cursor-pointer rounded-full bg-neutral-50 py-3.5 text-sm font-medium tracking-[0.02em] text-neutral-900 transition-colors hover:bg-neutral-200 xl:py-4"
+        className="mt-2.5 cursor-pointer rounded-full bg-neutral-50 py-3.5 text-base font-medium tracking-[0.02em] text-neutral-900 transition-colors hover:bg-neutral-200 xl:py-4"
       >
         Send request
       </button>
 
-      <p className="text-[11px] leading-[1.5] text-neutral-500">
+      <p className="text-[13px] leading-[1.5] text-neutral-500">
         Opens your email app, addressed to {RECIPIENT}.
       </p>
     </form>
@@ -163,7 +163,7 @@ export function Wholesale() {
  */
 function inputClasses(error?: string): string {
   const base =
-    "w-full rounded-[12px] px-3.5 py-3 text-sm text-neutral-50 outline-none transition-[background-color,border-color] duration-150 placeholder:text-neutral-600 xl:px-4 xl:py-3.5";
+    "w-full rounded-[12px] px-3.5 py-3 text-base text-neutral-50 outline-none transition-[background-color,border-color] duration-150 placeholder:text-neutral-600 xl:px-4 xl:py-3.5";
 
   if (error) {
     return `${base} border border-[#c25a1c]/60 bg-[rgba(194,90,28,0.06)] focus:border-[#c25a1c]`;
@@ -197,7 +197,7 @@ function FieldWrapper({
     <div>
       <label
         htmlFor={htmlFor}
-        className="mb-1.5 flex items-baseline justify-between text-[11px] font-medium uppercase tracking-[0.06em] text-[#a29886]"
+        className="mb-1.5 flex items-baseline justify-between text-[13px] font-medium uppercase tracking-[0.06em] text-[#a29886]"
       >
         <span>{label}</span>
         {error && (

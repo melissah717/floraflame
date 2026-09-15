@@ -15,7 +15,7 @@ import { motion, useScroll, useTransform, useReducedMotion } from "motion/react"
  *   is 280vh so the scroll is much shorter (no long empty tail).
  *
  * Text and card behave the same at every breakpoint:
- *   – "Let's talk." fades in on entry, scrolls up out of view
+ *   – "Let's talk" fades in on entry, scrolls up out of view
  *   – Card slides up from below viewport into center (always opaque)
  */
 
@@ -29,6 +29,22 @@ const FLOWER =
   "https://res.cloudinary.com/g0mcdcfr/image/upload/f_auto,q_auto/v1787812609/Multi-Design_Element_Split_1_ks2tby.png";
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+/**
+ * When the decorative flames and flowers are allowed to start moving.
+ *
+ * They all used to begin at 0–0.06, which put them on screen during the
+ * "Let's talk" beat — and since they enter from above, what you actually
+ * saw was a severed tip hanging off the top edge with nothing else around
+ * it. Fixing one element just promoted the next one into the same spot,
+ * because the timing was the problem, not any single position.
+ *
+ * The text finishes clearing at 0.16 and the card starts rising at 0.13,
+ * so holding every decoration until 0.16 gives the headline a clean beat
+ * on its own, then lets the card lead and the artwork assemble around it.
+ * Each element still has 0.4+ of progress to travel, so nothing rushes.
+ */
+const DECOR_IN = 0.16;
 
 export function LetsTalk({ children }: { children?: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -47,40 +63,61 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
 
   // ── DESKTOP elements (5 total, xl:block) ──
 
-  const bigFlameY = useTransform(p, [0, 0.5], ["-70vh", "0vh"], { ease: easeOutCubic });
-  const bigFlameScale = useTransform(p, [0, 0.5], [1.3, 1], { ease: easeOutCubic });
-  const bigFlameRotate = useTransform(p, [0, 0.5], [22, 8]);
+  /**
+   * Both flames must START FULLY OFF THE TOP, and the old values didn't.
+   *
+   * The starting offset has to clear the BOX BOTTOM, not the box top, and
+   * the box is bigger than its classes suggest because it's scaled 1.3 on
+   * entry (scale grows it about its centre, so half the extra hangs below)
+   * and rotated on top of that:
+   *
+   *   big:   top 15vh + h 60vh  → bottom 75vh, ×1.3 about centre → ~84vh
+   *   small: top 65vh + h 30vh  → bottom 95vh, ×1.3 about centre → ~99.5vh
+   *
+   * At -70vh and -90vh they each sat ~5-10vh short, so the tips hung into
+   * the top of the frame through the whole "Let's talk" beat — a severed
+   * graphic pinned to the top edge with nothing around it. The values
+   * below clear those bottoms with margin for the rotation.
+   *
+   * They also now start LATER, so they sweep in alongside the rising card
+   * instead of being parked on screen before anything else arrives. The
+   * three flowers below already worked this way; these were the odd ones.
+   */
+  const bigFlameY = useTransform(p, [DECOR_IN, 0.6], ["-95vh", "0vh"], { ease: easeOutCubic });
+  const bigFlameScale = useTransform(p, [DECOR_IN, 0.6], [1.3, 1], { ease: easeOutCubic });
+  const bigFlameRotate = useTransform(p, [DECOR_IN, 0.6], [22, 8]);
 
-  const smallFlameY = useTransform(p, [0.02, 0.52], ["-90vh", "0vh"], { ease: easeOutCubic });
-  const smallFlameScale = useTransform(p, [0.02, 0.52], [1.3, 1], { ease: easeOutCubic });
-  const smallFlameRotate = useTransform(p, [0.02, 0.52], [-20, -8]);
+  const smallFlameY = useTransform(p, [DECOR_IN + 0.02, 0.62], ["-115vh", "0vh"], { ease: easeOutCubic });
+  const smallFlameScale = useTransform(p, [DECOR_IN + 0.02, 0.62], [1.3, 1], { ease: easeOutCubic });
+  const smallFlameRotate = useTransform(p, [DECOR_IN + 0.02, 0.62], [-20, -8]);
 
-  const flower1X = useTransform(p, [0, 0.15, 0.5], ["-14vw", "-14vw", "0vw"]);
-  const flower1Y = useTransform(p, [0, 0.12, 0.5], ["-60vh", "20vh", "0vh"], { ease: easeOutCubic });
-  const flower1Scale = useTransform(p, [0, 0.12, 0.5], [1.5, 1.5, 1], { ease: easeOutCubic });
-  const flower1Rotate = useTransform(p, [0, 0.5], [40, 15]);
+  const flower1X = useTransform(p, [DECOR_IN, 0.28, 0.58], ["-14vw", "-14vw", "0vw"]);
+  const flower1Y = useTransform(p, [DECOR_IN, 0.28, 0.58], ["-60vh", "20vh", "0vh"], { ease: easeOutCubic });
+  const flower1Scale = useTransform(p, [DECOR_IN, 0.28, 0.58], [1.5, 1.5, 1], { ease: easeOutCubic });
+  const flower1Rotate = useTransform(p, [DECOR_IN, 0.58], [40, 15]);
 
-  const flower2X = useTransform(p, [0.03, 0.15, 0.52], ["8vw", "8vw", "0vw"]);
-  const flower2Y = useTransform(p, [0.03, 0.15, 0.52], ["-90vh", "-25vh", "0vh"], { ease: easeOutCubic });
-  const flower2Scale = useTransform(p, [0.03, 0.15, 0.52], [1.5, 1.5, 1], { ease: easeOutCubic });
-  const flower2Rotate = useTransform(p, [0.03, 0.52], [-32, -10]);
+  const flower2X = useTransform(p, [DECOR_IN + 0.02, 0.3, 0.6], ["8vw", "8vw", "0vw"]);
+  const flower2Y = useTransform(p, [DECOR_IN + 0.02, 0.3, 0.6], ["-90vh", "-25vh", "0vh"], { ease: easeOutCubic });
+  const flower2Scale = useTransform(p, [DECOR_IN + 0.02, 0.3, 0.6], [1.5, 1.5, 1], { ease: easeOutCubic });
+  const flower2Rotate = useTransform(p, [DECOR_IN + 0.02, 0.6], [-32, -10]);
 
-  const flower3X = useTransform(p, [0.06, 0.2, 0.55], ["6vw", "6vw", "0vw"]);
-  const flower3Y = useTransform(p, [0.06, 0.18, 0.55], ["-110vh", "-15vh", "0vh"], { ease: easeOutCubic });
-  const flower3Scale = useTransform(p, [0.06, 0.18, 0.55], [1.4, 1.4, 1], { ease: easeOutCubic });
-  const flower3Rotate = useTransform(p, [0.06, 0.55], [18, -5]);
+  const flower3X = useTransform(p, [DECOR_IN + 0.04, 0.32, 0.62], ["6vw", "6vw", "0vw"]);
+  const flower3Y = useTransform(p, [DECOR_IN + 0.04, 0.32, 0.62], ["-110vh", "-15vh", "0vh"], { ease: easeOutCubic });
+  const flower3Scale = useTransform(p, [DECOR_IN + 0.04, 0.32, 0.62], [1.4, 1.4, 1], { ease: easeOutCubic });
+  const flower3Rotate = useTransform(p, [DECOR_IN + 0.04, 0.62], [18, -5]);
 
   // ── MOBILE/TABLET elements (2 total, xl:hidden) ──
   // Big flame behind card, peeks from top-right corner.
   // Small flower behind card, peeks from bottom-left corner.
 
-  const mFlameY = useTransform(p, [0, 0.5], ["-45vh", "0vh"], { ease: easeOutCubic });
-  const mFlameScale = useTransform(p, [0, 0.5], [1.2, 1], { ease: easeOutCubic });
-  const mFlameRotate = useTransform(p, [0, 0.5], [12, 4]);
+  // NOTE: there used to be a big flame anchored top-right below the xl
+  // breakpoint. It was removed rather than repositioned — it settled 34vh
+  // into the frame by design, so it always read as a severed graphic
+  // dangling from the top edge with nothing holding it to anything.
 
-  const mFlowerY = useTransform(p, [0.05, 0.55], ["-70vh", "0vh"], { ease: easeOutCubic });
-  const mFlowerScale = useTransform(p, [0.05, 0.55], [1.2, 1], { ease: easeOutCubic });
-  const mFlowerRotate = useTransform(p, [0.05, 0.55], [-18, -6]);
+  const mFlowerY = useTransform(p, [DECOR_IN, 0.6], ["-70vh", "0vh"], { ease: easeOutCubic });
+  const mFlowerScale = useTransform(p, [DECOR_IN, 0.6], [1.2, 1], { ease: easeOutCubic });
+  const mFlowerRotate = useTransform(p, [DECOR_IN, 0.6], [-18, -6]);
 
   return (
     <section
@@ -92,18 +129,6 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
     >
       <div className="sticky top-0 h-svh w-full overflow-hidden">
         {/* ── MOBILE/TABLET only (behind card, peeking) ─── */}
-
-        {/* Big flame — top-right corner, peeks from top */}
-        <motion.div
-          style={
-            reduce
-              ? undefined
-              : { y: mFlameY, scale: mFlameScale, rotate: mFlameRotate }
-          }
-          className="pointer-events-none absolute right-0 top-0 z-0 h-[58vh] w-[52vw] will-change-transform xl:hidden"
-        >
-          <Image src={FLAME_BIG} alt="" fill sizes="52vw" className="object-contain" unoptimized />
-        </motion.div>
 
         {/* Small flower — bottom-left corner, peeks from bottom + left */}
         <motion.div
@@ -149,13 +174,10 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
             style={{ y: cardY }}
             className="w-[calc(100vw-56px)] max-w-[760px] rounded-[24px] border border-[#2a2521] bg-[#1a1712] p-6 shadow-[0_50px_120px_rgba(0,0,0,0.7)] will-change-transform xl:p-[clamp(32px,4.5vw,52px)]"
           >
-            <p className="mb-3 text-[10px] uppercase tracking-[0.22em] text-neutral-500 xl:mb-4 xl:text-[11px]">
-              03 · Submit a Request
-            </p>
             <h2 className="font-display text-[clamp(1.5rem,6vw,3rem)] font-black leading-[0.95] tracking-[-0.015em] text-neutral-50">
               Tell us what you need.
             </h2>
-            <p className="mt-3 max-w-[48ch] text-[13px] leading-[1.5] text-neutral-500 xl:mt-4 xl:text-[14px] xl:leading-[1.55]">
+            <p className="mt-3 max-w-[48ch] text-[15px] leading-[1.55] text-neutral-400 xl:mt-4 xl:text-base xl:leading-[1.6]">
               Questions about a drop, press, a collab, or getting Flora &amp;
               Flame on your shelf. This goes straight to our inbox.
             </p>
@@ -201,13 +223,13 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
           <Image src={FLOWER} alt="" fill sizes="16vw" className="object-contain" unoptimized />
         </motion.div>
 
-        {/* ── "Let's talk." intro (z:50, always in front) ── */}
+        {/* ── "Let's talk" intro (z:50, always in front) ── */}
         <motion.div
           style={{ y: textY }}
           className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center px-5 will-change-transform"
         >
           <p className="whitespace-nowrap text-center font-display text-[clamp(2.5rem,7vw,7rem)] font-black uppercase leading-[0.85] tracking-[-0.03em] text-neutral-50">
-            Let&apos;s talk.
+            Let&apos;s talk
           </p>
         </motion.div>
       </div>

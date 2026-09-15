@@ -322,35 +322,3 @@ export function ScrollMarquee({
     </div>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* SectionLabel — the "01 — drops" editorial marker.                   */
-/* ------------------------------------------------------------------ */
-export function SectionLabel({
-  number,
-  tone = "light",
-  children,
-}: {
-  number: string;
-  /** "dark" = for light backgrounds. "light" = for dark sections (site default). */
-  tone?: "dark" | "light";
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-3 text-xs tracking-[0.08em]",
-        tone === "light" ? "text-neutral-400" : "text-neutral-500"
-      )}
-    >
-      <span className="tabular-nums">{number}</span>
-      <span
-        className={cn(
-          "h-px w-8",
-          tone === "light" ? "bg-neutral-700" : "bg-neutral-300"
-        )}
-      />
-      <span>{children}</span>
-    </div>
-  );
-}

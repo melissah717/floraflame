@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Reveal, SectionLabel } from "@/components/scroll-primitives";
+import { Reveal } from "@/components/scroll-primitives";
 import { ArchiveClient } from "@/components/archive-client";
 import { getArchiveBatches } from "@/lib/strains";
 
@@ -26,10 +26,7 @@ export default async function StrainsPage() {
     <div className="bg-neutral-900 text-neutral-50">
       <div className="mx-auto max-w-7xl px-5 pb-24 pt-32 sm:px-8 sm:pt-40">
         <Reveal>
-          <SectionLabel number="—" tone="light">
-            Strains
-          </SectionLabel>
-          <h1 className="mt-4 max-w-[16ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-[16ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl lg:text-6xl">
             Every batch we&apos;ve tested.
           </h1>
         </Reveal>

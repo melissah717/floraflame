@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   motion,
@@ -36,9 +36,15 @@ const NAV_TOP = 22;
 const HERO_TOP_VH = 10;
 
 const DOCKED_PX = 40;
-const HERO_VW = 12;
 const HERO_MIN = 40;
-const HERO_MAX = 170;
+// Gutter left at each end of the hero wordmark. The text is sized to fill
+// everything between them, so this is the only thing keeping it off the
+// screen edges. It matches NAV_LEFT so the wordmark's left edge doesn't
+// shift horizontally as it docks — only its size changes.
+const HERO_GUTTER = NAV_LEFT;
+// Font size used by the offscreen probe that measures the string. Any
+// value works; it just needs to be big enough that rounding is noise.
+const PROBE_PX = 100;
 
 const ENTRANCE_DELAY = 0.3;
 const LETTER_STAGGER = 0.06;
@@ -58,19 +64,52 @@ export function DockingLogo({ showWithNav = true }: { showWithNav?: boolean }) {
   const { scrollY } = useScroll();
   const reduce = useReducedMotion();
 
-  const [heroPx, setHeroPx] = useState(HERO_MAX);
+  /**
+   * Hero font size is MEASURED, not guessed at with a vw ratio.
+   *
+   * "Flora & Flame" has to span the full width of the viewport, and the
+   * width of a string is a property of the typeface, not of the viewport —
+   * a vw-based size only lands edge-to-edge at one specific window width.
+   * So an offscreen probe renders the same string, in the same face, at a
+   * known size; the ratio of its width to that size is constant, and the
+   * font size that exactly fills the line falls out of it.
+   *
+   * Measured again after `document.fonts.ready` because the probe is
+   * meaningless while Fraunces is still swapping in from a fallback.
+   */
+  const probeRef = useRef<HTMLSpanElement>(null);
+  const [heroPx, setHeroPx] = useState(HERO_MIN);
   useEffect(() => {
     const measure = () => {
-      const raw = window.innerWidth * (HERO_VW / 100);
-      setHeroPx(Math.max(HERO_MIN, Math.min(HERO_MAX, raw)));
+      const probe = probeRef.current;
+      if (!probe) return;
+      const available = window.innerWidth - HERO_GUTTER * 2;
+
+      // Pass 1 — rough ratio at the reference size.
+      probe.style.fontSize = `${PROBE_PX}px`;
+      const ratio = probe.getBoundingClientRect().width / PROBE_PX;
+      if (!ratio) return;
+      let size = available / ratio;
+
+      // Pass 2 — re-measure AT that size. Each letter is laid out in its
+      // own inline-block box, and those boxes round independently, so the
+      // string's width isn't perfectly linear in font size: pass 1 lands
+      // ~10px short at desktop widths. Measuring at the answer and
+      // correcting gets it under a pixel.
+      probe.style.fontSize = `${size}px`;
+      const actual = probe.getBoundingClientRect().width;
+      if (actual) size *= available / actual;
+
+      setHeroPx(Math.max(HERO_MIN, size));
     };
     measure();
+    document.fonts?.ready.then(measure).catch(() => {});
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, []);
 
   const fontSize = useTransform(scrollY, [0, DOCK_END], [heroPx, DOCKED_PX]);
-  const x = useTransform(scrollY, [0, DOCK_END], ["6vw", `${NAV_LEFT}px`]);
+  const x = useTransform(scrollY, [0, DOCK_END], [`${HERO_GUTTER}px`, `${NAV_LEFT}px`]);
   const y = useTransform(scrollY, [0, DOCK_END], [`${HERO_TOP_VH}vh`, `${NAV_TOP}px`]);
 
   // Cross-fade at terminal: text out, SVG in, during the last ~15% of dock.
@@ -119,6 +158,25 @@ export function DockingLogo({ showWithNav = true }: { showWithNav?: boolean }) {
           </motion.span>
         ))}
       </motion.div>
+
+      {/* ── Measuring probe ── never seen. Mirrors the wordmark's markup
+           EXACTLY, including the per-letter inline-block spans: those
+           suppress the kerning a plain string would get, so a plain-string
+           probe would measure narrower than the real thing and the
+           wordmark would overhang the screen. `visibility: hidden` rather
+           than `display: none`, which would measure zero. */}
+      <span
+        ref={probeRef}
+        aria-hidden
+        className="pointer-events-none invisible absolute left-0 top-0 font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap"
+        style={{ fontSize: `${PROBE_PX}px` }}
+      >
+        {LETTERS.map((char, i) => (
+          <span key={i} className="inline-block">
+            {char === " " ? "\u00A0" : char}
+          </span>
+        ))}
+      </span>
 
       {/* ── SVG wordmark ── appears at nav slot as text fades out.
            Fixed at docked position (no scroll motion — only opacity animates).

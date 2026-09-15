@@ -406,7 +406,7 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
                 transition={{ duration: 0.3 }}
                 className="flex flex-col items-center gap-2"
               >
-                <span className="inline-flex items-center rounded-full border border-neutral-700 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-300">
+                <span className="inline-flex items-center rounded-full border border-neutral-700 px-3 py-1 text-[13px] uppercase tracking-[0.18em] text-neutral-300">
                   Just dropped
                 </span>
                 <span className="font-display text-xl text-neutral-50 sm:text-2xl">
@@ -508,13 +508,13 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
                     {active.name}
                   </h2>
                   {active.isCurrent && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-300">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[13px] tracking-[0.06em] text-neutral-300">
                       <span className="h-1.5 w-1.5 rounded-full bg-lime-400" aria-hidden />
                       In rotation
                     </span>
                   )}
                   {active.isNew && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-300">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[13px] tracking-[0.06em] text-neutral-300">
                       <span className="h-1.5 w-1.5 rounded-full bg-sky-400" aria-hidden />
                       New
                     </span>
@@ -531,7 +531,7 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
                   {active.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400"
+                      className="rounded-full border border-neutral-700 px-2.5 py-1 text-[13px] tracking-[0.06em] text-neutral-400"
                     >
                       {tag}
                     </span>
@@ -561,7 +561,7 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
       <div className="flex flex-col gap-8">
         {currentBatches.length > 0 && (
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+            <p className="text-[13px] uppercase tracking-[0.18em] text-neutral-400">
               Now in rotation: {currentBatches.length}
             </p>
             <div className="mt-3 grid grid-cols-6 gap-3 sm:grid-cols-8 sm:gap-4">
@@ -587,7 +587,7 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
         )}
 
         <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+          <p className="text-[13px] uppercase tracking-[0.18em] text-neutral-400">
             All strains: {batches.length}
           </p>
           <div className="mt-3 grid grid-cols-6 gap-3 sm:grid-cols-8 sm:gap-4">

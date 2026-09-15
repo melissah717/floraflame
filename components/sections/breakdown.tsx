@@ -464,7 +464,7 @@ export function Breakdown() {
               <span className="h-px w-8 bg-neutral-700" />
               <span>The Breakdown</span>
             </div>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900/80 px-3 py-1 text-[11px] tracking-[0.14em] text-neutral-300 backdrop-blur-sm">
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900/80 px-3 py-1 text-[13px] tracking-[0.14em] text-neutral-300 backdrop-blur-sm">
               <span
                 className="h-2 w-2 rounded-full"
                 style={{ backgroundColor: RGB.indica }}
@@ -988,13 +988,13 @@ function ChapterSideLabel({
     <div className="pointer-events-none absolute top-28 bottom-8 left-[-3.75rem] hidden lg:block">
       <div className="sticky top-28 flex h-[calc(100vh-8rem)] items-center justify-start">
         {disabled ? (
-          <div className="pl-1 text-[12px] tracking-[0.16em] text-neutral-500 uppercase [text-orientation:upright] [writing-mode:vertical-rl]">
+          <div className="pl-1 text-[13px] tracking-[0.16em] text-neutral-500 uppercase [text-orientation:upright] [writing-mode:vertical-rl]">
             <span style={{ color: accent }}>{title.replaceAll(" ", "  ")}</span>
           </div>
         ) : (
           <motion.div
             style={{ opacity, x, filter: blur }}
-            className="pl-1 text-[12px] tracking-[0.16em] text-neutral-500 uppercase [text-orientation:upright] [writing-mode:vertical-rl]"
+            className="pl-1 text-[13px] tracking-[0.16em] text-neutral-500 uppercase [text-orientation:upright] [writing-mode:vertical-rl]"
           >
             <span style={{ color: accent }}>{title.replaceAll(" ", "  ")}</span>
           </motion.div>
@@ -1089,7 +1089,7 @@ function TerpeneStackVisual({
                 <span className="mt-1.5 block font-display text-[1.15rem] leading-none text-neutral-50">
                   Set intensity
                 </span>
-                <span className="mt-1.5 block text-[12px] leading-relaxed text-neutral-300">
+                <span className="mt-1.5 block text-[13px] leading-relaxed text-neutral-300">
                   THC and CBD shape the weight of the high.
                 </span>
               </div>
@@ -1100,7 +1100,7 @@ function TerpeneStackVisual({
                 <span className="mt-1.5 block font-display text-[1.15rem] leading-none text-neutral-50">
                   Set character
                 </span>
-                <span className="mt-1.5 block text-[12px] leading-relaxed text-neutral-300">
+                <span className="mt-1.5 block text-[13px] leading-relaxed text-neutral-300">
                   Aroma compounds steer mood, body feel, and clarity.
                 </span>
               </div>
@@ -1121,7 +1121,7 @@ function TerpeneStackVisual({
                         backgroundColor: terpene.item.accent ?? RGB.hybrid,
                       }}
                     />
-                    <span className="truncate text-[12px] tracking-[0.12em] text-neutral-200 uppercase">
+                    <span className="truncate text-[13px] tracking-[0.12em] text-neutral-200 uppercase">
                       {terpene.item.title}
                     </span>
                   </div>
@@ -1133,14 +1133,14 @@ function TerpeneStackVisual({
       </div>
       <div className="pointer-events-none mt-3 min-h-[6rem] sm:mt-4">
         <div className="flex min-h-[6rem] w-[14rem] flex-col justify-between rounded-[1.25rem] bg-[#0d0d0f] px-3.5 py-3 shadow-[0_10px_28px_rgb(0_0_0_/_0.22)]">
-          <span className="block text-[10px] tracking-[0.22em] text-neutral-500">
+          <span className="block text-[13px] tracking-[0.22em] text-neutral-500">
             OTHER POPULAR TERPENES
           </span>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {popularTerpenes.map((terpene) => (
               <span
                 key={terpene}
-                className="rounded-full bg-white/[0.04] px-2 py-1 text-[11px] tracking-[0.12em] text-neutral-300 uppercase"
+                className="rounded-full bg-white/[0.04] px-2 py-1 text-[13px] tracking-[0.12em] text-neutral-300 uppercase"
               >
                 {terpene}
               </span>
@@ -1155,11 +1155,14 @@ function TerpeneStackVisual({
 /* ------------------------------------------------------------------ */
 
 /**
- * Chapter divider — a small numbered eyebrow (matching the site's own
- * SectionLabel pattern) with the actual chapter title stamped in below it:
- * a quick scale+rotate snap rather than a gentle slide, so it reads as a
- * stamp hitting flash paper. The rule under it is tinted to the chapter's
- * spectrum color, so each chapter reads as its own "page."
+ * Chapter divider — the chapter title stamped in: a quick scale+rotate
+ * snap rather than a gentle slide, so it reads as a stamp hitting flash
+ * paper. The rule under it is tinted to the chapter's spectrum color, so
+ * each chapter reads as its own "page."
+ *
+ * `number` no longer prints — the numbered eyebrow above the title was
+ * removed site-wide — but it still drives the per-chapter animation
+ * timings below, which are deliberately not uniform.
  */
 function ChapterMark({
   number,
@@ -1226,12 +1229,7 @@ function ChapterMark({
 
   const label = (
     <div>
-      <div className="flex items-center gap-3 text-xs tracking-[0.08em] text-neutral-500">
-        <span className="tabular-nums">{String(number).padStart(2, "0")}</span>
-        <span className="h-px w-8" style={{ backgroundColor: accent }} />
-        <span>Chapter</span>
-      </div>
-      <h3 className="mt-3 font-display text-3xl leading-tight tracking-[-0.01em] sm:text-4xl">
+      <h3 className="font-display text-3xl leading-tight tracking-[-0.01em] sm:text-4xl">
         {title}
       </h3>
     </div>
@@ -1620,16 +1618,16 @@ function TerpeneWheelVisual({
             <span className="font-display text-lg leading-none">
               {activeTerpene.item.title}
             </span>
-            <span className="mt-1.5 text-[10px] tracking-[0.18em] text-neutral-500">
+            <span className="mt-1.5 text-[13px] tracking-[0.18em] text-neutral-500">
               {activeTerpene.item.pct}%
             </span>
           </>
         ) : (
           <>
-            <span className="text-[10px] tracking-[0.18em] text-neutral-500">
+            <span className="text-[13px] tracking-[0.18em] text-neutral-500">
               TERPENE
             </span>
-            <span className="text-[10px] tracking-[0.18em] text-neutral-500">
+            <span className="text-[13px] tracking-[0.18em] text-neutral-500">
               PROFILE
             </span>
           </>

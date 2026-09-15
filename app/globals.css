@@ -150,6 +150,25 @@
   --color-neutral-700: #443f37;
   --color-neutral-800: #000000;
   --color-neutral-900: #000000;
+
+  /* Body type ramp, +1px across the board.
+     The display sizes on this site are enormous (up to 10rem) while body
+     copy sat on Tailwind's stock ramp, so the small end read as an
+     afterthought next to the headlines. Overriding the tokens lifts every
+     existing text-xs / text-sm / text-base / text-lg / text-xl in the
+     components at once — same trick as the neutral ramp above, no
+     component edits needed.
+
+     Line heights are deliberately NOT set: Tailwind's defaults are
+     unitless ratios (e.g. calc(1.5 / 1)), so leading scales with these
+     automatically and stays proportional.
+
+     Display sizes (2xl and up) are untouched. */
+  --text-xs: 0.8125rem;  /* 13px, was 12 */
+  --text-sm: 0.9375rem;  /* 15px, was 14 */
+  --text-base: 1.0625rem; /* 17px, was 16 */
+  --text-lg: 1.1875rem;  /* 19px, was 18 */
+  --text-xl: 1.3125rem;  /* 21px, was 20 */
 }
 
 /* Fraunces axis defaults: slightly soft, wonk on.

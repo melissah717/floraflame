@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import {
   motion,
   useScroll,
   useTransform,
   useReducedMotion,
+  useMotionValueEvent,
   type MotionValue,
 } from "motion/react";
 
@@ -42,21 +43,66 @@ const HERO_W = "45vw";
 const HERO_H = "78vh";
 // Text column — wider than before to accommodate three stacked paragraphs.
 // Higher top position so the whole stack fits vertically.
-const TEXT_RIGHT = "18vw";
-const TEXT_TOP = "16vh";
-const TEXT_WIDTH = "24vw";
-const EXIT_RANGE = [0.05, 0.28] as const;
-const P1_MORPH_RANGE = [0.25, 0.5] as const;
+// NOTE: the paragraph font size below is capped by a vh term as well as a
+// vw one (min(1.5vw, 2.45vh)). The stack has to fit inside the sticky 100vh
+// viewport, and on a wide-but-short window (1366×768, 1280×720) a purely
+// width-based size overflowed the bottom. The vh term is what keeps it in.
+const TEXT_RIGHT = "12vw";
+const TEXT_TOP = "13vh";
+const TEXT_WIDTH = "30vw";
+// Everything below is pushed later than it used to be to make room for the
+// LIVING SOIL reveal, which now owns the first fifth of the section while
+// the row sits at rest. The shape of the sequence is unchanged.
+const EXIT_RANGE = [0.2, 0.4] as const;
+const P1_MORPH_RANGE = [0.38, 0.58] as const;
 // Three paragraphs slide in from the RIGHT with stagger. Each takes ~10%
 // of scroll to slide in, one after another, then the section holds.
 // Big positive slideFrom = starts fully off-screen right, so no opacity
 // fade needed — paragraph is simply out of view until it slides in.
 const PARA_STAGGER: readonly (readonly [number, number])[] = [
-  [0.5, 0.6],
-  [0.6, 0.7],
-  [0.7, 0.8],
+  [0.58, 0.67],
+  [0.67, 0.76],
+  [0.76, 0.85],
 ];
 const PARA_SLIDE_FROM = "50vw";
+
+// ── DESKTOP "LIVING SOIL" reveal ──
+// Sits in the empty band above the photo row while the row rests, reveals a
+// word at a time, then rides the row's own exit transform off the top.
+const WORDS = ["Living", "Soil"] as const;
+// The row runs from ROW_LEFT[0] to ROW_LEFT[3] + ROW_W — 7vw to 93vw. The
+// type is pinned to exactly that span so it lines up with the outer edges
+// of the first and last photo.
+const WORDS_LEFT = ROW_LEFT[0];
+const WORDS_WIDTH = "86vw";
+// Anchored by its BOTTOM edge, which lands 3vh above ROW_TOP (37vh). Using
+// bottom rather than top means the gap to the photos stays put no matter
+// how tall the type ends up.
+const WORDS_BOTTOM = "66vh";
+// Tuned by measurement: "LIVING SOIL" in Fraunces at this weight, plus the
+// 0.2em word gap, runs 5.56em of ink, so 86vw / 5.56 = 15.47vw would fill
+// the row exactly. Set a little under that — landing right on the
+// container width puts the flex items at the shrink threshold, and a
+// shrunk item would have its word quietly clipped by the reveal mask.
+// 15vw lands at ~97% of the row: reads flush with the outer photo edges
+// with ~37px of slack. Both terms are vw, so the fit holds at every window
+// width — only a change to the string or the typeface needs re-deriving.
+//
+// The vh term guards short, wide windows, where type sized purely off the
+// width grows tall enough to collide with the nav. It can only ever make
+// the line narrower than the row, never wider.
+const WORDS_SIZE = "min(15vw, 27vh)";
+// Two hard cuts, NOT a reveal. Each word is simply off, then on — no
+// slide, no fade — so it lands like a stamp rather than arriving. The
+// two hits sit ~190px of scroll apart: far enough to read as two separate
+// impacts, close enough to feel like one gesture.
+const WORD_HITS = [0.05, 0.11] as const;
+// The recoil after each hit, in SECONDS — time-based, not scroll-based, so
+// the impact lands with the same snap however fast you happen to be
+// scrolling. Deliberately short: this is the shock settling, not an
+// entrance; stretch it and the BOOM turns back into a zoom.
+const WORD_PUNCH_SEC = 0.22;
+const WORD_PUNCH_SCALE = 1.06;
 
 // ── MOBILE stack → hero knobs ──
 const MOBILE_SCROLL_LENGTH = "h-[380vh]";
@@ -93,6 +139,27 @@ const IMAGES = [
 ];
 
 /**
+ * ── `sizes` and the object-cover trap ──
+ *
+ * The source photos are LANDSCAPE (3130×2075, ≈1.51:1) but every box below
+ * is PORTRAIT. `sizes` tells the browser how wide the image will render, and
+ * the browser sizes the *whole* image to that — but `object-cover` on a
+ * portrait box scales to match the box HEIGHT and crops the sides off.
+ *
+ * So the width the browser actually needs is `boxHeight × 1.51`, not boxWidth.
+ * Passing the box width (e.g. "20vw") asked for a 288×190 file to fill a
+ * 288×495 slot — a 2.6× upscale on a 1× screen, 5.2× on retina. That was the
+ * blur. These are expressed in vh because the boxes are.
+ *
+ * Keep each value in sync with the *largest* box its image ever animates to.
+ */
+// (aspect ratio 3130 / 2075 = 1.51)
+const SIZES_ROW = "max(20vw, 83vh)"; //  55vh × 1.51
+const SIZES_HERO = "max(45vw, 118vh)"; //  78vh × 1.51
+const SIZES_MOBILE_ROW = "max(90vw, 31vh)"; //  20vh × 1.51
+const SIZES_MOBILE_HERO = "max(90vw, 49vh)"; //  32vh × 1.51
+
+/**
  * Three-paragraph narrative. Each stands on its own so any can be cut
  * without breaking the others. Story arc: who we are → what "living soil"
  * actually means → the quality bar we hold ourselves to.
@@ -104,18 +171,39 @@ const ABOUT_PARAGRAPHS = [
 ];
 
 /**
- * Short blurbs overlaid on each of the 4 panel photos before the row exits.
- * TODO: swap these placeholders with the copy your client sends.
+ * Captions overlaid on each of the 4 panel photos before the row exits.
+ *
+ * KEEP THESE SHORT — under about 24 characters. The panels are only 20vw
+ * wide, and a caption that wraps to two lines breaks the rhythm of the row
+ * (three one-liners and one two-liner reads as a mistake, not a variation).
+ * No terminal periods: these are captions, not sentences, and a full stop
+ * on a four-word fragment makes it read as clipped rather than deliberate.
+ *
  * Index matches IMAGES[]:
  *   0 → about-1 (anchor, the one that expands to hero)
  *   1 → about-2, 2 → about-3, 3 → about-4 (the three that slide up and off)
  */
 const PANEL_BLURBS = [
-  "The room where it all happens.",
-  "Every plant, checked by hand.",
-  "Trimming's slow because it has to be.",
-  "Small runs. Nothing anonymous.",
+  "Where it all happens",
+  "Every plant, by hand",
+  "Trimmed slow, on purpose",
+  "Nothing anonymous",
 ];
+
+/**
+ * Caption styling. These were set in Fraunces at display weight, which put
+ * them in the same voice as the section headings — so the photo captions
+ * competed with the headline instead of sitting under it. Karla, uppercase
+ * and letterspaced, reads as an annotation on the photograph: clearly
+ * subordinate, and much cleaner at this size over a busy image.
+ *
+ * Uppercase + tracking also buys apparent size without needing more point
+ * size, which matters here because the panels are narrow.
+ */
+const CAPTION_CLASS =
+  "font-sans text-[0.8rem] font-semibold uppercase tracking-[0.13em] text-white/95 xl:text-[0.85rem]";
+const CAPTION_CLASS_MOBILE =
+  "font-sans text-[0.85rem] font-semibold uppercase tracking-[0.13em] text-white/95";
 
 export function About() {
   const videoRef = useRef<HTMLDivElement>(null);
@@ -156,6 +244,30 @@ export function About() {
   // the full hero image is visible before it reaches its final position.
   const p1OverlayOp = useTransform(aboutProgress, [P1_MORPH_RANGE[0], P1_MORPH_RANGE[0] + 0.08], [1, 0]);
 
+  /**
+   * LIVING / SOIL — plain React state, deliberately NOT a scroll-linked
+   * MotionValue.
+   *
+   * The obvious implementation is useTransform over a hair-thin input
+   * range, e.g. [hit - 0.0005, hit] → [0, 1], to fake a step function.
+   * That does not survive: Motion pre-samples scroll-linked transforms
+   * into keyframes at a fixed resolution, and a step that narrow falls
+   * between samples, so it comes out smeared into a gradual ramp. The
+   * word fades instead of hitting — the exact thing this is not meant
+   * to do.
+   *
+   * A boolean flipped from a scroll subscription can't be interpolated,
+   * so the cut stays a cut. Returning the previous tuple when nothing
+   * changed keeps this from re-rendering on every scroll frame.
+   */
+  const [hits, setHits] = useState<[boolean, boolean]>([false, false]);
+  useMotionValueEvent(aboutProgress, "change", (p) => {
+    setHits((prev) => {
+      const next: [boolean, boolean] = [p >= WORD_HITS[0], p >= WORD_HITS[1]];
+      return next[0] === prev[0] && next[1] === prev[1] ? prev : next;
+    });
+  });
+
   // Mobile photo transforms
   const mRestY = useTransform(mobileProgress, [...MOBILE_EXIT_RANGE], ["0vh", "-100vh"]);
   const mP1Top = useTransform(mobileProgress, [...MOBILE_MORPH_RANGE], [MOBILE_STACK_TOP[0], MOBILE_HERO_TOP]);
@@ -193,6 +305,37 @@ export function About() {
       {/* ── DESKTOP: row exits → hero appears → 3 paragraphs slide in from left ── */}
       <div ref={aboutRef} className={`relative hidden ${ABOUT_SCROLL_LENGTH} lg:block`}>
         <div className="sticky top-0 h-screen w-full overflow-hidden">
+          {/* ── LIVING SOIL ── each word cuts in, hard, in the band above
+              the photo row — two hits rather than a reveal — then both
+              leave on the row's own exit transform so the type and the
+              photos clear the screen as one move. */}
+          <motion.h2
+            style={
+              reduce
+                ? { left: WORDS_LEFT, bottom: WORDS_BOTTOM, width: WORDS_WIDTH, fontSize: WORDS_SIZE }
+                : { left: WORDS_LEFT, bottom: WORDS_BOTTOM, width: WORDS_WIDTH, fontSize: WORDS_SIZE, y: restY }
+            }
+            className="absolute z-10 flex items-end gap-[0.2em] font-display uppercase tracking-[-0.03em] whitespace-nowrap text-neutral-50 will-change-transform"
+          >
+            {WORDS.map((word, i) => (
+              // No overflow-hidden wrapper any more: it existed only to clip
+              // the old slide, and it would now crop the punch's overshoot.
+              <motion.span
+                key={word}
+                // Opacity is a plain value, not animated: that IS the cut.
+                // Only the scale recoil is animated, and initial={false}
+                // keeps it from playing once on mount.
+                style={{ opacity: reduce || hits[i] ? 1 : 0 }}
+                initial={false}
+                animate={reduce ? undefined : { scale: hits[i] ? 1 : WORD_PUNCH_SCALE }}
+                transition={{ duration: WORD_PUNCH_SEC, ease: [0.16, 1, 0.3, 1] }}
+                className="shrink-0 leading-[1] will-change-[opacity,transform]"
+              >
+                {word}
+              </motion.span>
+            ))}
+          </motion.h2>
+
           {[1, 2, 3].map((idx) => (
             <motion.div
               key={idx}
@@ -209,12 +352,12 @@ export function About() {
               }
               className="absolute overflow-hidden rounded-md"
             >
-              <Image src={IMAGES[idx]} alt="" fill sizes="20vw" className="object-cover" />
+              <Image src={IMAGES[idx]} alt="" fill sizes={SIZES_ROW} className="object-cover" />
               {/* Dim overlay — permanent on the exiting panels, so blurb reads. */}
-              <div className="absolute inset-0 bg-black/45" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10" />
               {/* Blurb, bottom of panel */}
               <div className="absolute inset-x-0 bottom-0 p-3 xl:p-4">
-                <p className="font-display text-white text-[clamp(0.7rem,0.85vw,0.85rem)] leading-[1.35]">
+                <p className={CAPTION_CLASS}>
                   {PANEL_BLURBS[idx]}
                 </p>
               </div>
@@ -229,18 +372,18 @@ export function About() {
             }
             className="absolute overflow-hidden rounded-md"
           >
-            <Image src={IMAGES[0]} alt="" fill sizes="45vw" className="object-cover" />
+            <Image src={IMAGES[0]} alt="" fill sizes={SIZES_HERO} className="object-cover" />
             {/* Overlay + blurb fade out early in the anchor morph so the
                 hero image reveals fully once the row is finished. */}
             <motion.div
               style={reduce ? { opacity: 0 } : { opacity: p1OverlayOp }}
-              className="absolute inset-0 bg-black/45"
+              className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10"
             />
             <motion.div
               style={reduce ? { opacity: 0 } : { opacity: p1OverlayOp }}
               className="absolute inset-x-0 bottom-0 p-3 xl:p-4"
             >
-              <p className="font-display text-white text-[clamp(0.7rem,0.85vw,0.85rem)] leading-[1.35]">
+              <p className={CAPTION_CLASS}>
                 {PANEL_BLURBS[0]}
               </p>
             </motion.div>
@@ -258,7 +401,7 @@ export function About() {
                 range={PARA_STAGGER[i]}
                 slideFrom={PARA_SLIDE_FROM}
                 reduce={!!reduce}
-                className="font-display text-[clamp(1rem,1.2vw,1.15rem)] leading-[1.65] tracking-[0.005em] text-neutral-50"
+                className="font-display text-[clamp(1.05rem,min(1.5vw,2.45vh),1.45rem)] leading-[1.65] tracking-[0.005em] text-neutral-50"
               >
                 {text}
               </SlidingParagraph>
@@ -286,10 +429,10 @@ export function About() {
               }
               className="absolute overflow-hidden rounded-md"
             >
-              <Image src={IMAGES[idx]} alt="" fill sizes="90vw" className="object-cover" />
-              <div className="absolute inset-0 bg-black/45" />
+              <Image src={IMAGES[idx]} alt="" fill sizes={SIZES_MOBILE_ROW} className="object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10" />
               <div className="absolute inset-x-0 bottom-0 p-3">
-                <p className="font-display text-white text-[clamp(0.85rem,3vw,1rem)] leading-[1.3]">
+                <p className={CAPTION_CLASS_MOBILE}>
                   {PANEL_BLURBS[idx]}
                 </p>
               </div>
@@ -315,16 +458,16 @@ export function About() {
             }
             className="absolute overflow-hidden rounded-md"
           >
-            <Image src={IMAGES[0]} alt="" fill sizes="90vw" className="object-cover" />
+            <Image src={IMAGES[0]} alt="" fill sizes={SIZES_MOBILE_HERO} className="object-cover" />
             <motion.div
               style={reduce ? { opacity: 0 } : { opacity: mP1OverlayOp }}
-              className="absolute inset-0 bg-black/45"
+              className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10"
             />
             <motion.div
               style={reduce ? { opacity: 0 } : { opacity: mP1OverlayOp }}
               className="absolute inset-x-0 bottom-0 p-3"
             >
-              <p className="font-display text-white text-[clamp(0.85rem,3vw,1rem)] leading-[1.3]">
+              <p className={CAPTION_CLASS_MOBILE}>
                 {PANEL_BLURBS[0]}
               </p>
             </motion.div>
@@ -349,7 +492,7 @@ export function About() {
                 range={MOBILE_PARA_STAGGER[i]}
                 slideFrom={MOBILE_PARA_SLIDE_FROM}
                 reduce={!!reduce}
-                className="text-left font-display text-[clamp(0.95rem,3.3vw,1.1rem)] leading-[1.6] tracking-[0.005em] text-neutral-50"
+                className="text-left font-display text-[clamp(1.05rem,3.6vw,1.2rem)] leading-[1.6] tracking-[0.005em] text-neutral-50"
               >
                 {text}
               </SlidingParagraph>
@@ -394,7 +537,13 @@ function SlidingParagraph({
         // Fraunces upright at a proper reading weight — light+italic was
         // pretty but read as "faded" against the dark background. This is
         // still designer-feeling but you can actually read it.
-        fontVariationSettings: "'opsz' 14, 'wght' 420, 'SOFT' 30, 'WONK' 0",
+        //
+        // wght 520, not 420: light text on a black ground optically thins
+        // out (halation eats the stems), so reverse type needs more weight
+        // than the same face would on white. opsz 11 rather than 14 for
+        // the same reason — Fraunces thins its hairlines as the optical
+        // size axis climbs, and the low end keeps them solid.
+        fontVariationSettings: "'opsz' 11, 'wght' 520, 'SOFT' 30, 'WONK' 0",
         ...(reduce ? {} : { x }),
       }}
       className={`will-change-transform ${className ?? ""}`}

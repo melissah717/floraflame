@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { Reveal, SectionLabel } from "@/components/scroll-primitives";
+import { Reveal } from "@/components/scroll-primitives";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
 
 const TEASER_IMAGE =
@@ -32,8 +32,7 @@ export default function MerchPage() {
   return (
     <div className="mx-auto max-w-7xl px-5 pb-24 pt-32 sm:px-8 sm:pt-40">
       <Reveal>
-        <SectionLabel number="—">Merch</SectionLabel>
-        <h1 className="mt-4 max-w-[16ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl lg:text-6xl">
+        <h1 className="max-w-[16ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl lg:text-6xl">
           Gear for the shelf.
         </h1>
       </Reveal>

@@ -10,7 +10,7 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
-import { Reveal, SectionLabel } from "@/components/scroll-primitives";
+import { Reveal } from "@/components/scroll-primitives";
 import { StockistMap } from "@/components/stockist-map";
 import {
   directionsUrl,
@@ -182,13 +182,9 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
       className="scroll-mt-20 bg-neutral-800 px-5 py-24 sm:px-8 sm:py-32"
     >
       <div className="mx-auto max-w-7xl">
-        <Reveal>
-          <SectionLabel number="04">Find Us</SectionLabel>
-        </Reveal>
-
         <motion.h2
           style={reduce ? undefined : { y: headingY, opacity: headingOpacity }}
-          className="mt-6 max-w-[14ch] font-display text-4xl leading-[1.02] sm:text-6xl"
+          className="max-w-[14ch] font-display text-4xl leading-[1.02] sm:text-6xl"
         >
           Carried in{" "}
           <CountUp

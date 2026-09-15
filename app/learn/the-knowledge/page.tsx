@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { getBlogPosts, type BlogPost } from "@/lib/blog";
-import { Reveal, RevealGroup, RevealItem, SectionLabel } from "@/components/scroll-primitives";
+import { Reveal, RevealGroup, RevealItem } from "@/components/scroll-primitives";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
 
 // Revisits the sheet on every request in dev, and on the revalidate
@@ -45,10 +45,7 @@ export default async function TheKnowledgePage() {
   return (
     <div className={`bg-neutral-900 pb-24 pt-32 text-neutral-50 sm:pb-32 sm:pt-48 ${GUTTER}`}>
       <Reveal>
-        <SectionLabel number="—" tone="light">
-          Learn
-        </SectionLabel>
-        <h1 className="mt-5 max-w-[16ch] font-display uppercase leading-[0.88] tracking-[-0.03em] text-[clamp(2.5rem,7vw,6.5rem)]">
+        <h1 className="max-w-[16ch] font-display uppercase leading-[0.88] tracking-[-0.03em] text-[clamp(2.5rem,7vw,6.5rem)]">
           The Knowledge
         </h1>
         <p className="mt-6 max-w-xl text-lg leading-relaxed text-neutral-400">

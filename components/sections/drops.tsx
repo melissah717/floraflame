@@ -8,7 +8,7 @@ import { type Strain } from "@/lib/strains";
 import { RGB, anchorForSpectrum, colorForHybrid } from "@/lib/spectrum";
 import { SpectrumBackdrop } from "@/components/spectrum-backdrop";
 import { NugZoom } from "@/components/nug-zoom";
-import { ParallaxText, Reveal, SectionLabel } from "@/components/scroll-primitives";
+import { ParallaxText, Reveal } from "@/components/scroll-primitives";
 import { cn } from "@/lib/utils";
 
 /**
@@ -92,7 +92,7 @@ function StrainInfo({
           </span>
         </div>
         {strain.isNew && (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[13px] tracking-[0.06em] text-neutral-300">
             <span className="h-1.5 w-1.5 rounded-full bg-sky-400" aria-hidden />
             New
           </span>
@@ -103,7 +103,7 @@ function StrainInfo({
         {strain.tags.map((tag) => (
           <span
             key={tag}
-            className="rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400 sm:px-3 sm:py-1.5 sm:text-xs"
+            className="rounded-full border border-neutral-700 px-2.5 py-1 text-[13px] tracking-[0.06em] text-neutral-400 sm:px-3 sm:py-1.5 sm:text-xs"
           >
             {tag}
           </span>
@@ -112,7 +112,7 @@ function StrainInfo({
           type="button"
           onClick={onToggleDescription}
           aria-expanded={showDescription}
-          className="flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[11px] tracking-[0.06em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50 sm:px-3 sm:py-1.5 sm:text-xs"
+          className="flex items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 py-1 text-[13px] tracking-[0.06em] text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50 sm:px-3 sm:py-1.5 sm:text-xs"
         >
           <Info className="h-3.5 w-3.5" />
           {showDescription ? "Less" : "More"}
@@ -226,7 +226,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
   return (
     <section
       id="drops"
-      className="relative isolate scroll-mt-20 overflow-hidden bg-neutral-900 py-10 text-neutral-50 sm:py-16 lg:py-20"
+      className="relative isolate scroll-mt-20 overflow-hidden bg-neutral-900 py-28 text-neutral-50 sm:py-36 lg:py-48"
     >
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
         <AnimatePresence mode="wait">
@@ -241,17 +241,22 @@ export function Drops({ strains }: { strains: Strain[] }) {
             <SpectrumBackdrop spectrum={active.spectrum} />
           </motion.div>
         </AnimatePresence>
+
+        {/* Edge fades — the backdrop is a full-bleed colored glow inside an
+            overflow-hidden box, so without these it stopped dead at the
+            section boundary and read as a colored band pasted between two
+            black sections. These dissolve it back into neutral-900 at both
+            ends, so the color arrives and leaves gradually as you scroll.
+            Tall (in vh) rather than a fixed px height, so the ramp stays
+            proportional to how much of the section is actually on screen. */}
+        <div className="absolute inset-x-0 top-0 h-[38vh] bg-gradient-to-b from-neutral-900 via-neutral-900/70 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-[38vh] bg-gradient-to-t from-neutral-900 via-neutral-900/70 to-transparent" />
       </div>
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <Reveal>
-          <SectionLabel number="02" tone="light">
-            Latest Drops
-          </SectionLabel>
-        </Reveal>
-        <Reveal delay={0.05}>
           <ParallaxText speed={16}>
-            <h2 className="mt-4 max-w-[24ch] font-display text-3xl leading-[1.05] tracking-[-0.01em] sm:mt-6 sm:text-4xl lg:text-5xl">
+            <h2 className="max-w-[24ch] font-display text-3xl leading-[1.05] tracking-[-0.01em] sm:text-4xl lg:text-5xl">
               Every strain sits somewhere on the spectrum. Find it.
             </h2>
           </ParallaxText>
@@ -569,7 +574,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
           </div>
         </div>
 
-        <p className="mt-2 text-center text-[11px] tabular-nums tracking-[0.18em] text-neutral-500">
+        <p className="mt-2 text-center text-[13px] tabular-nums tracking-[0.18em] text-neutral-500">
           {String(activeIndex + 1).padStart(2, "0")} / {String(SORTED.length).padStart(2, "0")}
         </p>
       </div>

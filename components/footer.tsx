@@ -19,7 +19,7 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+            <p className="text-[13px] uppercase tracking-[0.18em] text-neutral-400">
               Navigation
             </p>
             <ul className="mt-4 space-y-2 text-sm">
@@ -42,7 +42,7 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+            <p className="text-[13px] uppercase tracking-[0.18em] text-neutral-400">
               Socials
             </p>
             <ul className="mt-4 space-y-2 text-sm">
@@ -86,7 +86,7 @@ export function SiteFooter() {
             .
           </p>
 
-          <div className="mt-6 flex flex-col gap-4 text-[11px] uppercase tracking-[0.18em] text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-6 flex flex-col gap-4 text-[13px] uppercase tracking-[0.18em] text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
             <span>© {new Date().getFullYear()} Flora &amp; Flame</span>
             <div className="flex gap-5">
               <PrivacyPolicyModal />

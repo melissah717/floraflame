@@ -143,7 +143,7 @@ export function AgeGate() {
 
             <motion.span
               variants={ITEM}
-              className="mt-10 text-[11px] uppercase tracking-[0.18em] text-neutral-600"
+              className="mt-10 text-[13px] uppercase tracking-[0.18em] text-neutral-600"
             >
               License #C120000449-LIC · 21+ only
             </motion.span>
