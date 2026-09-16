@@ -221,21 +221,45 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
           between the two, not as crossing an edge. Giving neutral-800 a
           value of its own is what would make the crossing visible.
 
-          `bottom-0` puts its bottom edge on the join, `translate-y-1/2`
-          drops it by half its own height, leaving its centre exactly on
-          the line. z-40 puts it in front of both neighbours: the sticky
-          pane is position:sticky at z-index auto and <FindUs> is a static
-          section, so any positive z-index paints over both. Still below
-          the z-50 navbar.
+          z-40 puts it in front of both neighbours: the sticky pane is
+          position:sticky at z-index auto and <FindUs> is a static section,
+          so any positive z-index paints over both. Still below the z-50
+          navbar.
 
-          200px tall = 100px either side of the join, which clears the
-          card above it and lands inside the map section's 96px of top
-          padding, so it never collides with that heading. */}
+          SIZING IS NOT FREE HERE, and it cannot be eyeballed on a desktop
+          window. The card is centred in the pinned pane, so the clearance
+          between its bottom edge and this join is (paneHeight - cardHeight)
+          / 2 — and on a phone the card nearly fills the pane, so that is
+          all the room there is:
+
+            390x664 (iPhone + Safari chrome)  ->  38px
+            360x620 (small Android)           ->  16px
+            svh < 611 (card hits its max-h)   ->  12px
+
+          Anything hanging further above the join than that covers the
+          card's own footer text. A version centred on the join hung 110px
+          up and buried the "Opens your email app" line on a real phone,
+          while looking perfectly fine in an 812px-tall emulator where the
+          clearance happens to be 112px.
+
+          So it is deliberately NOT centred on the join: `bottom-0` puts its
+          bottom edge on the line and `translate-y-[98px]` drops it, leaving
+          6px above and 98px below. 6px clears even the 12px worst case;
+          98px sits in the map section's 96px of top padding.
+
+          No rotation, on purpose. A rotated square's bounding box grows by
+          (cos+sin) of the angle, so a -rotate-6 on this element added ~11px
+          of vertical reach and ate most of the clearance — the visible art
+          gains nothing that is worth that here.
+
+          It still crosses the join, but as a sliver. A true half-and-half
+          is not geometrically available on a phone without making the card
+          shorter first. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute bottom-0 left-6 z-40 h-[200px] w-[200px] -rotate-6 translate-y-1/2 xl:hidden"
+        className="pointer-events-none absolute bottom-0 left-6 z-40 h-[104px] w-[104px] translate-y-[98px] xl:hidden"
       >
-        <Image src={FLOWER} alt="" fill sizes="200px" className="object-contain" unoptimized />
+        <Image src={FLOWER} alt="" fill sizes="104px" className="object-contain" unoptimized />
       </div>
 
       <div className="sticky top-0 h-svh w-full overflow-hidden">
