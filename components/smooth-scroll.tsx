@@ -23,9 +23,11 @@ export function SmoothScroll() {
       duration: 1.2,
       // easeOutExpo-ish: snappy at start, gentle settle.
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      // Touch already has native inertia — bumping the multiplier just
-      // makes it match wheel feel a bit more, but keep near 1.
-      touchMultiplier: 1.5,
+      // Touch already has native inertia, so this only scales how far the
+      // page travels per pixel of finger. At 1.5 the page ran 50% ahead of
+      // the thumb and every flick landed past where it was aimed — the
+      // overshoot at the end of pinned sections. 1 tracks the finger.
+      touchMultiplier: 1,
     });
 
     let raf = 0;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useRef, useSyncExternalStore, type ReactNode } from "react";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 
@@ -46,20 +46,80 @@ const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
  */
 const DECOR_IN = 0.16;
 
+/** True at `xl` and up — the same 1280px cutoff the decoration layers use
+ * to switch between the 2-element mobile scatter and the 5-element one.
+ *
+ * Subscribed rather than read into state in an effect, so there's no
+ * render-then-correct pass. The server snapshot is `false`: the section is
+ * far below the fold either way, and guessing mobile keeps the first paint
+ * consistent with the mobile-first CSS above the xl breakpoint. */
+const DESKTOP_MQ = "(min-width: 1280px)";
+
+function subscribeDesktop(onChange: () => void) {
+  const mql = window.matchMedia(DESKTOP_MQ);
+  mql.addEventListener("change", onChange);
+  return () => mql.removeEventListener("change", onChange);
+}
+
+const getDesktopSnapshot = () => window.matchMedia(DESKTOP_MQ).matches;
+const getDesktopServerSnapshot = () => false;
+
+function useIsDesktop() {
+  return useSyncExternalStore(
+    subscribeDesktop,
+    getDesktopSnapshot,
+    getDesktopServerSnapshot
+  );
+}
+
+/**
+ * Below xl, the choreography needs its OWN fractions — not just a shorter
+ * section.
+ *
+ * `p` is a fraction of the section's scroll range, so the same fraction is
+ * worth a different number of pixels at each breakpoint. Mobile used to
+ * inherit the desktop fractions in a much shorter section, which squeezed
+ * the card's entrance into ~140px of scroll: less than one thumb flick, so
+ * the card appeared to snap straight to its resting place instead of
+ * sliding there. Everything then finished by 0.6 and left ~520px of scroll
+ * where nothing moved at all, which is the long dead stretch before the
+ * map section.
+ *
+ * These stretch the entrance to ~2.4x the scroll distance while cutting the
+ * dead tail to under half, inside a section that is itself shorter.
+ */
+const MOBILE_TEXT_OUT = [0, 0.26];
+const MOBILE_CARD_IN = [0.2, 0.62];
+const MOBILE_DECOR_IN = 0.26;
+const MOBILE_DECOR_OUT = 0.78;
+
+const DESKTOP_TEXT_OUT = [0, 0.16];
+const DESKTOP_CARD_IN = [0.13, 0.24];
+
 export function LetsTalk({ children }: { children?: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const isDesktop = useIsDesktop();
 
   const { scrollYProgress: p } = useScroll({
     target: ref,
     offset: ["start start", "end end"],
   });
 
-  // Text and card — both breakpoints. Compressed so the card starts
-  // sliding in almost as soon as the text starts scrolling out, killing
-  // the "empty scroll" gap between phases.
-  const textY = useTransform(p, [0, 0.16], ["0vh", "-100vh"]);
-  const cardY = useTransform(p, [0.13, 0.24], ["100vh", "0vh"], { ease: easeOutCubic });
+  // Text and card — both breakpoints, but on their own timings (see the
+  // MOBILE_* constants). The card still starts sliding in before the text
+  // has finished leaving, so there's no empty gap between the phases.
+  const textY = useTransform(
+    p,
+    isDesktop ? DESKTOP_TEXT_OUT : MOBILE_TEXT_OUT,
+    ["0vh", "-100vh"]
+  );
+  const cardY = useTransform(
+    p,
+    isDesktop ? DESKTOP_CARD_IN : MOBILE_CARD_IN,
+    ["100vh", "0vh"],
+    { ease: easeOutCubic }
+  );
 
   // ── DESKTOP elements (5 total, xl:block) ──
 
@@ -115,17 +175,26 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
   // into the frame by design, so it always read as a severed graphic
   // dangling from the top edge with nothing holding it to anything.
 
-  const mFlowerY = useTransform(p, [DECOR_IN, 0.6], ["-70vh", "0vh"], { ease: easeOutCubic });
-  const mFlowerScale = useTransform(p, [DECOR_IN, 0.6], [1.2, 1], { ease: easeOutCubic });
-  const mFlowerRotate = useTransform(p, [DECOR_IN, 0.6], [-18, -6]);
+  const M_DECOR = [MOBILE_DECOR_IN, MOBILE_DECOR_OUT];
+  const mFlowerY = useTransform(p, M_DECOR, ["-70vh", "0vh"], { ease: easeOutCubic });
+  const mFlowerScale = useTransform(p, M_DECOR, [1.2, 1], { ease: easeOutCubic });
+  const mFlowerRotate = useTransform(p, M_DECOR, [-18, -6]);
 
   return (
     <section
       ref={ref}
       id="wholesale"
-      // More scroll room on mobile so the sliding animations don't fly
-      // past — was 200vh, now 300vh gives each phase 50% more scroll.
-      className="relative h-[260vh] bg-neutral-900 xl:h-[350vh]"
+      // `svh`, not `vh`, to match the sticky pane below. On a phone `vh` is
+      // the LARGE viewport (toolbar retracted) while `svh` is the small one,
+      // so a vh-tall section wrapping an svh-tall pane put the sticky
+      // release at a different scroll position than where `p` reaches 1 —
+      // and the section's own height changed as the toolbar hid, which is
+      // the small lurch at the end. Same unit on both, no mismatch.
+      //
+      // 200 rather than 260 because the phases below now use more of the
+      // range, so the leftover dead scroll before the map shrinks twice
+      // over: shorter section, and less of it spent going nowhere.
+      className="relative h-[200svh] bg-neutral-900 xl:h-[350vh]"
     >
       <div className="sticky top-0 h-svh w-full overflow-hidden">
         {/* ── MOBILE/TABLET only (behind card, peeking) ─── */}
