@@ -172,16 +172,23 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
         <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
           <motion.div
             style={{ y: cardY }}
-            className="w-[calc(100vw-56px)] max-w-[760px] rounded-[24px] border border-[#2a2521] bg-[#1a1712] p-6 shadow-[0_50px_120px_rgba(0,0,0,0.7)] will-change-transform xl:p-[clamp(32px,4.5vw,52px)]"
+            // The sticky wrapper is `h-svh overflow-hidden`, so anything
+            // taller than the viewport is CLIPPED, not scrolled — on short
+            // phones that ate the submit button. Capping the card at the
+            // viewport (minus the gutter) and letting it scroll internally
+            // makes that impossible regardless of how small the screen is;
+            // the tightened mobile spacing below is what keeps it from
+            // needing to scroll on an ordinary phone in the first place.
+            className="max-h-[calc(100svh-24px)] w-[calc(100vw-40px)] max-w-[760px] overflow-y-auto rounded-[20px] border border-[#2a2521] bg-[#1a1712] p-5 shadow-[0_50px_120px_rgba(0,0,0,0.7)] will-change-transform sm:w-[calc(100vw-56px)] sm:rounded-[24px] sm:p-6 xl:p-[clamp(32px,4.5vw,52px)]"
           >
-            <h2 className="font-display text-[clamp(1.5rem,6vw,3rem)] font-black leading-[0.95] tracking-[-0.015em] text-neutral-50">
+            <h2 className="font-display text-[clamp(1.375rem,5.5vw,3rem)] font-black leading-[0.95] tracking-[-0.015em] text-neutral-50">
               Tell us what you need.
             </h2>
-            <p className="mt-3 max-w-[48ch] text-[15px] leading-[1.55] text-neutral-400 xl:mt-4 xl:text-base xl:leading-[1.6]">
+            <p className="mt-2 max-w-[48ch] text-[13.5px] leading-[1.45] text-neutral-400 sm:mt-3 sm:text-[15px] sm:leading-[1.55] xl:mt-4 xl:text-base xl:leading-[1.6]">
               Questions about a drop, press, a collab, or getting Flora &amp;
               Flame on your shelf. This goes straight to our inbox.
             </p>
-            <div className="mt-6 xl:mt-8">{children ?? <PlaceholderForm />}</div>
+            <div className="mt-4 sm:mt-6 xl:mt-8">{children ?? <PlaceholderForm />}</div>
           </motion.div>
         </div>
 

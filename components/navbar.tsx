@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -14,6 +13,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { DockingLogo, DOCK_END } from "@/components/docking-logo";
+import { Wordmark } from "@/components/wordmark";
 import { cn } from "@/lib/utils";
 
 /**
@@ -104,15 +104,11 @@ export function Navbar() {
             <span aria-hidden className="h-10 w-[200px] shrink-0 sm:h-12" />
           ) : (
             <Link href="/" aria-label="Flora & Flame, home" className="shrink-0">
-              <Image
-                src="https://res.cloudinary.com/g0mcdcfr/image/upload/v1785517828/text-logo.svg"
-                alt="Flora & Flame"
-                width={240}
-                height={48}
-                unoptimized
-                priority
-                className="h-10 w-auto invert sm:h-12"
-              />
+              {/* Same <Wordmark /> the home page docks into. The SVG wraps a
+                  full-color raster, so `invert` on an <Image> turned it blue
+                  instead of white — the mask approach ignores the source
+                  colors entirely and paints the silhouette. */}
+              <Wordmark className="h-10 w-[200px] sm:h-12 sm:w-[240px]" color="bg-neutral-50" />
             </Link>
           )}
 

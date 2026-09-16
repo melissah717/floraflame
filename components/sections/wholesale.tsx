@@ -93,10 +93,10 @@ export function Wholesale() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 xl:gap-[18px]"
+      className="flex flex-col gap-2.5 sm:gap-3 xl:gap-[18px]"
       noValidate
     >
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <Field
           name="name"
           label="Name"
@@ -136,18 +136,18 @@ export function Wholesale() {
         value={values.message}
         onChange={update}
         error={errors.message}
-        rows={3}
+        rows={2}
         placeholder="What's going on?"
       />
 
       <button
         type="submit"
-        className="mt-2.5 cursor-pointer rounded-full bg-neutral-50 py-3.5 text-base font-medium tracking-[0.02em] text-neutral-900 transition-colors hover:bg-neutral-200 xl:py-4"
+        className="mt-1.5 cursor-pointer rounded-full bg-neutral-50 py-3 text-base font-medium tracking-[0.02em] text-neutral-900 transition-colors hover:bg-neutral-200 sm:mt-2.5 sm:py-3.5 xl:py-4"
       >
         Send request
       </button>
 
-      <p className="text-[13px] leading-[1.5] text-neutral-500">
+      <p className="text-[11px] leading-[1.45] text-neutral-500 sm:text-[13px] sm:leading-[1.5]">
         Opens your email app, addressed to {RECIPIENT}.
       </p>
     </form>
@@ -163,7 +163,7 @@ export function Wholesale() {
  */
 function inputClasses(error?: string): string {
   const base =
-    "w-full rounded-[12px] px-3.5 py-3 text-base text-neutral-50 outline-none transition-[background-color,border-color] duration-150 placeholder:text-neutral-600 xl:px-4 xl:py-3.5";
+    "w-full rounded-[12px] px-3 py-2.5 text-base text-neutral-50 outline-none transition-[background-color,border-color] duration-150 placeholder:text-neutral-600 sm:px-3.5 sm:py-3 xl:px-4 xl:py-3.5";
 
   if (error) {
     return `${base} border border-[#c25a1c]/60 bg-[rgba(194,90,28,0.06)] focus:border-[#c25a1c]`;
@@ -197,7 +197,7 @@ function FieldWrapper({
     <div>
       <label
         htmlFor={htmlFor}
-        className="mb-1.5 flex items-baseline justify-between text-[13px] font-medium uppercase tracking-[0.06em] text-[#a29886]"
+        className="mb-1 flex items-baseline justify-between text-[11px] font-medium uppercase tracking-[0.06em] text-[#a29886] sm:mb-1.5 sm:text-[13px]"
       >
         <span>{label}</span>
         {error && (
@@ -287,7 +287,7 @@ function TextareaField({
         onChange={onChange}
         placeholder={placeholder}
         aria-invalid={!!error}
-        className={`${inputClasses(error)} resize-none`}
+        className={`${inputClasses(error)} resize-none sm:min-h-[104px] xl:min-h-[120px]`}
       />
     </FieldWrapper>
   );
