@@ -85,13 +85,18 @@ function useIsDesktop() {
  * where nothing moved at all, which is the long dead stretch before the
  * map section.
  *
- * These stretch the entrance to ~2.4x the scroll distance while cutting the
- * dead tail to under half, inside a section that is itself shorter.
+ * They also OVERLAP, which is what keeps the section short. The card starts
+ * rising at 0.10, well before the headline has finished leaving at 0.38, so
+ * the two phases share scroll instead of queuing behind each other. Running
+ * them end to end left a stretch with the headline gone and the card not yet
+ * up — an empty screen that read as wasted space, and the only way to make
+ * that not feel rushed was to keep making the section longer.
+ *
+ * Net: the entrance gets ~2x the scroll distance it had originally, in a
+ * section that is 40% shorter than it was.
  */
-const MOBILE_TEXT_OUT = [0, 0.26];
-const MOBILE_CARD_IN = [0.2, 0.62];
-const MOBILE_DECOR_IN = 0.26;
-const MOBILE_DECOR_OUT = 0.78;
+const MOBILE_TEXT_OUT = [0, 0.38];
+const MOBILE_CARD_IN = [0.1, 0.72];
 
 const DESKTOP_TEXT_OUT = [0, 0.16];
 const DESKTOP_CARD_IN = [0.13, 0.24];
@@ -166,19 +171,23 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
   const flower3Scale = useTransform(p, [DECOR_IN + 0.04, 0.32, 0.62], [1.4, 1.4, 1], { ease: easeOutCubic });
   const flower3Rotate = useTransform(p, [DECOR_IN + 0.04, 0.62], [18, -5]);
 
-  // ── MOBILE/TABLET elements (2 total, xl:hidden) ──
-  // Big flame behind card, peeks from top-right corner.
-  // Small flower behind card, peeks from bottom-left corner.
-
-  // NOTE: there used to be a big flame anchored top-right below the xl
-  // breakpoint. It was removed rather than repositioned — it settled 34vh
-  // into the frame by design, so it always read as a severed graphic
-  // dangling from the top edge with nothing holding it to anything.
-
-  const M_DECOR = [MOBILE_DECOR_IN, MOBILE_DECOR_OUT];
-  const mFlowerY = useTransform(p, M_DECOR, ["-70vh", "0vh"], { ease: easeOutCubic });
-  const mFlowerScale = useTransform(p, M_DECOR, [1.2, 1], { ease: easeOutCubic });
-  const mFlowerRotate = useTransform(p, M_DECOR, [-18, -6]);
+  // ── MOBILE/TABLET ── nothing decorative INSIDE the pinned pane. ──
+  //
+  // Two elements used to live in there and both were removed rather than
+  // repositioned. A big flame anchored top-right settled 34vh into the
+  // frame by design, so it always read as a severed graphic hanging off the
+  // top edge. A small flower then sat bottom-left at -4vw, half off the
+  // screen AND half behind the card: on the way in it crossed an otherwise
+  // empty screen as a clipped fragment, and once the card landed only two
+  // petal tips showed above the card's bottom edge.
+  //
+  // Neither could be fixed by moving it. The card is calc(100vw-40px) wide,
+  // so the side gutters are 20px — nothing fits beside it — and it fills
+  // all but ~112px of the height. Anything big enough to read as artwork
+  // has to overlap the card or the screen edge, and the pane clips whatever
+  // does. The flower that survives is the one on the section's bottom edge
+  // (see the seam flower below), outside the pane and outside its clip.
+  // Desktop keeps all five inside the pane because it has the width.
 
   return (
     <section
@@ -191,26 +200,45 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
       // and the section's own height changed as the toolbar hid, which is
       // the small lurch at the end. Same unit on both, no mismatch.
       //
-      // 200 rather than 260 because the phases below now use more of the
-      // range, so the leftover dead scroll before the map shrinks twice
-      // over: shorter section, and less of it spent going nowhere.
-      className="relative h-[200svh] bg-neutral-900 xl:h-[350vh]"
+      // 160 on mobile, down from an original 260. The phases below overlap
+      // rather than running end to end, so the section no longer needs
+      // length to avoid feeling rushed — which is what let this come down
+      // twice while the card's entrance still got slower each time.
+      className="relative h-[160svh] bg-neutral-900 xl:h-[350vh]"
     >
+      {/* ── Seam flower (below xl) ── straddles the join into <FindUs>. ──
+          Deliberately a child of <section> and NOT of the sticky pane
+          below: that pane is overflow-hidden, which is exactly what
+          clipped the old mobile flower. Out here nothing crops it, so it
+          can hang half over the next section.
+
+          Worth knowing: the join is structural, not visual. This section is
+          bg-neutral-900 and <FindUs> is bg-neutral-800, but globals.css
+          sets BOTH of those to #000000, so the two surfaces are one
+          unbroken black field and nothing marks the line. The flower is
+          centred on it anyway — that is what keeps it clear of the card
+          above and the heading below — but it reads as sitting in the gap
+          between the two, not as crossing an edge. Giving neutral-800 a
+          value of its own is what would make the crossing visible.
+
+          `bottom-0` puts its bottom edge on the join, `translate-y-1/2`
+          drops it by half its own height, leaving its centre exactly on
+          the line. z-40 puts it in front of both neighbours: the sticky
+          pane is position:sticky at z-index auto and <FindUs> is a static
+          section, so any positive z-index paints over both. Still below
+          the z-50 navbar.
+
+          200px tall = 100px either side of the join, which clears the
+          card above it and lands inside the map section's 96px of top
+          padding, so it never collides with that heading. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute bottom-0 left-6 z-40 h-[200px] w-[200px] -rotate-6 translate-y-1/2 xl:hidden"
+      >
+        <Image src={FLOWER} alt="" fill sizes="200px" className="object-contain" unoptimized />
+      </div>
+
       <div className="sticky top-0 h-svh w-full overflow-hidden">
-        {/* ── MOBILE/TABLET only (behind card, peeking) ─── */}
-
-        {/* Small flower — bottom-left corner, peeks from bottom + left */}
-        <motion.div
-          style={
-            reduce
-              ? undefined
-              : { y: mFlowerY, scale: mFlowerScale, rotate: mFlowerRotate }
-          }
-          className="pointer-events-none absolute left-[-4vw] top-[70vh] z-0 h-[30vh] w-[36vw] will-change-transform xl:hidden"
-        >
-          <Image src={FLOWER} alt="" fill sizes="36vw" className="object-contain" unoptimized />
-        </motion.div>
-
         {/* ── DESKTOP only (5 elements, xl+) ─── */}
 
         {/* Big flame — right side, behind card */}
