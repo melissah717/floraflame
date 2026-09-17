@@ -140,7 +140,7 @@ export function StockistMap({
         }).setHTML(
           `<div style="font-family:'Cabinet Grotesk',system-ui,sans-serif;position:relative;min-width:222px;padding:16px 18px;background:#0f0e0c;color:#faf8f4;border-radius:14px;box-shadow:0 22px 55px rgba(0,0,0,0.5);outline:1px solid rgba(250,248,244,0.14)">
             <div style="position:absolute;inset:4px;border:1px solid rgba(250,248,244,0.08);border-radius:10px;pointer-events:none"></div>
-            <strong style="display:block;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:17px;line-height:1.1;letter-spacing:-0.01em;color:#faf8f4">
+            <strong style="display:block;font-family:'Archivo',Helvetica,Arial,sans-serif;font-weight:700;font-size:17px;line-height:1.1;letter-spacing:-0.01em;color:#faf8f4">
               ${escapeHtml(s.name)}
             </strong>
             ${

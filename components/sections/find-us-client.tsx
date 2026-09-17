@@ -179,12 +179,12 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
     <section
       ref={sectionRef}
       id="find-us"
-      className="scroll-mt-20 bg-neutral-800 px-5 py-24 sm:px-8 sm:py-32"
+      className="scroll-mt-20 bg-neutral-800 px-5 py-16 sm:px-8 sm:py-20 lg:px-12"
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[88rem]">
         <motion.h2
           style={reduce ? undefined : { y: headingY, opacity: headingOpacity }}
-          className="max-w-[14ch] font-display text-4xl leading-[1.02] sm:text-6xl"
+          className="font-display text-[clamp(2.25rem,4.1vw,4.25rem)] leading-[1.02] lg:whitespace-nowrap"
         >
           Carried in{" "}
           <CountUp
@@ -196,7 +196,7 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
         </motion.h2>
 
         <Reveal delay={0.1}>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
             <form onSubmit={runSearch} className="flex flex-1 gap-2">
               <input
                 value={query}
@@ -206,12 +206,12 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
                 }}
                 placeholder="City or zip, try SF, Oakland, 95351"
                 aria-label="Search by city or zip"
-                className="w-full border-0 border-b border-neutral-600 bg-transparent px-0 py-3 text-base outline-none transition-colors placeholder:text-neutral-500 focus:border-neutral-50"
+                className="w-full border-0 border-b border-neutral-600 bg-transparent px-0 py-3 text-lg outline-none transition-colors placeholder:text-neutral-500 focus:border-neutral-50 sm:text-xl"
               />
               <button
                 type="submit"
                 disabled={searching}
-                className="shrink-0 rounded-full bg-neutral-50 px-6 py-3 text-sm text-neutral-900 transition-colors hover:bg-neutral-200 disabled:opacity-60"
+                className="shrink-0 rounded-full bg-neutral-50 px-7 py-3.5 text-base text-neutral-900 transition-colors hover:bg-neutral-200 disabled:opacity-60"
               >
                 {searching ? "Searching…" : "Search"}
               </button>
@@ -219,7 +219,7 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
 
             <button
               onClick={useMyLocation}
-              className="shrink-0 text-sm text-neutral-400 underline-offset-4 transition-colors hover:text-neutral-50 hover:underline sm:ml-4"
+              className="shrink-0 text-base text-neutral-400 underline-offset-4 transition-colors hover:text-neutral-50 hover:underline sm:ml-4"
             >
               {geoState === "loading" ? "Locating…" : "Use my location"}
             </button>
@@ -227,27 +227,27 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
         </Reveal>
 
         {geoState === "denied" && (
-          <p className="mt-3 text-sm text-neutral-400">
+          <p className="mt-3 text-base text-neutral-400">
             Couldn&apos;t get your location, search by city or zip instead.
           </p>
         )}
 
         {noMatch && (
-          <p className="mt-3 text-sm text-neutral-400">
+          <p className="mt-3 text-base text-neutral-400">
             Couldn&apos;t find &ldquo;{query}&rdquo; in California. Try a city
             name or a zip code.
           </p>
         )}
 
         {originLabel && !noMatch && (
-          <p className="mt-4 text-sm text-neutral-400">
+          <p className="mt-4 text-base text-neutral-400">
             Nearest to <span className="text-neutral-50">{originLabel}</span>
           </p>
         )}
 
         {/* Pins come from `shown`, so the map and list always agree. */}
         <Reveal delay={0.1}>
-          <div className="mt-10">
+          <div className="mt-8">
             <StockistMap
               stockists={stockists}
               focus={focusSet}
@@ -260,13 +260,13 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
         </Reveal>
 
         {!hasOrigin ? (
-          <p className="mt-8 text-sm text-neutral-400">
+          <p className="mt-6 text-base text-neutral-400 sm:text-lg">
             Search a city or
             use your location to find the closest ones.
           </p>
         ) : (
           <>
-            <div className="mt-10 grid gap-x-8 gap-y-px sm:grid-cols-2">
+            <div className="mt-8 grid gap-x-10 gap-y-px sm:grid-cols-2">
               {shown.map((s) => {
                 const key = stockistKey(s);
                 return (
@@ -371,13 +371,13 @@ function StockistCard({
               color: isSelected ? ACCENT : "#faf8f4",
             }}
             transition={{ duration: 0.22, ease: "easeOut" }}
-            className="font-display text-xl transition-opacity group-hover:opacity-60"
+            className="font-display text-2xl transition-opacity group-hover:opacity-60"
           >
             {stockist.name}
           </motion.h3>
 
           {typeof stockist.miles === "number" && (
-            <span className="ml-3 shrink-0 text-xs tabular-nums text-neutral-400">
+            <span className="ml-3 shrink-0 text-sm tabular-nums text-neutral-400">
               {stockist.miles < 10
                 ? stockist.miles.toFixed(1)
                 : Math.round(stockist.miles)}{" "}
@@ -386,13 +386,13 @@ function StockistCard({
           )}
         </button>
 
-        <p className="mt-1 text-sm text-neutral-400">
+        <p className="mt-1 text-base text-neutral-400">
           {location}
           {stockist.state ? `, ${stockist.state}` : ""} {stockist.zip}
         </p>
 
         {stockist.status === "restocking" && (
-          <p className="mt-2 text-xs text-neutral-400">Restocking soon</p>
+          <p className="mt-2 text-sm text-neutral-400">Restocking soon</p>
         )}
       </div>
 
@@ -400,7 +400,7 @@ function StockistCard({
         href={directionsUrl(stockist)}
         target="_blank"
         rel="noopener noreferrer"
-        className="group mt-1 inline-flex shrink-0 items-center gap-2 text-sm tracking-[0.02em] text-neutral-400 transition-colors hover:text-neutral-50"
+        className="group mt-1 inline-flex shrink-0 items-center gap-2 text-base tracking-[0.02em] text-neutral-400 transition-colors hover:text-neutral-50"
       >
         Directions
         <span className="transition-transform duration-300 group-hover:translate-x-1">

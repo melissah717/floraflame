@@ -15,7 +15,7 @@ import { Wordmark } from "@/components/wordmark";
  * FLORA & FLAME wordmark with a cross-fade "morph" at the terminal.
  *
  * BEHAVIOR:
- *   – Hero: big display text (Fraunces), letters swipe in on load
+ *   – Hero: big display text (Archivo), letters swipe in on load
  *   – Scroll: text scales down + slides toward nav slot (existing dock)
  *   – Terminal: as text finishes docking, it cross-fades into the script
  *     SVG wordmark — same nav position, different visual style
@@ -75,7 +75,7 @@ export function DockingLogo({ showWithNav = true }: { showWithNav?: boolean }) {
    * font size that exactly fills the line falls out of it.
    *
    * Measured again after `document.fonts.ready` because the probe is
-   * meaningless while Fraunces is still swapping in from a fallback.
+   * meaningless while Archivo is still swapping in from a fallback.
    */
   const probeRef = useRef<HTMLSpanElement>(null);
   const [heroPx, setHeroPx] = useState(HERO_MIN);

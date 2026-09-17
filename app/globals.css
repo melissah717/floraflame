@@ -133,7 +133,7 @@
   /* Fonts. Source variable names are set in app/lsayout.tsx and must
      differ from these token names, or you get a circular reference. */
   --font-sans: var(--font-karla);
-  --font-display: var(--font-fraunces);
+  --font-display: var(--font-archivo);
 
   /* Warm neutral ramp.
      Overriding Tailwind's built-in neutral scale means every existing
@@ -171,9 +171,8 @@
   --text-xl: 1.3125rem;  /* 21px, was 20 */
 }
 
-/* Fraunces axis defaults: slightly soft, wonk on.
-   Bump SOFT toward 100 for rounder terminals, drop WONK to 0 to
-   straighten out the quirky letterforms. */
+/* Display defaults: heavy and tight. Archivo's 800 is the poster weight;
+   paragraphs that use the display face dial `wght` down themselves. */
 .font-display {
   font-weight: 800;
   letter-spacing: -0.03em;

@@ -10,16 +10,22 @@ import {
   useMotionValueEvent,
   type MotionValue,
 } from "motion/react";
+import { Reveal } from "@/components/scroll-primitives";
 
 /**
  * About — three acts, same shape on desktop and mobile.
  *
  *   1. Keyhole video opens up (unchanged).
- *   2. DESKTOP: 4 photos row → photos 2-4 slide up → photo 1 expands to
- *      hero on left → THREE paragraphs slide in from the left, one by
- *      one, into a narrow bottom-right column.
- *   3. MOBILE: same idea rotated 90°. Vertical stack → photo 1 expands →
- *      three paragraphs slide in from left, one by one, in a wider column.
+ *   2. DESKTOP: LIVING SOIL hits → 4 photos row → photos 2-4 slide up →
+ *      photo 1 grows into a big inset frame that fills the viewport, holds
+ *      a beat, then the stage unpins and scrolls off. As it leaves, the
+ *      photo inside the frame drifts slower than the frame (parallax), the
+ *      way Lightship's hero visual does.
+ *   3. MOBILE: same idea rotated 90°. Vertical stack → photo 1 grows into
+ *      the inset frame → unpins and scrolls off with the same parallax.
+ *   4. BOTH: the three paragraphs follow in normal flow underneath, set
+ *      large and tight (Lightship's "From our aerodynamic profile…" block)
+ *      and left to scroll naturally under the site's momentum scroll.
  *
  * STICKY TRAP: the tall wrappers must NOT have an overflow-hidden ancestor.
  */
@@ -32,39 +38,35 @@ const START_INSET_Y = 28;
 const START_RADIUS = 14;
 
 // ── DESKTOP row → hero knobs ──
-const ABOUT_SCROLL_LENGTH = "h-[450vh]";
+// The paragraph phase no longer lives inside the pinned stage, so the
+// wrapper is shorter: hits → rest → exit → grow → a short hold → unpin.
+const ABOUT_SCROLL_LENGTH = "h-[320vh]";
 const ROW_LEFT = ["7vw", "29vw", "51vw", "73vw"];
 const ROW_TOP = "37vh";
 const ROW_W = "20vw";
 const ROW_H = "55vh";
-const HERO_LEFT = "5vw";
+// Final frame: a big inset panel with a thin margin all round, sitting just
+// under the nav — Lightship's hero-visual proportions.
+const HERO_LEFT = "3vw";
 const HERO_TOP = "12vh";
-const HERO_W = "45vw";
-const HERO_H = "78vh";
-// Text column — wider than before to accommodate three stacked paragraphs.
-// Higher top position so the whole stack fits vertically.
-// NOTE: the paragraph font size below is capped by a vh term as well as a
-// vw one (min(1.5vw, 2.45vh)). The stack has to fit inside the sticky 100vh
-// viewport, and on a wide-but-short window (1366×768, 1280×720) a purely
-// width-based size overflowed the bottom. The vh term is what keeps it in.
-const TEXT_RIGHT = "12vw";
-const TEXT_TOP = "13vh";
-const TEXT_WIDTH = "30vw";
-// Everything below is pushed later than it used to be to make room for the
-// LIVING SOIL reveal, which now owns the first fifth of the section while
-// the row sits at rest. The shape of the sequence is unchanged.
-const EXIT_RANGE = [0.2, 0.4] as const;
-const P1_MORPH_RANGE = [0.38, 0.58] as const;
-// Three paragraphs slide in from the RIGHT with stagger. Each takes ~10%
-// of scroll to slide in, one after another, then the section holds.
-// Big positive slideFrom = starts fully off-screen right, so no opacity
-// fade needed — paragraph is simply out of view until it slides in.
-const PARA_STAGGER: readonly (readonly [number, number])[] = [
-  [0.58, 0.67],
-  [0.67, 0.76],
-  [0.76, 0.85],
-];
-const PARA_SLIDE_FROM = "50vw";
+const HERO_W = "94vw";
+const HERO_H = "80vh";
+// Ranges are fractions of ABOUT_SCROLL_LENGTH. In scroll distance: LIVING
+// SOIL lands in the first ~50vh, the row leaves over 90vh, photo 1 grows
+// over the next 90vh (overlapping the tail of the exit), then holds for
+// ~60vh so the full frame reads before the stage unpins.
+const EXIT_RANGE = [0.28, 0.56] as const;
+const P1_MORPH_RANGE = [0.53, 0.81] as const;
+
+// ── HERO parallax (both breakpoints) ──
+// The photo inside the frame is taller than the frame by this much on each
+// side, which is the room it has to drift. While the frame grows it eases
+// from a slight zoom to rest; once the stage unpins and scrolls off, the
+// photo slides DOWN relative to the frame, so it appears to move slower
+// than the page — the lag that reads as depth.
+const HERO_BLEED = "12%";
+const HERO_GROW_SCALE = 1.12;
+const HERO_DRIFT: [string, string] = ["-6vh", "6vh"];
 
 // ── DESKTOP "LIVING SOIL" reveal ──
 // Sits in the empty band above the photo row while the row rests, reveals a
@@ -79,24 +81,23 @@ const WORDS_WIDTH = "86vw";
 // bottom rather than top means the gap to the photos stays put no matter
 // how tall the type ends up.
 const WORDS_BOTTOM = "66vh";
-// Tuned by measurement: "LIVING SOIL" in Fraunces at this weight, plus the
-// 0.2em word gap, runs 5.56em of ink, so 86vw / 5.56 = 15.47vw would fill
-// the row exactly. Set a little under that — landing right on the
-// container width puts the flex items at the shrink threshold, and a
-// shrunk item would have its word quietly clipped by the reveal mask.
-// 15vw lands at ~97% of the row: reads flush with the outer photo edges
-// with ~37px of slack. Both terms are vw, so the fit holds at every window
-// width — only a change to the string or the typeface needs re-deriving.
+// Tuned by measurement: "LIVING SOIL" in Archivo 800 at 15vw ran ~90.6vw
+// of ink (measured at 1440px), so 15 × 86 / 90.6 ≈ 14.2vw would fill the
+// row exactly. Set a little under that — landing right on the container
+// width puts the flex items at the shrink threshold, and a shrunk item
+// would have its word quietly clipped. 14vw lands at ~98% of the row.
+// Both terms are vw, so the fit holds at every window width — only a
+// change to the string or the typeface needs re-deriving.
 //
 // The vh term guards short, wide windows, where type sized purely off the
 // width grows tall enough to collide with the nav. It can only ever make
 // the line narrower than the row, never wider.
-const WORDS_SIZE = "min(15vw, 27vh)";
+const WORDS_SIZE = "min(14vw, 25vh)";
 // Two hard cuts, NOT a reveal. Each word is simply off, then on — no
 // slide, no fade — so it lands like a stamp rather than arriving. The
 // two hits sit ~190px of scroll apart: far enough to read as two separate
 // impacts, close enough to feel like one gesture.
-const WORD_HITS = [0.05, 0.11] as const;
+const WORD_HITS = [0.07, 0.155] as const;
 // The recoil after each hit, in SECONDS — time-based, not scroll-based, so
 // the impact lands with the same snap however fast you happen to be
 // scrolling. Deliberately short: this is the shock settling, not an
@@ -105,29 +106,17 @@ const WORD_PUNCH_SEC = 0.22;
 const WORD_PUNCH_SCALE = 1.06;
 
 // ── MOBILE stack → hero knobs ──
-const MOBILE_SCROLL_LENGTH = "h-[380vh]";
+const MOBILE_SCROLL_LENGTH = "h-[260vh]";
 const MOBILE_STACK_TOP = ["68vh", "46vh", "24vh", "2vh"];
 const MOBILE_STACK_H = "20vh";
 const MOBILE_STACK_LEFT = "5vw";
 const MOBILE_STACK_W = "90vw";
-// Photo hero shrunk further so 3 paragraphs comfortably fit below within
-// the 100vh sticky viewport.
-const MOBILE_HERO_TOP = "5vh";
-const MOBILE_HERO_H = "32vh";
-// Text: full-width bottom column, three paragraphs stack with tight gap.
-// Higher top position + tighter styling to fit all 3 in the remaining space.
-const MOBILE_TEXT_LEFT = "6vw";
-const MOBILE_TEXT_TOP = "40vh";
-const MOBILE_TEXT_WIDTH = "88vw";
-const MOBILE_EXIT_RANGE = [0.05, 0.3] as const;
-const MOBILE_MORPH_RANGE = [0.18, 0.45] as const;
-// Same paragraph stagger shape as desktop, remapped onto mobile scroll.
-const MOBILE_PARA_STAGGER: readonly (readonly [number, number])[] = [
-  [0.5, 0.6],
-  [0.6, 0.7],
-  [0.7, 0.8],
-];
-const MOBILE_PARA_SLIDE_FROM = "100vw";
+// Same inset-frame idea as desktop. The stage is h-svh, so keep the frame
+// comfortably inside it — 11vh + 66vh lands around 85% of a small viewport.
+const MOBILE_HERO_TOP = "11vh";
+const MOBILE_HERO_H = "66vh";
+const MOBILE_EXIT_RANGE = [0.07, 0.44] as const;
+const MOBILE_MORPH_RANGE = [0.26, 0.66] as const;
 
 // ── images ──
 const CLOUD = "https://res.cloudinary.com/g0mcdcfr/image/upload/f_auto,q_auto";
@@ -155,9 +144,9 @@ const IMAGES = [
  */
 // (aspect ratio 3130 / 2075 = 1.51)
 const SIZES_ROW = "max(20vw, 83vh)"; //  55vh × 1.51
-const SIZES_HERO = "max(45vw, 118vh)"; //  78vh × 1.51
+const SIZES_HERO = "max(94vw, 121vh)"; //  80vh × 1.51
 const SIZES_MOBILE_ROW = "max(90vw, 31vh)"; //  20vh × 1.51
-const SIZES_MOBILE_HERO = "max(90vw, 49vh)"; //  32vh × 1.51
+const SIZES_MOBILE_HERO = "max(90vw, 100vh)"; //  66vh × 1.51
 
 /**
  * Three-paragraph narrative. Each stands on its own so any can be cut
@@ -191,7 +180,7 @@ const PANEL_BLURBS = [
 ];
 
 /**
- * Caption styling. These were set in Fraunces at display weight, which put
+ * Caption styling. These were set in the display face at display weight, which put
  * them in the same voice as the section headings — so the photo captions
  * competed with the headline instead of sitting under it. Karla, uppercase
  * and letterspaced, reads as an annotation on the photograph: clearly
@@ -204,6 +193,17 @@ const CAPTION_CLASS =
   "font-sans text-[0.8rem] font-semibold uppercase tracking-[0.13em] text-white/95 xl:text-[0.85rem]";
 const CAPTION_CLASS_MOBILE =
   "font-sans text-[0.85rem] font-semibold uppercase tracking-[0.13em] text-white/95";
+
+/**
+ * The three paragraphs, Lightship-style: big, tight, line-height ~1, set at
+ * a reading weight rather than display weight, left-aligned and capped at
+ * roughly 1000px so lines stay around 10–12 words. Archivo at wght ~450:
+ * Lightship uses a 400 grotesque on white; reverse type on black needs a
+ * touch more stem or it thins out.
+ */
+const PARAGRAPH_CLASS =
+  "font-display text-[clamp(1.35rem,2.4vw,2.75rem)] leading-[1.1] tracking-[-0.025em] text-neutral-50";
+const PARAGRAPH_VARIATION = "'wght' 450";
 
 export function About() {
   const videoRef = useRef<HTMLDivElement>(null);
@@ -222,6 +222,16 @@ export function About() {
   const { scrollYProgress: mobileProgress } = useScroll({
     target: mobileRef,
     offset: ["start start", "end end"],
+  });
+  // 0 the moment each pinned stage unpins, 1 when it has fully scrolled
+  // off — the window in which the hero photo lags behind its frame.
+  const { scrollYProgress: aboutExit } = useScroll({
+    target: aboutRef,
+    offset: ["end end", "end start"],
+  });
+  const { scrollYProgress: mobileExit } = useScroll({
+    target: mobileRef,
+    offset: ["end end", "end start"],
   });
 
   // Keyhole (unchanged)
@@ -242,7 +252,23 @@ export function About() {
   const p1Height = useTransform(aboutProgress, [...P1_MORPH_RANGE], [ROW_H, HERO_H]);
   // Overlay + blurb on the anchor photo fades out early in its morph, so
   // the full hero image is visible before it reaches its final position.
-  const p1OverlayOp = useTransform(aboutProgress, [P1_MORPH_RANGE[0], P1_MORPH_RANGE[0] + 0.08], [1, 0]);
+  // Input ranges below are spelled out edge to edge (0 … 1). Opacity and
+  // transform values get pre-sampled into keyframes, and a range that stops
+  // short of 1 was extrapolated past its last stop instead of held, which
+  // brought the overlay back up to full strength by the end of the hold.
+  const p1OverlayOp = useTransform(
+    aboutProgress,
+    [0, P1_MORPH_RANGE[0], P1_MORPH_RANGE[0] + 0.08, 1],
+    [1, 1, 0, 0],
+  );
+  // Photo inside the frame: settles from a slight zoom as the frame grows,
+  // then drifts down while the stage scrolls off.
+  const p1ImgScale = useTransform(
+    aboutProgress,
+    [0, P1_MORPH_RANGE[0], P1_MORPH_RANGE[1], 1],
+    [HERO_GROW_SCALE, HERO_GROW_SCALE, 1, 1],
+  );
+  const p1ImgY = useTransform(aboutExit, [0, 1], HERO_DRIFT);
 
   /**
    * LIVING / SOIL — plain React state, deliberately NOT a scroll-linked
@@ -272,12 +298,17 @@ export function About() {
   const mRestY = useTransform(mobileProgress, [...MOBILE_EXIT_RANGE], ["0vh", "-100vh"]);
   const mP1Top = useTransform(mobileProgress, [...MOBILE_MORPH_RANGE], [MOBILE_STACK_TOP[0], MOBILE_HERO_TOP]);
   const mP1Height = useTransform(mobileProgress, [...MOBILE_MORPH_RANGE], [MOBILE_STACK_H, MOBILE_HERO_H]);
-  const mP1OverlayOp = useTransform(mobileProgress, [MOBILE_MORPH_RANGE[0], MOBILE_MORPH_RANGE[0] + 0.08], [1, 0]);
-  // Lift phase: as text paragraphs slide in, the photo lifts UP off screen
-  // and the text column shifts UP to fill the freed space — so all 3
-  // paragraphs fit without being clipped by the sticky viewport.
-  const mPhotoLiftY = useTransform(mobileProgress, [0.48, 0.7], ["0vh", "-45vh"]);
-  const mTextLiftY = useTransform(mobileProgress, [0.48, 0.7], ["0vh", "-25vh"]);
+  const mP1OverlayOp = useTransform(
+    mobileProgress,
+    [0, MOBILE_MORPH_RANGE[0], MOBILE_MORPH_RANGE[0] + 0.08, 1],
+    [1, 1, 0, 0],
+  );
+  const mP1ImgScale = useTransform(
+    mobileProgress,
+    [0, MOBILE_MORPH_RANGE[0], MOBILE_MORPH_RANGE[1], 1],
+    [HERO_GROW_SCALE, HERO_GROW_SCALE, 1, 1],
+  );
+  const mP1ImgY = useTransform(mobileExit, [0, 1], HERO_DRIFT);
 
   return (
     <section id="about" className="scroll-mt-20 bg-neutral-900">
@@ -372,7 +403,13 @@ export function About() {
             }
             className="absolute overflow-hidden rounded-md"
           >
-            <Image src={IMAGES[0]} alt="" fill sizes={SIZES_HERO} className="object-cover" />
+            <HeroPhoto
+              src={IMAGES[0]}
+              sizes={SIZES_HERO}
+              scale={p1ImgScale}
+              y={p1ImgY}
+              reduce={!!reduce}
+            />
             {/* Overlay + blurb fade out early in the anchor morph so the
                 hero image reveals fully once the row is finished. */}
             <motion.div
@@ -388,25 +425,6 @@ export function About() {
               </p>
             </motion.div>
           </motion.div>
-
-          {/* Text column — three paragraphs stacked, each slides in from left. */}
-          <div
-            className="absolute flex flex-col gap-5"
-            style={{ right: TEXT_RIGHT, top: TEXT_TOP, width: TEXT_WIDTH }}
-          >
-            {ABOUT_PARAGRAPHS.map((text, i) => (
-              <SlidingParagraph
-                key={i}
-                progress={aboutProgress}
-                range={PARA_STAGGER[i]}
-                slideFrom={PARA_SLIDE_FROM}
-                reduce={!!reduce}
-                className="font-display text-[clamp(1.05rem,min(1.5vw,2.45vh),1.45rem)] leading-[1.65] tracking-[0.005em] text-neutral-50"
-              >
-                {text}
-              </SlidingParagraph>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -453,12 +471,17 @@ export function About() {
                     top: mP1Top,
                     width: MOBILE_STACK_W,
                     height: mP1Height,
-                    y: mPhotoLiftY,
                   }
             }
             className="absolute overflow-hidden rounded-md"
           >
-            <Image src={IMAGES[0]} alt="" fill sizes={SIZES_MOBILE_HERO} className="object-cover" />
+            <HeroPhoto
+              src={IMAGES[0]}
+              sizes={SIZES_MOBILE_HERO}
+              scale={mP1ImgScale}
+              y={mP1ImgY}
+              reduce={!!reduce}
+            />
             <motion.div
               style={reduce ? { opacity: 0 } : { opacity: mP1OverlayOp }}
               className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10"
@@ -473,31 +496,26 @@ export function About() {
             </motion.div>
           </motion.div>
 
-          {/* Text column — all three paragraphs. Column lifts UP as the
-              photo above slides off screen, giving the paragraphs the
-              full viewport to fit without being clipped. */}
-          <motion.div
-            className="absolute flex flex-col gap-4"
-            style={{
-              left: MOBILE_TEXT_LEFT,
-              top: MOBILE_TEXT_TOP,
-              width: MOBILE_TEXT_WIDTH,
-              y: reduce ? 0 : mTextLiftY,
-            }}
-          >
-            {ABOUT_PARAGRAPHS.map((text, i) => (
-              <SlidingParagraph
-                key={i}
-                progress={mobileProgress}
-                range={MOBILE_PARA_STAGGER[i]}
-                slideFrom={MOBILE_PARA_SLIDE_FROM}
-                reduce={!!reduce}
-                className="text-left font-display text-[clamp(1.05rem,3.6vw,1.2rem)] leading-[1.6] tracking-[0.005em] text-neutral-50"
-              >
+        </div>
+      </div>
+
+      {/* ── STORY — three paragraphs in normal flow, Lightship-style. The
+          pinned stage above has just scrolled off carrying the big photo, so
+          this reads as the caption to that image: no pin, no slide, just
+          large type moving under the page's own momentum. Each paragraph
+          gets the site's standard soft reveal on first view. ── */}
+      {/* Sits tight under the photo. The frame ends 8vh (desktop) / ~15svh
+          (mobile) above the bottom of its stage, so the top padding here is
+          kept small and mobile pulls up a little to close the extra gap. */}
+      <div className="-mt-[6svh] px-5 pb-[16vh] pt-[4vh] sm:px-8 lg:mt-0 lg:px-14 lg:pb-[22vh] lg:pt-[5vh]">
+        <div className="flex max-w-[1000px] flex-col gap-[1.1em]">
+          {ABOUT_PARAGRAPHS.map((text, i) => (
+            <Reveal key={i} delay={i * 0.05} y={20}>
+              <p className={PARAGRAPH_CLASS} style={{ fontVariationSettings: PARAGRAPH_VARIATION }}>
                 {text}
-              </SlidingParagraph>
-            ))}
-          </motion.div>
+              </p>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
@@ -505,50 +523,34 @@ export function About() {
 }
 
 /**
- * A single paragraph that slides in from the right, in a given scroll
- * progress window. No opacity fade — the initial position sits fully
- * off-screen so it's naturally invisible until it slides into view.
- *
- * Font styling is applied here (not in className) so all paragraphs get
- * consistent variable-font settings — italic Fraunces at light weight
- * with a touch of softness. Feels editorial and readable at body sizes,
- * distinct from the display headings.
+ * The photo inside a hero frame, oversized vertically by HERO_BLEED on each
+ * side so it has room to drift without exposing the frame's edge. `scale`
+ * eases the zoom out as the frame grows; `y` is the parallax lag while the
+ * pinned stage scrolls off.
  */
-function SlidingParagraph({
-  children,
-  progress,
-  range,
-  slideFrom,
+function HeroPhoto({
+  src,
+  sizes,
+  scale,
+  y,
   reduce,
-  className,
 }: {
-  children: React.ReactNode;
-  progress: MotionValue<number>;
-  range: readonly [number, number];
-  slideFrom: string;
+  src: string;
+  sizes: string;
+  scale: MotionValue<number>;
+  y: MotionValue<string>;
   reduce: boolean;
-  className?: string;
 }) {
-  const x = useTransform(progress, [range[0], range[1]], [slideFrom, "0vw"]);
-
   return (
-    <motion.p
+    <motion.div
       style={{
-        // Fraunces upright at a proper reading weight — light+italic was
-        // pretty but read as "faded" against the dark background. This is
-        // still designer-feeling but you can actually read it.
-        //
-        // wght 520, not 420: light text on a black ground optically thins
-        // out (halation eats the stems), so reverse type needs more weight
-        // than the same face would on white. opsz 11 rather than 14 for
-        // the same reason — Fraunces thins its hairlines as the optical
-        // size axis climbs, and the low end keeps them solid.
-        fontVariationSettings: "'opsz' 11, 'wght' 520, 'SOFT' 30, 'WONK' 0",
-        ...(reduce ? {} : { x }),
+        top: `-${HERO_BLEED}`,
+        bottom: `-${HERO_BLEED}`,
+        ...(reduce ? {} : { scale, y }),
       }}
-      className={`will-change-transform ${className ?? ""}`}
+      className="absolute inset-x-0 will-change-transform"
     >
-      {children}
-    </motion.p>
+      <Image src={src} alt="" fill sizes={sizes} className="object-cover" />
+    </motion.div>
   );
 }

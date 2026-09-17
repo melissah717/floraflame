@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Karla } from "next/font/google";
+import { Archivo, Karla } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AgeGate } from "@/components/age-gate";
@@ -11,14 +11,14 @@ import { SmoothScroll } from "@/components/smooth-scroll"
 import "./globals.css";
 
 /**
- * Fraunces — a "soft serif" with optical size, SOFT and WONK axes.
- * Warm, slightly irregular, agricultural rather than editorial.
- * WONK enables the quirky angled terminals on g/y/w.
+ * Archivo — a sturdy grotesque with a wide weight range and a width axis.
+ * Modern and poster-like at display sizes, clean at paragraph sizes. Loaded
+ * as a variable font so `font-variation-settings: 'wght'` overrides work.
  */
-const fraunces = Fraunces({
+const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-fraunces",
-  axes: ["SOFT", "WONK", "opsz"],
+  variable: "--font-archivo",
+  axes: ["wdth"],
 });
 
 /**
@@ -97,7 +97,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${karla.variable} bg-neutral-900`}>
+    <html lang="en" className={`${archivo.variable} ${karla.variable} bg-neutral-900`}>
       <body className="bg-neutral-900 font-sans text-neutral-50 antialiased">
         <a
           href="#main-content"

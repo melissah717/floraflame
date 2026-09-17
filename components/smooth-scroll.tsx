@@ -1,7 +1,33 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import Lenis from "lenis";
+
+/* ------------------------------------------------------------------ */
+/* Tiny external store so any client component can grab the live      */
+/* Lenis instance (for lenis.scrollTo, the snap plugin, etc.) without  */
+/* threading it through context from the root layout.                 */
+/* ------------------------------------------------------------------ */
+let instance: Lenis | null = null;
+const listeners = new Set<() => void>();
+
+function publish(next: Lenis | null) {
+  instance = next;
+  listeners.forEach((cb) => cb());
+}
+
+function subscribe(cb: () => void) {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
+
+/** The page's Lenis instance, or null before <SmoothScroll /> mounts
+ * (and always null on the server). Re-renders when it appears. */
+export function useLenis(): Lenis | null {
+  return useSyncExternalStore(subscribe, () => instance, () => null);
+}
 
 /**
  * Momentum scroll for the whole site.
@@ -36,8 +62,10 @@ export function SmoothScroll() {
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
+    publish(lenis);
 
     return () => {
+      publish(null);
       cancelAnimationFrame(raf);
       lenis.destroy();
     };

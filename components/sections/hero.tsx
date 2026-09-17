@@ -75,7 +75,7 @@ export function Hero() {
           {/* OUTER — pointer tracking only. */}
           <motion.div
             style={{ x: panelX, skewX: panelSkew }}
-            className="absolute left-1/2 top-1/2 z-0 aspect-square w-[56vw] max-w-[460px] -translate-x-1/2 -translate-y-1/2 will-change-transform sm:w-[28vw]"
+            className="absolute left-1/2 top-1/2 z-0 aspect-square w-[84vw] max-w-[690px] -translate-x-1/2 -translate-y-1/2 will-change-transform sm:w-[42vw]"
           >
             {/* INNER — entrance. Slides in after the headline. */}
             <motion.div
@@ -88,7 +88,7 @@ export function Hero() {
                 src={PANEL_IMAGE}
                 alt="Flora & Flame"
                 fill
-                sizes="(max-width: 640px) 56vw, 28vw"
+                sizes="(max-width: 640px) 84vw, 42vw"
                 className="object-contain"
                 priority
               />
