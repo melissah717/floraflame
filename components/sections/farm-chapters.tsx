@@ -63,6 +63,7 @@ const CHAPTERS: Chapter[] = [
     title: "The plants",
     caption: "Living soil beds. No-till, no synthetics.",
     frames: [
+      { src: `${IMG}/v1789669981/FF-2_1_ddbrr3.jpg`, alt: "Plants in the living soil beds, Oakland facility" },
       { src: `${IMG}/v1786484377/bottom-shelf-view.jpg`, alt: "Bottom shelf, Oakland facility" },
       { src: `${IMG}/v1786484377/topshelf-view.jpg`, alt: "Top shelf, Oakland facility" },
     ],
@@ -99,6 +100,12 @@ const SNAP_REACH = 0.35
 /** Movement (in viewports) a gesture has to make before it counts as
  * moving to the next chapter rather than a nudge. One wheel tick clears it. */
 const SNAP_DEAD_ZONE = 0.08
+/** After a settle lands, wheel input is swallowed for this long. Trackpad
+ * momentum keeps emitting wheel events for a good while after the fingers
+ * lift, and without this those trailing events read as a fresh gesture and
+ * carried you straight through the middle chapter. */
+const WHEEL_COOLDOWN_MS = 450
+const SETTLE_DURATION_S = 1
 const SNAP_EASE = (t: number) => 1 - Math.pow(1 - t, 4)
 
 const IMAGE_SIZES = "(max-width: 768px) 100vw, 50vw"
@@ -169,6 +176,22 @@ export function FarmChapters() {
       if (gestureStartY === null) gestureStartY = lenis.scroll
     }
 
+    // While a settle animates, and for a short cooldown after, Lenis is
+    // held LOCKED: it keeps preventing the wheel's default (so the page
+    // can't natively scroll either) and discards the deltas. That is what
+    // stops trackpad momentum, which outlasts the animation, from reading
+    // as a fresh gesture. `lock: true` covers the animation itself; the
+    // cooldown extends it. The setter is TS-private but exists at runtime.
+    const setLocked = (v: boolean) => {
+      ;(lenis as unknown as { isLocked: boolean }).isLocked = v
+    }
+    let cooldown = 0
+    const releaseLater = () => {
+      window.clearTimeout(cooldown)
+      setLocked(true)
+      cooldown = window.setTimeout(() => setLocked(false), WHEEL_COOLDOWN_MS)
+    }
+
     const settle = (landingY: number, duration: number) => {
       const startY = gestureStartY ?? landingY
       gestureStartY = null
@@ -176,6 +199,7 @@ export function FarmChapters() {
       if (!m) return
 
       const rel = (landingY - m.top) / m.h
+      const startRel = (startY - m.top) / m.h
       const dir = Math.sign(landingY - startY)
       const inside = rel >= 0 && rel <= steps
       // Outside the section only pull in when heading toward it, and only
@@ -185,24 +209,37 @@ export function FarmChapters() {
         (rel > steps && dir < 0 && rel <= steps + SNAP_REACH)
       if (!inside && !entering) return
 
-      // Step in the direction of travel: any gesture past the dead zone
-      // moves at least one chapter, a long flick can skip several. Mirrors
-      // how a mandatory CSS snap feels without needing one.
-      const stepped =
-        dir > 0 ? Math.ceil(rel - SNAP_DEAD_ZONE) : dir < 0 ? Math.floor(rel + SNAP_DEAD_ZONE) : Math.round(rel)
+      // Exactly ONE chapter per gesture, counted from the chapter the
+      // gesture started on. A long flick used to be allowed to skip ahead
+      // by however far it travelled, which made the middle chapter nearly
+      // impossible to stop on — Lenis keeps accumulating wheel deltas for
+      // the whole 1.2s glide, so even a modest swipe "travelled" 1.5+
+      // screens. Clamping to one step makes each gesture predictable.
+      const from = Math.min(Math.max(Math.round(startRel), 0), steps)
+      const moved = rel - startRel
+      const stepped = Math.abs(moved) < SNAP_DEAD_ZONE ? from : from + (moved > 0 ? 1 : -1)
       const index = Math.min(Math.max(stepped, 0), steps)
       const target = Math.round(m.top + index * m.h)
-      if (Math.abs(target - landingY) < 1) return
-      lenis.scrollTo(target, { duration, easing: SNAP_EASE })
+      if (Math.abs(target - landingY) < 1 && Math.abs(target - lenis.scroll) < 1) return
+
+      lenis.scrollTo(target, {
+        duration,
+        easing: SNAP_EASE,
+        lock: true,
+        // Runs after Lenis's own reset() has cleared the lock, so re-arm it.
+        onComplete: releaseLater,
+      })
     }
 
     const offWheel = lenis.on("virtual-scroll", ({ event }) => {
       if (!(event instanceof WheelEvent)) return
+      // Lenis still emits while locked even though it drops the delta.
+      if (lenis.isLocked) return
       begin()
       window.clearTimeout(timer)
       timer = window.setTimeout(() => {
         const landing = Math.min(Math.max(lenis.targetScroll, 0), lenis.limit)
-        settle(landing, 1)
+        settle(landing, SETTLE_DURATION_S)
       }, WHEEL_SETTLE_MS)
     })
 
@@ -217,6 +254,8 @@ export function FarmChapters() {
     // fighting the rest of the programmatic glide.
     const onTouchStart = () => {
       window.clearTimeout(timer)
+      window.clearTimeout(cooldown)
+      setLocked(false)
       if (lenis.isScrolling === "smooth") lenis.scrollTo(lenis.scroll, { immediate: true })
     }
     window.addEventListener("touchstart", onTouchStart, { passive: true })
@@ -224,6 +263,8 @@ export function FarmChapters() {
     return () => {
       offWheel()
       offScroll()
+      window.clearTimeout(cooldown)
+      setLocked(false)
       window.removeEventListener("touchstart", onTouchStart)
       window.clearTimeout(timer)
     }
