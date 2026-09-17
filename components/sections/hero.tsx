@@ -64,9 +64,12 @@ export function Hero() {
   const cueOpacity = useTransform(scrollY, [0, h * 0.12], [1, 0]);
 
   return (
-    // Tall wrapper = longer sticky pin. Bump to 300vh (or higher) if you
-    // want even more scroll time before About begins to cover.
-    <div className="relative h-[180vh]">
+    // Tall wrapper = longer sticky pin. Desktop keeps the long pin; on
+    // phones the same 180vh was most of two screens of nothing happening
+    // before About started to cover, so it's cut to a short beat there.
+    // Must stay longer than DOCK_END (500px) so the wordmark finishes
+    // docking while the hero is still pinned.
+    <div className="relative h-[115svh] lg:h-[180vh]">
       <section className="sticky top-0 h-svh overflow-hidden bg-neutral-900">
         <motion.div
           style={reduce ? undefined : { y: contentY }}

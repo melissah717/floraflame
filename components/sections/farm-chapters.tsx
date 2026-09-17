@@ -25,7 +25,7 @@ import { useLenis } from "@/components/smooth-scroll"
  *     side, so vertical scroll slides them in horizontally.
  * A chapter title sits dead centre in mix-blend-difference (white over
  * black, inverted over photos) and flips word-by-word when the chapter
- * changes. A caption pill at the bottom names what you're looking at.
+ * changes.
  *
  * Snapping: Lenis owns the wheel, so CSS scroll-snap can't be used. A
  * small idle-settle (see below) lands each gesture on the nearest chapter
@@ -270,7 +270,6 @@ export function FarmChapters() {
     }
   }, [lenis, reduce, steps])
 
-  const chapter = CHAPTERS[active]
 
   return (
     <div
@@ -334,22 +333,6 @@ export function FarmChapters() {
           ))}
         </div>
 
-        {/* CAPTION pill */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-5 z-20 flex justify-center px-5 sm:bottom-8">
-          <motion.div
-            key={chapter.title}
-            initial={reduce ? false : { opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="flex max-w-full items-center gap-3 rounded-full border border-neutral-700/80 bg-neutral-900/70 px-4 py-2 text-xs tracking-[0.06em] text-neutral-200 backdrop-blur-md sm:px-5 sm:py-2.5"
-          >
-            <span className="shrink-0 tabular-nums text-neutral-500">
-              {String(active + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
-            </span>
-            <span aria-hidden className="h-3 w-px shrink-0 bg-neutral-700" />
-            <span className="truncate">{chapter.caption}</span>
-          </motion.div>
-        </div>
       </div>
     </div>
   )

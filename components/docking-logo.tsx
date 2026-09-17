@@ -60,7 +60,17 @@ const LETTERS = "Flora & Flame".split("");
 export const ENTRANCE_TOTAL_SEC =
   ENTRANCE_DELAY + LETTERS.length * LETTER_STAGGER + LETTER_DURATION;
 
-export function DockingLogo({ showWithNav = true }: { showWithNav?: boolean }) {
+export function DockingLogo({
+  showWithNav = true,
+  behindMenu = false,
+}: {
+  showWithNav?: boolean;
+  /** True while the mobile sheet is open. The wordmark normally sits above
+   * the header (z-60) so it can dock into it, but the sheet is z-50 and the
+   * logo was painting over the open menu. Dropping under it for the
+   * duration keeps the menu clean. */
+  behindMenu?: boolean;
+}) {
   const { scrollY } = useScroll();
   const reduce = useReducedMotion();
 
@@ -126,7 +136,7 @@ export function DockingLogo({ showWithNav = true }: { showWithNav?: boolean }) {
     <Link
       href="/"
       aria-label="Flora & Flame, home"
-      className="fixed left-0 top-0 z-[60]"
+      className={`fixed left-0 top-0 ${behindMenu ? "z-40" : "z-[60]"}`}
     >
       {/* ── Text wordmark ── hero display type, docks, then fades out ── */}
       <motion.div

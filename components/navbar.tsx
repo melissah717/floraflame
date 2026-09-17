@@ -87,7 +87,7 @@ export function Navbar() {
 
   return (
     <>
-      {isHome && <DockingLogo showWithNav={wantsNav} />}
+      {isHome && <DockingLogo showWithNav={wantsNav} behindMenu={open} />}
 
       <motion.header
         initial={{ y: -80, opacity: 0 }}
