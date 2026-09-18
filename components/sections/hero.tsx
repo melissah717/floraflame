@@ -18,8 +18,9 @@ import {
  *   2. Then the headline lines drop in (delay 2.4s, staggered).
  *   3. Then the tiger panel slides in from the left (delay 3.4s).
  *
- * On scroll: the whole section pins for ~1.5 viewports thanks to the 250vh
- * wrapper — hero gets its own scroll time before About starts covering.
+ * On scroll: the whole section pins for ~1.5 viewports thanks to the tall
+ * wrapper — hero gets its own scroll time before the next section starts
+ * covering.
  * No fancy scale/opacity — just plain sticky pinning.
  */
 
@@ -66,7 +67,8 @@ export function Hero() {
   return (
     // Tall wrapper = longer sticky pin. Desktop keeps the long pin; on
     // phones the same 180vh was most of two screens of nothing happening
-    // before About started to cover, so it's cut to a short beat there.
+    // before the next section started to cover, so it's cut to a short
+    // beat there.
     // Must stay longer than DOCK_END (500px) so the wordmark finishes
     // docking while the hero is still pinned.
     <div className="relative h-[115svh] lg:h-[180vh]">

@@ -1,7 +1,7 @@
 import { Hero } from "@/components/sections/hero";
 import { Drops } from "@/components/sections/drops";
 import { About } from "@/components/sections/about";
-import {LetsTalk} from  "@/components/sections/lets-talk"
+import { LetsTalk } from "@/components/sections/lets-talk";
 import { Wholesale } from "@/components/sections/wholesale";
 import { FindUs } from "@/components/sections/find-us";
 import { getCurrentDrops } from "@/lib/strains";
@@ -51,10 +51,10 @@ export default async function HomePage() {
         Sections with their own bg (marquee band, wholesale) override it.
       */}
       <div className="relative z-10 bg-neutral-900">
-        <About />
         <Drops strains={strains} />
+        <About />
         <LetsTalk>
-        <Wholesale />
+          <Wholesale />
         </LetsTalk>
         <FindUs />
       </div>
