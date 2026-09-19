@@ -1,17 +1,12 @@
 /**
  * Stockist data + location helpers.
  *
- * SPREADSHEET SCHEMA — keep the column names identical to these field names
- * and the Google Sheets CSV maps straight onto this type with no translation
- * layer:
- *
- *   name | address | city | state | zip | lat | lng | status | phone | notes
- *
- * lat/lng are filled by the Apps Script — leave them blank while entering
- * data by hand.
+ * Rows live in Supabase `stockists` and are edited at /admin/stockists.
+ * lat/lng are geocoded from the address when the row is saved, so nothing
+ * fills them in by hand.
  */
 
-import { parseCsvLine } from "@/lib/csv";
+import { supabase } from "@/lib/supabase";
 
 export type Stockist = {
   name: string;
@@ -245,152 +240,80 @@ export function directionsUrl(s: Stockist): string {
 }
 
 /* ------------------------------------------------------------------ */
-/* Google Sheets                                                       */
+/* Supabase                                                            */
 /* ------------------------------------------------------------------ */
 
 const LOG = "[stockists]";
 
 /**
- * Pull stockists from a published Google Sheet.
+ * Pull stockists from Supabase `stockists`, written from /admin/stockists.
  *
- * SETUP
- *   Sheet → File → Share → Publish to web → Sheet1 → CSV → copy the URL,
- *   then set STOCKISTS_CSV_URL (in .env.local locally, and in Vercel's
- *   environment variables for production).
+ * This used to read a published-to-web Google Sheet as CSV, with an Apps
+ * Script bolted to the sheet to fill lat/lng. Both are gone: the admin
+ * geocodes on save (see lib/admin/geocode.ts), and coordinates arrive in
+ * the row already. The old path also had a failure mode worth not missing
+ * — revoking publish-to-web made Google answer 200 with an HTML sign-in
+ * page, which parsed into garbage rather than an error.
  *
- * EVERY PATH LOGS, INCLUDING SUCCESS.
- * The previous version returned placeholder data silently in two cases —
- * a body with under two lines, and zero parsed rows. Both are exactly the
- * failures worth knowing about, and both looked identical to success in the
- * build log. A fallback that hides why it fired is worse than a crash.
- *
- * These run at BUILD time, not runtime: the page is prerendered with
- * revalidate, so look in Vercel's Build Logs, not Runtime Logs.
+ * EVERY PATH LOGS, INCLUDING SUCCESS. A fallback that hides why it fired
+ * is worse than a crash, and these run at BUILD time (the page is
+ * prerendered with revalidate), so look in Vercel's Build Logs.
  */
 export async function fetchStockists(): Promise<Stockist[]> {
-  const url = process.env.STOCKISTS_CSV_URL;
+  const { data, error } = await supabase
+    .from("stockists")
+    .select("name, address, city, state, zip, lat, lng, status, phone, notes")
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
 
-  if (!url) {
-    console.warn(`${LOG} STOCKISTS_CSV_URL not set — using placeholders.`);
+  if (error) {
+    console.error(`${LOG} fetchStockists failed:`, error.message);
     return STOCKISTS;
   }
 
-  try {
-    // A stall (rather than an outright failure) can hang page generation
-    // past Next's prerender watchdog. The timeout guarantees the catch
-    // block actually gets a chance to fall back.
-    const res = await fetch(url, {
-      next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(8000),
-    });
+  const parsed: Stockist[] = (data ?? []).map((row) => ({
+    name: row.name,
+    address: row.address,
+    city: row.city,
+    state: row.state || "CA",
+    zip: row.zip,
+    lat: Number(row.lat),
+    lng: Number(row.lng),
+    status: (["carrying", "restocking", "paused"].includes(row.status)
+      ? row.status
+      : "carrying") as Stockist["status"],
+    phone: row.phone || undefined,
+    notes: row.notes || undefined,
+  }));
 
-    if (!res.ok) {
-      console.error(`${LOG} HTTP ${res.status} ${res.statusText}`);
-      return STOCKISTS;
-    }
+  // Rows without usable coordinates can't be sorted or pinned, so they're
+  // dropped rather than rendered. Geocoding is allowed to fail on save
+  // (a typo'd address shouldn't block the write), so this stays.
+  const usable = parsed.filter(
+    (s) =>
+      s.name &&
+      Number.isFinite(s.lat) &&
+      Number.isFinite(s.lng) &&
+      s.lat !== 0 &&
+      s.lng !== 0
+  );
 
-    const contentType = res.headers.get("content-type") ?? "";
-    const raw = await res.text();
-
-    /**
-     * The most common failure, and the sneakiest: when publish-to-web is
-     * revoked, Google answers 200 with an HTML sign-in page. res.ok is true,
-     * the body is a valid string, and the CSV parser just produces garbage —
-     * so without this check it looks exactly like success.
-     */
-    if (!contentType.includes("csv") && raw.trimStart().startsWith("<")) {
-      console.error(
-        `${LOG} Expected CSV, got ${contentType || "unknown"}. ` +
-          `Body starts: ${raw.slice(0, 120).replace(/\s+/g, " ")}`
-      );
-      console.error(
-        `${LOG} Usually means publish-to-web was revoked. Re-publish: ` +
-          `File → Share → Publish to web → Sheet1 → CSV.`
-      );
-      return STOCKISTS;
-    }
-
-    // Strip BOM, normalise Windows line endings.
-    const csv = raw.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n");
-    const lines = csv.trim().split("\n");
-
-    if (lines.length < 2) {
-      console.error(
-        `${LOG} Only ${lines.length} line(s) — expected a header plus rows. ` +
-          `Body: ${raw.slice(0, 200)}`
-      );
-      return STOCKISTS;
-    }
-
-    const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase());
-
-    // A publish URL pointing at the wrong tab is otherwise silent: you get
-    // a perfectly valid CSV that happens to have none of the right columns.
-    for (const required of ["name", "lat", "lng"]) {
-      if (!headers.includes(required)) {
-        console.error(
-          `${LOG} No "${required}" column. Found: ${headers.join(", ")}. ` +
-            `Check the publish URL points at the right tab.`
-        );
-        return STOCKISTS;
-      }
-    }
-
-    const col = (row: string[], key: string) => {
-      const i = headers.indexOf(key);
-      return i === -1 ? "" : (row[i] ?? "").replace(/^"|"$/g, "").trim();
-    };
-
-    const parsed = lines
-      .slice(1)
-      .map(parseCsvLine)
-      .map((row) => {
-        const rawStatus = col(row, "status").toLowerCase();
-        return {
-          name: col(row, "name"),
-          address: col(row, "address"),
-          city: col(row, "city"),
-          state: col(row, "state") || "CA",
-          zip: col(row, "zip"),
-          lat: Number(col(row, "lat")),
-          lng: Number(col(row, "lng")),
-          status: (["carrying", "restocking", "paused"].includes(rawStatus)
-            ? rawStatus
-            : "carrying") as Stockist["status"],
-          phone: col(row, "phone") || undefined,
-          notes: col(row, "notes") || undefined,
-        };
-      });
-
-    // Rows without usable coordinates can't be sorted or pinned, so they're
-    // dropped rather than rendered — a row mid-edit shouldn't break the page.
-    const usable = parsed.filter(
-      (s) =>
-        s.name &&
-        Number.isFinite(s.lat) &&
-        Number.isFinite(s.lng) &&
-        s.lat !== 0 &&
-        s.lng !== 0
+  if (parsed.length && !usable.length) {
+    console.error(
+      `${LOG} ${parsed.length} row(s), none usable — every row is missing ` +
+        `coordinates. Re-save them in /admin/stockists to geocode.`
     );
-
-    if (!usable.length) {
-      console.error(
-        `${LOG} Parsed ${parsed.length} row(s), none usable — every row is ` +
-          `missing a name or coordinates. First: ${JSON.stringify(parsed[0])}`
-      );
-      return STOCKISTS;
-    }
-
-    const dropped = parsed.length - usable.length;
-    if (dropped) {
-      console.warn(`${LOG} ${dropped} row(s) skipped — missing coordinates.`);
-    }
-
-    console.log(`${LOG} Loaded ${usable.length} stockists from the sheet.`);
-    return usable;
-  } catch (err) {
-    // Never let a sheet outage take the page down.
-    console.error(`${LOG} Fetch threw:`, err);
     return STOCKISTS;
   }
+
+  const dropped = parsed.length - usable.length;
+  if (dropped) {
+    console.warn(
+      `${LOG} ${dropped} row(s) skipped — no coordinates. Re-save them in ` +
+        `/admin/stockists to geocode.`
+    );
+  }
+
+  console.log(`${LOG} Loaded ${usable.length} stockist(s).`);
+  return usable;
 }

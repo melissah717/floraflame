@@ -6,8 +6,11 @@ import { getBlogPosts, type BlogPost } from "@/lib/blog";
 import { Reveal, RevealGroup, RevealItem } from "@/components/scroll-primitives";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
 
-// Revisits the sheet on every request in dev, and on the revalidate
-// window (see lib/blog.ts) in production — no build-time freeze.
+// Dating from when posts lived in a Google Sheet that could change at any
+// moment with no way to know. Posts are in Supabase now and the admin calls
+// revalidatePath() on save, so this could become a static route with
+// `revalidate` — left dynamic for now because that's a behaviour change to
+// make deliberately, not as a side effect of the migration.
 export const dynamic = "force-dynamic";
 
 const TITLE = "The Knowledge"

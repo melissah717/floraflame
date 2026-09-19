@@ -2,12 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, Karla } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { AgeGate } from "@/components/age-gate";
-import { CookieConsent } from "@/components/cookie-consent";
-import { Preloader } from "@/components/preloader";
-import { Navbar } from "@/components/navbar";
-import { SiteFooter } from "@/components/footer";
-import { SmoothScroll } from "@/components/smooth-scroll"
 import "./globals.css";
 
 /**
@@ -96,22 +90,23 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  /*
+   * Deliberately bare: <html>, <body>, the font variables, and the two
+   * Vercel beacons. Nothing else.
+   *
+   * The public site's chrome — age gate, cookie banner, preloader, Lenis
+   * smooth scroll, nav and footer — lives one level down in
+   * app/(site)/layout.tsx. That split is what lets /admin exist: an age
+   * gate over the login form, a preloader in front of it, and Lenis
+   * hijacking scroll inside a long form are all wrong for a back office,
+   * and there is no way to opt a route OUT of a layout above it.
+   *
+   * Route groups don't appear in URLs, so nothing the site serves moved.
+   */
   return (
     <html lang="en" className={`${archivo.variable} ${karla.variable} bg-neutral-900`}>
       <body className="bg-neutral-900 font-sans text-neutral-50 antialiased">
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:rounded-full focus:bg-neutral-50 focus:px-5 focus:py-3 focus:text-sm focus:text-neutral-900"
-        >
-          Skip to main content
-        </a>
-        <AgeGate />
-        <CookieConsent />
-        <Preloader />
-        <SmoothScroll />
-        <Navbar />
-        <main id="main-content">{children}</main>
-        <SiteFooter />
+        {children}
         <Analytics />
         <SpeedInsights />
       </body>
