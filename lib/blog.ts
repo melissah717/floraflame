@@ -14,6 +14,7 @@
  */
 
 import { supabase } from "@/lib/supabase";
+import { optimizedImage } from "@/lib/cloudinary";
 
 const LOG = "[blog]";
 
@@ -89,7 +90,7 @@ function toParagraphs(value: unknown): BlogParagraph[] {
     const p = entry as Record<string, unknown>;
     const para: BlogParagraph = {
       title: typeof p.title === "string" ? p.title : "",
-      image: typeof p.image === "string" ? p.image : "",
+      image: typeof p.image === "string" ? optimizedImage(p.image) : "",
       body: typeof p.body === "string" ? p.body : "",
     };
     // A paragraph with nothing in it is a leftover empty row in the
@@ -103,7 +104,7 @@ function rowToPost(row: BlogPostRow): BlogPost {
     slug: row.slug,
     title: row.title,
     bucket: row.bucket || "General",
-    heroImage: row.hero_image ?? "",
+    heroImage: optimizedImage(row.hero_image),
     blurb: row.blurb ?? "",
     paragraphs: toParagraphs(row.paragraphs),
   };

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { savePost, deletePost, type AdminPost } from "@/lib/admin/posts";
 import type { BlogParagraph } from "@/lib/blog";
 import type { ActionState } from "@/lib/admin/form";
+import { ImageField } from "@/components/admin/image-field";
 import {
   Banner,
   Checkbox,
@@ -100,17 +101,15 @@ function ParagraphRepeater({ initial }: { initial: BlogParagraph[] }) {
             />
           </Field>
 
-          <Field
+          {/* Controlled, so the repeater's own state stays the source of
+              truth and reordering moves the image with its section. */}
+          <ImageField
+            name={`paragraph-${index}-image`}
             label="Image"
-            htmlFor={`paragraph-${index}-image`}
-            hint="Optional Cloudinary URL."
-          >
-            <TextInput
-              name={`paragraph-${index}-image`}
-              value={paragraph.image}
-              onChange={(e) => update(index, "image", e.target.value)}
-            />
-          </Field>
+            hint="Optional."
+            value={paragraph.image}
+            onValueChange={(next) => update(index, "image", next)}
+          />
 
           <Field label="Body" htmlFor={`paragraph-${index}-body`}>
             <TextArea
@@ -202,9 +201,12 @@ export function PostForm({ post }: { post: AdminPost | null }) {
             </Field>
           </div>
 
-          <Field label="Hero image" htmlFor="hero_image" hint="Optional Cloudinary URL.">
-            <TextInput name="hero_image" defaultValue={post?.hero_image ?? ""} />
-          </Field>
+          <ImageField
+            name="hero_image"
+            label="Hero image"
+            hint="Optional. Shown on the index card and used for social previews."
+            defaultValue={post?.hero_image}
+          />
 
           <Field
             label="Blurb"

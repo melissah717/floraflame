@@ -6,6 +6,7 @@ import Link from "next/link";
 import { saveBatch, deleteBatch, type AdminBatch } from "@/lib/admin/strains";
 import { SPECTRUM_POSITIONS } from "@/lib/strains";
 import type { ActionState } from "@/lib/admin/form";
+import { ImageField } from "@/components/admin/image-field";
 import {
   Banner,
   Checkbox,
@@ -98,28 +99,21 @@ export function StrainForm({ batch }: { batch: AdminBatch | null }) {
 
         <FormSection
           title="Photos"
-          description="Cloudinary URLs. Only res.cloudinary.com/g0mcdcfr paths are allowed through next.config.ts."
+          description="Upload a file or paste a URL. Delivery is optimised automatically — no need to shrink anything first."
         >
-          <Field
+          <ImageField
+            name="image"
             label="Product photo"
-            htmlFor="image"
             error={errors.image}
             hint="Container + nug. Used on the homepage card."
-          >
-            <TextInput
-              name="image"
-              defaultValue={batch?.image ?? ""}
-              error={errors.image}
-              placeholder="https://res.cloudinary.com/g0mcdcfr/image/upload/…"
-            />
-          </Field>
-          <Field
+            defaultValue={batch?.image}
+          />
+          <ImageField
+            name="nug_image"
             label="Nug close-up"
-            htmlFor="nug_image"
             hint="Optional. Used on /strains; falls back to the product photo."
-          >
-            <TextInput name="nug_image" defaultValue={batch?.nug_image ?? ""} />
-          </Field>
+            defaultValue={batch?.nug_image}
+          />
         </FormSection>
 
         <FormSection title="Profile">

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { optimizedImage } from "@/lib/cloudinary";
 
 /**
  * Where a strain sits on the indica → sativa spectrum, relative to the
@@ -123,8 +124,10 @@ function rowToStrain(row: DropBatchRow): Strain | null {
   return {
     slug: row.slug,
     name: row.name,
-    image: row.image,
-    nugImage: row.nug_image ?? undefined,
+    // f_auto,q_auto added on read rather than stored, so it also applies to
+    // rows written before this existed and to URLs pasted by hand.
+    image: optimizedImage(row.image),
+    nugImage: row.nug_image ? optimizedImage(row.nug_image) : undefined,
     spectrum,
     isCurrent: row.is_current ?? false,
     // String comparison works here since both sides are "YYYY-MM-DD" —

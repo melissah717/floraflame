@@ -70,6 +70,32 @@ it to `.env.local` or Vercel.
 Re-running either is safe: posts upsert on `slug`, and the SQL path clears
 `stockists` before reinserting rather than duplicating all 45.
 
+## 4b. Image uploads (optional)
+
+The admin can upload straight to Cloudinary. Without these three vars the
+upload button reports that it isn't configured and you can still paste a
+URL, so this is safe to skip.
+
+Cloudinary → Settings → API Keys:
+
+```bash
+CLOUDINARY_CLOUD_NAME=g0mcdcfr
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+```
+
+All three are server-only — no `NEXT_PUBLIC_` prefix, so none of them ever
+reaches the browser. The secret signs upload requests; the browser gets a
+short-lived signature and sends the file straight to Cloudinary, never
+through this app.
+
+Add the same three to Vercel for production.
+
+> You do **not** need to compress anything before uploading. Cloudinary
+> stores the original and derives a per-browser variant at delivery — see
+> `lib/cloudinary.ts`. The admin only downscales files whose longest side
+> is over 2600px, and only to keep the upload itself quick.
+
 ## 5. Clean up
 
 Once `/admin` shows the migrated content:
