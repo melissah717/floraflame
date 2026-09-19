@@ -48,6 +48,7 @@ export function SiteFooter() {
             <ul className="mt-4 space-y-2 text-sm">
               {[
                 ["Instagram", "https://instagram.com/floraandflameca"],
+                ["YouTube", "https://www.youtube.com/@FloraFlameCA"],
                 ["Weedmaps", "https://weedmaps.com/brands/flora-flame"],
               ].map(([label, href]) => (
                 <li key={label}>

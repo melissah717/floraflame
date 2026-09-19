@@ -13,8 +13,11 @@ export const revalidate = 3600;
 
 // Organization schema, not LocalBusiness — Flora & Flame sells wholesale to
 // licensed retailers rather than operating its own public storefront, so
-// there's no street address to publish. Add `sameAs` social URLs here once
-// the footer's Instagram/Weedmaps/Leafly links are wired to real profiles.
+// there's no street address to publish.
+//
+// `sameAs` is how a search engine connects these profiles to the brand
+// rather than treating them as unrelated pages that happen to share a name.
+// Keep it in step with the socials listed in components/footer.tsx.
 const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -24,6 +27,11 @@ const ORGANIZATION_JSON_LD = {
   description:
     "Small-batch, no-till living soil cannabis cultivator based in Oakland, California.",
   foundingDate: "2017",
+  sameAs: [
+    "https://www.youtube.com/@FloraFlameCA",
+    "https://instagram.com/floraandflameca",
+    "https://weedmaps.com/brands/flora-flame",
+  ],
   address: {
     "@type": "PostalAddress",
     addressLocality: "Oakland",

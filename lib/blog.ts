@@ -31,6 +31,11 @@ export type BlogPost = {
   heroImage: string;
   blurb: string;
   paragraphs: BlogParagraph[];
+  /** ISO timestamps. Feed the sitemap's lastModified and Article schema's
+   *  datePublished/dateModified, both of which were previously either
+   *  fabricated at build time or missing entirely. */
+  publishedAt: string;
+  updatedAt: string;
 };
 
 /**
@@ -51,6 +56,8 @@ export const BLOG_POSTS: BlogPost[] = [
         body: "This placeholder shows while the blog_posts fetch is failing. See lib/blog.ts.",
       },
     ],
+    publishedAt: new Date(0).toISOString(),
+    updatedAt: new Date(0).toISOString(),
   },
 ];
 
@@ -74,6 +81,8 @@ type BlogPostRow = {
   hero_image: string | null;
   blurb: string | null;
   paragraphs: unknown;
+  created_at: string;
+  updated_at: string;
 };
 
 /**
@@ -107,10 +116,12 @@ function rowToPost(row: BlogPostRow): BlogPost {
     heroImage: optimizedImage(row.hero_image),
     blurb: row.blurb ?? "",
     paragraphs: toParagraphs(row.paragraphs),
+    publishedAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 
-const SELECT_COLUMNS = "slug, title, bucket, hero_image, blurb, paragraphs";
+const SELECT_COLUMNS = "slug, title, bucket, hero_image, blurb, paragraphs, created_at, updated_at";
 
 /**
  * Published posts, in admin-defined order.
