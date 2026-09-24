@@ -3,6 +3,7 @@ import Link from "next/link";
 import { listBatches } from "@/lib/admin/strains";
 import { listPosts } from "@/lib/admin/posts";
 import { listStockists } from "@/lib/admin/stockists";
+import { strainIssues, worstSeverity } from "@/lib/admin/strain-issues";
 
 export default async function AdminOverviewPage() {
   const [batches, posts, stockists] = await Promise.all([
@@ -12,6 +13,11 @@ export default async function AdminOverviewPage() {
   ]);
 
   const current = batches.filter((b) => b.is_current);
+  // Same check the strains list and the edit form use, so the three can't
+  // drift into disagreeing about what counts as incomplete.
+  const needsAttention = batches.filter(
+    (b) => worstSeverity(strainIssues(b)) === "warn"
+  );
   const drafts = posts.filter((p) => !p.published);
   // Geocoding is allowed to fail on save, and a stockist without
   // coordinates is silently dropped from the map — so it gets counted here
@@ -24,10 +30,14 @@ export default async function AdminOverviewPage() {
       title: "Strains",
       stat: `${batches.length} batch${batches.length === 1 ? "" : "es"}`,
       detail:
-        current.length > 0
-          ? `${current.length} in rotation: ${current.map((b) => b.name).join(", ")}`
-          : "Nothing is in rotation — the homepage is showing placeholders.",
-      warn: current.length === 0,
+        needsAttention.length > 0
+          ? `${needsAttention.length} missing something that shows on the site: ${needsAttention
+              .map((b) => b.name)
+              .join(", ")}`
+          : current.length > 0
+            ? `${current.length} in rotation: ${current.map((b) => b.name).join(", ")}`
+            : "Nothing is in rotation — the homepage is showing placeholders.",
+      warn: current.length === 0 || needsAttention.length > 0,
     },
     {
       href: "/admin/posts",

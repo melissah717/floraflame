@@ -98,20 +98,29 @@ function LearnCard({
       href={`/learn/${entry.slug}`}
       className="group relative block aspect-square overflow-hidden rounded-md bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-50/70"
     >
-      {/* Photo — eases in a touch on hover, behind everything. */}
+      {/* Photo — eases in a touch on hover, behind everything.
+          will-change-transform is load-bearing, not a micro-optimisation:
+          the card clips with overflow-hidden and a rounded corner, so
+          without its own compositing layer the browser re-rasterises and
+          re-clips the photo on every frame of the scale, which reads as a
+          shimmer along the edges. */}
       <Image
         src={entry.image}
         alt={entry.alt}
         fill
         priority={priority}
         sizes="(max-width: 640px) 100vw, 50vw"
-        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+        className="object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.04]"
       />
       {/* Black wash. Sits heavy at rest so the type reads, lifts slightly on
-          hover so the photo comes forward. */}
+          hover so the photo comes forward.
+          Animates OPACITY, not background-color. Same look, but colour is a
+          paint property — transitioning it repainted a full-card overlay
+          every frame, directly on top of the photo that was also being
+          re-rasterised. Opacity stays on the compositor. */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-black/60 transition-colors duration-500 group-hover:bg-black/45"
+        className="absolute inset-0 bg-black opacity-60 transition-opacity duration-500 group-hover:opacity-45"
       />
 
       {/* Content — centred, like the mock. */}
@@ -125,7 +134,10 @@ function LearnCard({
       </div>
 
       {/* Read cue — bottom right, fades up on hover. */}
-      <span className="absolute bottom-5 right-5 flex items-center gap-2 text-xs tracking-[0.08em] text-neutral-100 opacity-0 transition-all duration-400 group-hover:opacity-100 group-hover:-translate-y-0.5 sm:bottom-6 sm:right-6">
+      {/* transition-[opacity,transform], not transition-all: `all` makes the
+          browser watch every animatable property on the element, including
+          layout ones it has no business animating here. */}
+      <span className="absolute bottom-5 right-5 flex items-center gap-2 text-xs tracking-[0.08em] text-neutral-100 opacity-0 transition-[opacity,transform] duration-400 will-change-[opacity,transform] group-hover:opacity-100 group-hover:-translate-y-0.5 sm:bottom-6 sm:right-6">
         Read
         <ArrowUpRight className="h-4 w-4" />
       </span>

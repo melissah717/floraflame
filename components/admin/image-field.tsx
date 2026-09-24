@@ -3,6 +3,12 @@
 import { useRef, useState } from "react";
 
 import { signUpload } from "@/lib/admin/upload";
+import {
+  hasBackgroundRemoved,
+  isCloudinaryUrl,
+  withBackgroundRemoved,
+  withoutBackgroundRemoved,
+} from "@/lib/cloudinary";
 import { Field, TextInput } from "@/components/admin/ui";
 
 /*
@@ -176,6 +182,11 @@ export function ImageField({
 
   const uploading = progress !== null;
 
+  // Derived from the URL, not tracked separately — the transform lives in
+  // the URL, so there's nothing to keep in sync.
+  const canCutOut = isCloudinaryUrl(url);
+  const cutOut = hasBackgroundRemoved(url);
+
   return (
     <Field label={label} htmlFor={name} hint={hint} error={problem ?? error}>
       <div className="flex flex-col gap-3">
@@ -188,7 +199,17 @@ export function ImageField({
             <img
               src={url}
               alt=""
-              className="h-20 w-20 shrink-0 rounded-lg border border-neutral-700 bg-neutral-950 object-contain"
+              // Checkerboard, not a flat panel: the whole point of the
+              // toggle is telling transparent from black, and a dark
+              // background makes those two look identical.
+              style={{
+                backgroundImage:
+                  "linear-gradient(45deg,#2a2a2a 25%,transparent 25%,transparent 75%,#2a2a2a 75%),linear-gradient(45deg,#2a2a2a 25%,transparent 25%,transparent 75%,#2a2a2a 75%)",
+                backgroundSize: "12px 12px",
+                backgroundPosition: "0 0, 6px 6px",
+                backgroundColor: "#151515",
+              }}
+              className="h-20 w-20 shrink-0 rounded-lg border border-neutral-700 object-contain"
             />
           ) : (
             <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-dashed border-neutral-700 text-[11px] text-neutral-600">
@@ -217,6 +238,22 @@ export function ImageField({
                 {uploading ? `Uploading… ${progress}%` : "Upload image"}
               </button>
 
+              {canCutOut && !uploading && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setUrl(cutOut ? withoutBackgroundRemoved(url) : withBackgroundRemoved(url))
+                  }
+                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                    cutOut
+                      ? "border-lime-500/50 text-lime-300 hover:border-lime-400"
+                      : "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:text-neutral-50"
+                  }`}
+                >
+                  {cutOut ? "Background removed" : "Remove background"}
+                </button>
+              )}
+
               {url && !uploading && (
                 <button
                   type="button"
@@ -229,6 +266,13 @@ export function ImageField({
             </div>
           </div>
         </div>
+
+        {cutOut && (
+          <p className="text-xs text-neutral-500">
+            Cloudinary processes the cut-out in the background — the first load can
+            still show the original. Reload in a few seconds if it looks unchanged.
+          </p>
+        )}
 
         {uploading && (
           <div className="h-1 w-full overflow-hidden rounded-full bg-neutral-800">

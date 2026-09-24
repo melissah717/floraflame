@@ -7,6 +7,7 @@ import { saveBatch, deleteBatch, type AdminBatch } from "@/lib/admin/strains";
 import { SPECTRUM_POSITIONS } from "@/lib/strains";
 import type { ActionState } from "@/lib/admin/form";
 import { ImageField } from "@/components/admin/image-field";
+import { strainIssues } from "@/lib/admin/strain-issues";
 import {
   Banner,
   Checkbox,
@@ -23,6 +24,11 @@ export function StrainForm({ batch }: { batch: AdminBatch | null }) {
   const [state, formAction] = useActionState<ActionState, FormData>(saveBatch, null);
   const errors = state?.fieldErrors ?? {};
   const isNew = !batch;
+
+  // Computed from the SAVED row, not live form state — it answers "what is
+  // wrong with what's published", which is the question worth answering.
+  // It refreshes when the save round-trips.
+  const issues = batch ? strainIssues(batch) : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,6 +55,31 @@ export function StrainForm({ batch }: { batch: AdminBatch | null }) {
       <form action={formAction} className="flex flex-col gap-5">
         {!isNew && <input type="hidden" name="id" value={batch.id} />}
         <Banner state={state} />
+
+        {issues.length > 0 && (
+          <section className="flex flex-col gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+            <h2 className="text-xs uppercase tracking-[0.08em] text-amber-300">
+              {issues.length} thing{issues.length === 1 ? "" : "s"} missing
+            </h2>
+            <ul className="flex flex-col gap-1.5">
+              {issues.map((issue) => (
+                <li key={issue.field} className="text-sm leading-snug">
+                  <span
+                    className={
+                      issue.severity === "warn" ? "text-amber-200" : "text-neutral-300"
+                    }
+                  >
+                    {issue.label}
+                  </span>
+                  <span className="text-neutral-500"> — {issue.detail}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-neutral-500">
+              None of these block saving. They&apos;re what the public site does without them.
+            </p>
+          </section>
+        )}
 
         <FormSection title="Identity">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -111,7 +142,7 @@ export function StrainForm({ batch }: { batch: AdminBatch | null }) {
           <ImageField
             name="nug_image"
             label="Nug close-up"
-            hint="Optional. Used on /strains; falls back to the product photo."
+            hint="Required for /strains — a batch without one is left off that page until it has one. The homepage doesn't need it."
             defaultValue={batch?.nug_image}
           />
         </FormSection>

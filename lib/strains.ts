@@ -167,11 +167,27 @@ export async function getCurrentDrops(): Promise<Strain[]> {
   return strains;
 }
 
-/** Every batch on file, newest first — for the /strains page. */
+/**
+ * Batches for the /strains page, newest first.
+ *
+ * Only batches that have a nug close-up on file. That page is built around
+ * the nug shot — it's the image the card, the intro cycle and every
+ * thumbnail render — and nug photography often lands well after a batch is
+ * otherwise ready. Showing those batches with the product photo standing in
+ * made the grid read as inconsistent rather than incomplete.
+ *
+ * This does NOT affect the homepage. Latest Drops uses the product photo,
+ * so a batch can be in rotation and visible there while it waits for its
+ * nug shot to turn up here.
+ */
 export async function getArchiveBatches(): Promise<Strain[]> {
   const { data, error } = await supabase
     .from("drop_batches")
     .select(SELECT_COLUMNS)
+    // Filtered in the query rather than after mapping: no point paying to
+    // transfer and parse rows that are about to be dropped.
+    .not("nug_image", "is", null)
+    .neq("nug_image", "")
     .order("collected_at", { ascending: false, nullsFirst: false })
     .order("name", { ascending: true });
 
@@ -180,5 +196,7 @@ export async function getArchiveBatches(): Promise<Strain[]> {
     return [];
   }
 
-  return (data ?? []).map(rowToStrain).filter((s): s is Strain => s !== null);
+  const batches = (data ?? []).map(rowToStrain).filter((s): s is Strain => s !== null);
+  console.log(`${LOG} Loaded ${batches.length} batch(es) with nug shots for /strains.`);
+  return batches;
 }

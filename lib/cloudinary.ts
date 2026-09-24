@@ -58,3 +58,48 @@ export function optimizedImage(
   // the URL already carries an unrelated one like `w_500`.
   return `${url.slice(0, start)}${transform}/${rest}`;
 }
+
+
+/* ────────────────────────────────────────────────────────────────────────
+ * Background removal
+ *
+ * Product photos arrive shot on black. The site paints them on neutral-900,
+ * so an opaque black square mostly hides — until it sits on the spectrum
+ * glow behind a strain card, where the seam shows.
+ *
+ * `e_background_removal` is Cloudinary's AI subject detection, and it's the
+ * only option that survived testing on a real jar: `e_make_transparent`
+ * keys on a flat colour, so at tolerance 10 it ate the black lid and at 30
+ * it hollowed out the whole jar. Background removal left lid, label and nug
+ * intact.
+ *
+ * Stored IN the URL rather than as a column, so there's no schema change and
+ * no second source of truth — the image either carries the transform or it
+ * doesn't. optimizedImage() chains f_auto,q_auto in front of it, which cuts
+ * the result from 2.1 MB to 238 KB.
+ *
+ * It's a paid add-on and runs asynchronously: the first request for a given
+ * asset can return the original while Cloudinary processes it, then serve
+ * the cut-out on a later request.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+const BACKGROUND_REMOVAL = "e_background_removal";
+
+export function isCloudinaryUrl(url: string): boolean {
+  return url.includes(UPLOAD_SEGMENT) && url.includes("res.cloudinary.com");
+}
+
+export function hasBackgroundRemoved(url: string): boolean {
+  return url.includes(`/${BACKGROUND_REMOVAL}/`);
+}
+
+export function withBackgroundRemoved(url: string): string {
+  if (!isCloudinaryUrl(url) || hasBackgroundRemoved(url)) return url;
+
+  const start = url.indexOf(UPLOAD_SEGMENT) + UPLOAD_SEGMENT.length;
+  return `${url.slice(0, start)}${BACKGROUND_REMOVAL}/${url.slice(start)}`;
+}
+
+export function withoutBackgroundRemoved(url: string): string {
+  return url.replace(`/${BACKGROUND_REMOVAL}/`, "/");
+}

@@ -1,12 +1,21 @@
 import Link from "next/link";
 
 import { listBatches, toggleCurrent } from "@/lib/admin/strains";
+import { strainIssues, worstSeverity } from "@/lib/admin/strain-issues";
 
 export const metadata = { title: "Strains" };
 
 export default async function AdminStrainsPage() {
   const batches = await listBatches();
   const currentCount = batches.filter((b) => b.is_current).length;
+
+  // Checked once here and passed down, so the header count and the per-row
+  // chips can't disagree about what's wrong.
+  const rows = batches.map((batch) => {
+    const issues = strainIssues(batch);
+    return { batch, issues, severity: worstSeverity(issues) };
+  });
+  const needsAttention = rows.filter((r) => r.severity === "warn").length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -15,7 +24,13 @@ export default async function AdminStrainsPage() {
           <h1 className="font-display text-2xl tracking-[-0.01em]">Strains</h1>
           <p className="text-sm text-neutral-400">
             {currentCount} of {batches.length} in rotation. Everything in rotation shows
-            in Latest Drops on the homepage; everything here shows on /strains.
+            in Latest Drops on the homepage; /strains lists the ones with a nug shot.
+            {needsAttention > 0 && (
+              <span className="text-amber-300">
+                {" "}
+                {needsAttention} {needsAttention === 1 ? "needs" : "need"} attention.
+              </span>
+            )}
           </p>
         </div>
         <Link
@@ -32,7 +47,7 @@ export default async function AdminStrainsPage() {
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {batches.map((batch) => (
+          {rows.map(({ batch, issues, severity }) => (
             <li
               key={batch.id}
               className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3"
@@ -50,6 +65,25 @@ export default async function AdminStrainsPage() {
                   {` · /${batch.slug}`}
                 </span>
               </div>
+
+              {issues.length > 0 && (
+                // One chip, not one per issue — a row with five blank
+                // optional fields would otherwise be a wall of pills and
+                // the rotation toggle would get pushed off screen. The
+                // title attribute carries the full list on hover; the edit
+                // form spells them all out.
+                <span
+                  title={issues.map((i) => `${i.label} — ${i.detail}`).join("\n")}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs ${
+                    severity === "warn"
+                      ? "border-amber-500/40 text-amber-300"
+                      : "border-neutral-700 text-neutral-500"
+                  }`}
+                >
+                  {issues[0].label}
+                  {issues.length > 1 ? ` +${issues.length - 1}` : ""}
+                </span>
+              )}
 
               {/* A plain form, no client JS: `bool()` reads presence, so the
                   `next` field is only sent when switching ON. */}
