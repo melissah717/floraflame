@@ -522,7 +522,6 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
                 </div>
                 <span className="text-sm tracking-[0.04em] text-neutral-400">
                   {active.spectrum}
-                  {active.thc ? ` · ${active.thc} THC` : ""}
                 </span>
               </div>
 
@@ -550,7 +549,7 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
               </h2>
               <p className="mt-1 text-sm leading-relaxed text-neutral-300 sm:text-base">
                 From what&apos;s in rotation now to everything we&apos;ve run before it — pick a
-                strain below to see flavor, effects, and lab results.
+                strain below to see flavor, effects, and where it sits on the spectrum.
               </p>
             </>
           ))}

@@ -6,8 +6,11 @@ import { getBlogPosts, type BlogPost } from "@/lib/blog";
 import { Reveal, RevealGroup, RevealItem } from "@/components/scroll-primitives";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
 
-// Revisits the sheet on every request in dev, and on the revalidate
-// window (see lib/blog.ts) in production — no build-time freeze.
+// Dating from when posts lived in a Google Sheet that could change at any
+// moment with no way to know. Posts are in Supabase now and the admin calls
+// revalidatePath() on save, so this could become a static route with
+// `revalidate` — left dynamic for now because that's a behaviour change to
+// make deliberately, not as a side effect of the migration.
 export const dynamic = "force-dynamic";
 
 const TITLE = "The Knowledge"
@@ -97,7 +100,10 @@ function BucketSection({
                     alt=""
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                    // Same reason as the /learn cards: scaling inside an
+                    // overflow-hidden rounded container shimmers without its
+                    // own layer.
+                    className="object-cover transition-transform duration-500 ease-out will-change-transform group-hover:scale-[1.04]"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">

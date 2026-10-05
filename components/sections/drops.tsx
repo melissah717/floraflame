@@ -124,14 +124,8 @@ function StrainInfo({
           <p className="mt-3 max-w-md text-sm leading-relaxed text-neutral-50 sm:mt-4 sm:text-base lg:max-w-2xl lg:text-lg">
             {strain.description}
           </p>
-          {(strain.thc || strain.genetics || strain.terpenes || strain.idealTime) && (
+          {(strain.genetics || strain.terpenes || strain.idealTime) && (
             <dl className="mt-3 flex max-w-md flex-col gap-2 text-sm sm:mt-5 lg:max-w-2xl">
-              {strain.thc && (
-                <div className="flex flex-wrap items-baseline gap-x-2">
-                  <dt className="tracking-[0.06em] text-neutral-500">THC</dt>
-                  <dd className="text-neutral-300">{strain.thc}</dd>
-                </div>
-              )}
               {strain.genetics && (
                 <div className="flex flex-wrap items-baseline gap-x-2">
                   <dt className="tracking-[0.06em] text-neutral-500">Genetics</dt>

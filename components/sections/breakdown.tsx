@@ -586,10 +586,15 @@ export function Breakdown() {
             />
           </motion.div>
         </div>
-        {/* Lead — plain static text, no scroll-triggered reveal. */}
-        <p className="relative max-w-4xl font-display text-[clamp(2rem,4.6vw,4.4rem)] leading-[1.02] tracking-[-0.03em] text-neutral-50">
+        {/* Lead — plain static text, no scroll-triggered reveal.
+            An <h1>, not a <p>: this is the page heading for /learn/the-leaf,
+            which renders this component and nothing else. As a <p> the page
+            shipped with no h1 at all and a hierarchy starting at h2. Every
+            visual property is an explicit class and Tailwind's preflight
+            zeroes heading margins, so this reads identically. */}
+        <h1 className="relative max-w-4xl font-display text-[clamp(2rem,4.6vw,4.4rem)] leading-[1.02] tracking-[-0.03em] text-neutral-50">
           {LEAD_EMPHASIS}
-        </p>
+        </h1>
         <p className="relative mt-5 max-w-5xl text-xl leading-[1.38] text-neutral-200 sm:text-2xl lg:text-[2rem]">
           {LEAD}
         </p>

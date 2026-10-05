@@ -46,6 +46,10 @@ export default async function KnowledgePostPage({
     headline: post.title,
     description: post.blurb || undefined,
     image: post.heroImage || undefined,
+    // Google's Article guidance lists both as recommended; without them a
+    // post can't show a date in results and loses freshness signal.
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt,
     author: { "@type": "Organization", name: "Flora & Flame" },
     publisher: { "@type": "Organization", name: "Flora & Flame" },
     mainEntityOfPage: `https://floraflame.ca/learn/the-knowledge/${slug}`,
