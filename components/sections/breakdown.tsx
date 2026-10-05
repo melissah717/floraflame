@@ -16,10 +16,8 @@ import {
   Brain,
   Citrus,
   Cloud,
-  Cookie,
   Droplet,
   Feather,
-  Flame,
   Flower2,
   Leaf,
   Shield,
@@ -38,11 +36,12 @@ import { cn } from "@/lib/utils"
  * rows that reveal and drift at their own depth as a single scroll tracker
  * advances. Content is fixed/educational, not per-batch data.
  *
- * Three chapters, each its own "flash sheet" catalog page, each with a
+ * Two chapters, each its own "flash sheet" catalog page, each with a
  * bespoke visual centerpiece:
  *   1. Cannabinoids & Terpenes — a terpene wheel (proportioned donut)
  *   2. Plant Anatomy           — a bud diagram with leader lines
- *   3. How You Take It         — onset/duration comparison bars
+ * (A third, "How You Take It", was removed. ConsumptionVisual and the
+ * `stat` item field it used are still here, unused, in case it returns.)
  *
  * On top of the scroll-linked reveal, every row and its corresponding piece
  * of the visual (wheel segment, leader line, bar) are wired to one shared
@@ -55,7 +54,7 @@ const HEADLINE = "Know what you're smoking"
 
 const LEAD_EMPHASIS = "A strain is more than its THC percentage."
 const LEAD =
-  "Cannabinoids and terpenes shape the effect, the plant's own anatomy is where they're made, and how you consume it changes all of it again."
+  "Cannabinoids and terpenes shape the effect, and the plant's own anatomy is where they're made."
 
 /** Inserts an alpha channel into a legacy-space rgb() string, e.g.
  * "rgb(139 92 246)" -> "rgb(139 92 246 / 0.15)". */
@@ -213,42 +212,6 @@ const CHAPTERS: Chapter[] = [
         title: "Cola",
         body: "The main flowering cluster at the top of the branch. Usually the densest bud on the plant.",
         icon: Flower2,
-      },
-    ],
-  },
-  {
-    title: "How You Take It",
-    accent: RGB.sativa,
-    items: [
-      {
-        n: "01",
-        title: "Smoking",
-        body: "Fastest onset, shortest duration. Effects in minutes, gone in a couple hours.",
-        icon: Flame,
-        stat: {
-          onset: { pct: 8, label: "Seconds to minutes" },
-          duration: { pct: 20, label: "1–3 hours" },
-        },
-      },
-      {
-        n: "02",
-        title: "Vaping",
-        body: "Similar speed to smoking, gentler on the lungs. Heat, not combustion.",
-        icon: Cloud,
-        stat: {
-          onset: { pct: 10, label: "Minutes" },
-          duration: { pct: 22, label: "1–3 hours" },
-        },
-      },
-      {
-        n: "03",
-        title: "Edibles",
-        body: "Slowest onset, longest duration. Processed through the liver into a stronger compound.",
-        icon: Cookie,
-        stat: {
-          onset: { pct: 75, label: "30–90 minutes" },
-          duration: { pct: 95, label: "4–8 hours" },
-        },
       },
     ],
   },
@@ -782,34 +745,8 @@ export function Breakdown() {
             )
           })}
         </div>
-
-        <ClosingLine progress={bodyProgress} disabled={!!reduce} />
       </div>
     </section>
-  )
-}
-
-/** Closes out the same continuous scroll — the last beat lands around
- * progress 0.94, so this picks up right after and rides the tail end of
- * bodyProgress rather than sitting there with no motion of its own. */
-function ClosingLine({
-  progress,
-  disabled,
-}: {
-  progress: MotionValue<number>
-  disabled: boolean
-}) {
-  const y = useTransform(progress, [0.78, 0.84, 0.95, 1], [40, 0, 0, -28])
-  const opacity = useTransform(progress, [0.78, 0.84, 0.95, 1], [0, 1, 1, 0.85])
-
-  return (
-    <motion.p
-      style={disabled ? undefined : { y, opacity }}
-      className="relative mt-32 max-w-4xl font-display text-3xl leading-[1.1] sm:mt-44 sm:text-5xl"
-    >
-      None of it works alone. It&apos;s the combination that decides how a
-      strain actually feels.
-    </motion.p>
   )
 }
 

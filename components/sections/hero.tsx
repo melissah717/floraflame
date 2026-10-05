@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   motion,
   useMotionValue,
@@ -41,6 +41,29 @@ export function Hero() {
   const h = vh || 800;
 
   // --- pointer tracking -------------------------------------------------
+  // The logo follows the cursor left and right, but only as far as the
+  // screen: with the cursor at the right edge, the logo's right edge sits
+  // on the right edge of the viewport and stops there (same on the left).
+  // It used to travel a fixed 260% of its own width, which carried it
+  // clean off the page.
+  //
+  // The travel is measured, not guessed: (viewport width − logo width) / 2
+  // is exactly the distance from centred to flush against an edge.
+  //
+  // Mouse/trackpad only. Touch devices never attach the listener, so on a
+  // phone the logo slides in and stays put.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const maxShift = useMotionValue(0);
+  useEffect(() => {
+    const measure = () => {
+      const w = panelRef.current?.offsetWidth ?? 0;
+      maxShift.set(Math.max(0, (window.innerWidth - w) / 2));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [maxShift]);
+
   const pointer = useMotionValue(0.5);
   const smooth = useSpring(pointer, {
     stiffness: 500,
@@ -48,17 +71,19 @@ export function Hero() {
     mass: 0.15,
   });
 
-  const range = reduce ? 40 : 260;
-  const panelX = useTransform(smooth, [0, 1], [`-${range}%`, `${range}%`]);
-  const panelSkew = useTransform(smooth, [0, 1], reduce ? [0, 0] : [3, -3]);
+  const panelX = useTransform([smooth, maxShift], ([p, max]: number[]) => (p - 0.5) * 2 * max);
+  const panelSkew = useTransform(smooth, [0, 1], [3, -3]);
 
   useEffect(() => {
+    if (reduce) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
     const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
       pointer.set(e.clientX / window.innerWidth);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
     return () => window.removeEventListener("pointermove", onMove);
-  }, [pointer]);
+  }, [pointer, reduce]);
 
   // --- scroll -----------------------------------------------------------
   const contentY = useTransform(scrollY, [0, h * 0.8], ["0%", "-12%"]);
@@ -71,20 +96,21 @@ export function Hero() {
     // beat there.
     // Must stay longer than DOCK_END (500px) so the wordmark finishes
     // docking while the hero is still pinned.
-    <div className="relative h-[115svh] lg:h-[180vh]">
+    <div className="relative h-[108svh] lg:h-[160vh]">
       <section className="sticky top-0 h-svh overflow-hidden bg-neutral-900">
         <motion.div
           style={reduce ? undefined : { y: contentY }}
           className="relative flex h-full items-center bg-neutral-900 will-change-transform"
         >
-          {/* OUTER — pointer tracking only. */}
+          {/* OUTER — pointer tracking only (see above). */}
           <motion.div
-            style={{ x: panelX, skewX: panelSkew }}
+            ref={panelRef}
+            style={reduce ? undefined : { x: panelX, skewX: panelSkew }}
             className="absolute left-1/2 top-1/2 z-0 aspect-square w-[84vw] max-w-[690px] -translate-x-1/2 -translate-y-1/2 will-change-transform sm:w-[42vw]"
           >
             {/* INNER — entrance. Slides in after the headline. */}
             <motion.div
-              initial={{ x: "-420%", opacity: 0 }}
+              initial={reduce ? false : { x: "-200%", opacity: 0 }}
               animate={{ x: "0%", opacity: 1 }}
               transition={{ duration: 1.1, delay: 3.4, ease: [0.22, 1, 0.36, 1] }}
               className="relative h-full w-full"

@@ -3,7 +3,7 @@ import { Breakdown } from "@/components/sections/breakdown";
 
 const TITLE = "The Leaf"
 const DESCRIPTION =
-  "Cannabinoids, terpenes, plant anatomy, and how different consumption methods actually feel. The stuff that matters more than the number on the label."
+  "Cannabinoids, terpenes, and plant anatomy. The stuff that matters more than the number on the label."
 
 export const metadata: Metadata = {
   title: TITLE,

@@ -28,7 +28,7 @@ const ENTRIES = [
     slug: "the-leaf",
     title: "The Leaf",
     excerpt:
-      "Cannabinoids, terpenes, plant anatomy, and how different consumption methods actually feel. The stuff that matters more than the number on the label.",
+      "Cannabinoids, terpenes, and plant anatomy. The stuff that matters more than the number on the label.",
     image: `${IMG}/v1785616995/PINEAPPLE-2_nr7vcn.jpg`,
     alt: "Close-up of a cured flower",
   },

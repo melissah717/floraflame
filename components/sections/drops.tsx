@@ -220,7 +220,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
   return (
     <section
       id="drops"
-      className="relative isolate scroll-mt-20 overflow-hidden bg-neutral-900 py-28 text-neutral-50 sm:py-36 lg:py-48"
+      className="relative isolate scroll-mt-20 overflow-hidden bg-neutral-900 pb-28 pt-12 text-neutral-50 sm:pb-36 sm:pt-16 lg:pb-48 lg:pt-20"
     >
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
         <AnimatePresence mode="wait">
