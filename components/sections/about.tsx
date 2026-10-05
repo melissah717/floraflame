@@ -1,9 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
+  animate,
   motion,
+  useInView,
+  useMotionValue,
   useScroll,
   useTransform,
   useReducedMotion,
@@ -11,6 +14,7 @@ import {
   type MotionValue,
 } from "motion/react";
 import { Reveal } from "@/components/scroll-primitives";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 
 /**
  * About — three acts, same shape on desktop and mobile.
@@ -21,8 +25,13 @@ import { Reveal } from "@/components/scroll-primitives";
  *      a beat, then the stage unpins and scrolls off. As it leaves, the
  *      photo inside the frame drifts slower than the frame (parallax), the
  *      way Lightship's hero visual does.
- *   3. MOBILE: same idea rotated 90°. Vertical stack → photo 1 grows into
- *      the inset frame → unpins and scrolls off with the same parallax.
+ *   3. MOBILE: same idea rotated 90°, but TRIGGERED rather than scrubbed.
+ *      The keyhole opens on a timer when it scrolls into view. The photo
+ *      stack pins for half a screen; a short scroll in, the three photos
+ *      leave and photo 1 grows into the inset frame on a timer, then it
+ *      unpins with the same parallax. Touch scroll events arrive late and
+ *      in bursts, so tying layout to them frame by frame stuttered, and the
+ *      long pins it needed were a lot of thumb travel for one idea.
  *   4. BOTH: the three paragraphs follow in normal flow underneath, set
  *      large and tight (Lightship's "From our aerodynamic profile…" block)
  *      and left to scroll naturally under the site's momentum scroll.
@@ -31,7 +40,13 @@ import { Reveal } from "@/components/scroll-primitives";
  */
 
 // ── keyhole knobs ──
-const SCROLL_LENGTH = "h-[130vh] lg:h-[200vh]";
+// Desktop pins for a screen while the keyhole scrubs open. Below lg there is
+// no pin at all: one screen tall, opens on a timer when it comes into view.
+const SCROLL_LENGTH = "h-svh lg:h-[200vh]";
+const KEYHOLE_CLOSED = `inset(${28}% ${30}% ${28}% ${30}% round ${14}px)`;
+const KEYHOLE_OPEN = "inset(0% 0% 0% 0% round 0px)";
+const KEYHOLE_OPEN_SEC = 1.1;
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 const OPEN_END = 0.65;
 const START_INSET_X = 30;
 const START_INSET_Y = 28;
@@ -106,7 +121,15 @@ const WORD_PUNCH_SEC = 0.22;
 const WORD_PUNCH_SCALE = 1.06;
 
 // ── MOBILE stack → hero knobs ──
-const MOBILE_SCROLL_LENGTH = "h-[260vh]";
+// Half a screen of pin: enough to trigger the change and hold on the
+// result for a beat, nothing more.
+const MOBILE_SCROLL_LENGTH = "h-[150svh]";
+// Fractions of that pin. Past GROW_AT the stack hands over to the big
+// photo; back below SHRINK_AT it returns. The gap is hysteresis.
+const MOBILE_GROW_AT = 0.22;
+const MOBILE_SHRINK_AT = 0.08;
+const MOBILE_EXIT_SEC = 0.65;
+const MOBILE_GROW_SEC = 0.8;
 const MOBILE_STACK_TOP = ["68vh", "46vh", "24vh", "2vh"];
 const MOBILE_STACK_H = "20vh";
 const MOBILE_STACK_LEFT = "5vw";
@@ -115,8 +138,6 @@ const MOBILE_STACK_W = "90vw";
 // comfortably inside it — 11vh + 66vh lands around 85% of a small viewport.
 const MOBILE_HERO_TOP = "11vh";
 const MOBILE_HERO_H = "66vh";
-const MOBILE_EXIT_RANGE = [0.07, 0.44] as const;
-const MOBILE_MORPH_RANGE = [0.26, 0.66] as const;
 
 // ── images ──
 const CLOUD = "https://res.cloudinary.com/g0mcdcfr/image/upload/f_auto,q_auto";
@@ -210,6 +231,9 @@ export function About() {
   const aboutRef = useRef<HTMLDivElement>(null);
   const mobileRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const isMobile = useIsMobile();
+  // Mobile keyhole: opens once, when most of it is on screen.
+  const videoOpen = useInView(videoRef, { amount: 0.55, once: true });
 
   const { scrollYProgress: videoProgress } = useScroll({
     target: videoRef,
@@ -294,30 +318,46 @@ export function About() {
     });
   });
 
-  // Mobile photo transforms
-  const mRestY = useTransform(mobileProgress, [...MOBILE_EXIT_RANGE], ["0vh", "-100vh"]);
-  const mP1Top = useTransform(mobileProgress, [...MOBILE_MORPH_RANGE], [MOBILE_STACK_TOP[0], MOBILE_HERO_TOP]);
-  const mP1Height = useTransform(mobileProgress, [...MOBILE_MORPH_RANGE], [MOBILE_STACK_H, MOBILE_HERO_H]);
-  const mP1OverlayOp = useTransform(
-    mobileProgress,
-    [0, MOBILE_MORPH_RANGE[0], MOBILE_MORPH_RANGE[0] + 0.08, 1],
-    [1, 1, 0, 0],
-  );
-  const mP1ImgScale = useTransform(
-    mobileProgress,
-    [0, MOBILE_MORPH_RANGE[0], MOBILE_MORPH_RANGE[1], 1],
-    [HERO_GROW_SCALE, HERO_GROW_SCALE, 1, 1],
-  );
+  // Mobile: one boolean off the pin's progress, everything else is timed.
+  const [mGrown, setMGrown] = useState(false);
+  useMotionValueEvent(mobileProgress, "change", (p) => {
+    setMGrown((prev) => (prev ? p > MOBILE_SHRINK_AT : p >= MOBILE_GROW_AT));
+  });
+  const grown = !!reduce || mGrown;
+  // Photo inside the frame eases out of its zoom as the frame grows.
+  const mP1ImgScale = useMotionValue(HERO_GROW_SCALE);
+  useEffect(() => {
+    const controls = animate(mP1ImgScale, grown ? 1 : HERO_GROW_SCALE, {
+      duration: MOBILE_GROW_SEC,
+      ease: EASE_OUT,
+    });
+    return () => controls.stop();
+  }, [grown, mP1ImgScale]);
+  // The drift on the way out stays scroll-linked: it is a transform on an
+  // element that is already moving with the page, so lag can't show.
   const mP1ImgY = useTransform(mobileExit, [0, 1], HERO_DRIFT);
 
   return (
     <section id="about" className="scroll-mt-20 bg-neutral-900">
       {/* ── KEYHOLE VIDEO ────────────────────────────────────────────── */}
       <div ref={videoRef} className={`relative ${SCROLL_LENGTH}`}>
-        <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden bg-neutral-900">
+        <div className="sticky top-0 flex h-svh w-full items-center justify-center overflow-hidden bg-neutral-900 lg:h-screen">
           <motion.video
+            // Keyed so a breakpoint change remounts rather than leaving one
+            // element holding both scroll-driven styles and timed targets.
+            key={isMobile ? "triggered" : "scrubbed"}
             className="h-full w-full object-cover will-change-[clip-path,transform]"
-            style={reduce ? undefined : { clipPath, WebkitClipPath: clipPath, scale }}
+            style={reduce || isMobile ? undefined : { clipPath, WebkitClipPath: clipPath, scale }}
+            initial={false}
+            animate={
+              !reduce && isMobile
+                ? {
+                    clipPath: videoOpen ? KEYHOLE_OPEN : KEYHOLE_CLOSED,
+                    scale: videoOpen ? 1 : 1.08,
+                  }
+                : undefined
+            }
+            transition={{ duration: KEYHOLE_OPEN_SEC, ease: EASE_OUT }}
             autoPlay={!reduce}
             muted
             loop
@@ -428,24 +468,28 @@ export function About() {
         </div>
       </div>
 
-      {/* ── MOBILE: vertical stack → last one expands → 3 paragraphs slide in ── */}
+      {/* ── MOBILE: stack → (short scroll) → three leave, one grows ── */}
       <div ref={mobileRef} className={`relative ${MOBILE_SCROLL_LENGTH} lg:hidden`}>
         <div className="sticky top-0 h-svh w-full overflow-hidden">
           {[1, 2, 3].map((idx) => (
             <motion.div
               key={idx}
-              style={
-                reduce
-                  ? { display: "none" }
-                  : {
-                      left: MOBILE_STACK_LEFT,
-                      top: MOBILE_STACK_TOP[idx],
-                      width: MOBILE_STACK_W,
-                      height: MOBILE_STACK_H,
-                      y: mRestY,
-                    }
-              }
-              className="absolute overflow-hidden rounded-md"
+              initial={false}
+              animate={{ y: grown ? "-110vh" : "0vh" }}
+              transition={{
+                duration: MOBILE_EXIT_SEC,
+                ease: EASE_OUT,
+                // Top photo leaves first on the way out, last on the way back.
+                delay: grown ? (3 - idx) * 0.05 : idx * 0.05,
+              }}
+              style={{
+                left: MOBILE_STACK_LEFT,
+                top: MOBILE_STACK_TOP[idx],
+                width: MOBILE_STACK_W,
+                height: MOBILE_STACK_H,
+                ...(reduce ? { display: "none" } : {}),
+              }}
+              className="absolute overflow-hidden rounded-md will-change-transform"
             >
               <Image src={IMAGES[idx]} alt="" fill sizes={SIZES_MOBILE_ROW} className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10" />
@@ -458,21 +502,18 @@ export function About() {
           ))}
 
           <motion.div
-            style={
-              reduce
-                ? {
-                    left: MOBILE_STACK_LEFT,
-                    top: MOBILE_HERO_TOP,
-                    width: MOBILE_STACK_W,
-                    height: MOBILE_HERO_H,
-                  }
-                : {
-                    left: MOBILE_STACK_LEFT,
-                    top: mP1Top,
-                    width: MOBILE_STACK_W,
-                    height: mP1Height,
-                  }
-            }
+            initial={false}
+            animate={{
+              top: grown ? MOBILE_HERO_TOP : MOBILE_STACK_TOP[0],
+              height: grown ? MOBILE_HERO_H : MOBILE_STACK_H,
+            }}
+            transition={{
+              duration: MOBILE_GROW_SEC,
+              ease: EASE_OUT,
+              // Let the others start clearing before this one expands.
+              delay: grown ? 0.12 : 0,
+            }}
+            style={{ left: MOBILE_STACK_LEFT, width: MOBILE_STACK_W }}
             className="absolute overflow-hidden rounded-md"
           >
             <HeroPhoto
@@ -483,11 +524,15 @@ export function About() {
               reduce={!!reduce}
             />
             <motion.div
-              style={reduce ? { opacity: 0 } : { opacity: mP1OverlayOp }}
+              initial={false}
+              animate={{ opacity: grown ? 0 : 1 }}
+              transition={{ duration: 0.3 }}
               className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10"
             />
             <motion.div
-              style={reduce ? { opacity: 0 } : { opacity: mP1OverlayOp }}
+              initial={false}
+              animate={{ opacity: grown ? 0 : 1 }}
+              transition={{ duration: 0.3 }}
               className="absolute inset-x-0 bottom-0 p-3"
             >
               <p className={CAPTION_CLASS_MOBILE}>
@@ -495,7 +540,6 @@ export function About() {
               </p>
             </motion.div>
           </motion.div>
-
         </div>
       </div>
 

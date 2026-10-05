@@ -10,6 +10,7 @@ import {
   useMotionValueEvent,
 } from "motion/react";
 import { Wordmark } from "@/components/wordmark";
+import { MOBILE_MQ, useIsMobile } from "@/hooks/use-is-mobile";
 
 /**
  * FLORA & FLAME wordmark with a cross-fade "morph" at the terminal.
@@ -30,6 +31,34 @@ import { Wordmark } from "@/components/wordmark";
  */
 
 export const DOCK_END = 500;
+
+/**
+ * PHONES AND TABLETS DOCK ON A TRIGGER, NOT A SCRUB.
+ *
+ * On desktop the wordmark's size and position are tied to scroll position
+ * across the first 500px. On touch devices that tie was the bug: scroll
+ * events arrive late and in bursts while a finger (or its momentum) is
+ * moving the page, so a fixed element driven from them lagged, then jumped
+ * to catch up, and a quick flick back to the top could leave it stranded
+ * mid-dock. Resizing text every frame (font-size is layout, not a
+ * transform) made each of those catch-ups visibly lurch.
+ *
+ * So below `lg` there are just two states. Scroll past MOBILE_DOCK_AT and
+ * the wordmark animates to the nav slot on a timer; come back above
+ * MOBILE_UNDOCK_AT and it animates back out. Transform-only (scale), so it
+ * runs on the compositor. The gap between the two thresholds is hysteresis
+ * so it can't flicker when you rest right on the line.
+ */
+const MOBILE_DOCK_AT = 40;
+const MOBILE_UNDOCK_AT = 12;
+const MOBILE_DOCK_SEC = 0.55;
+const DOCK_EASE = [0.22, 1, 0.36, 1] as const;
+
+/** Scroll distance after which the wordmark counts as docked, for whoever
+ * needs to gate on it (the navbar). Client-only. */
+export function dockThreshold() {
+  return window.matchMedia(MOBILE_MQ).matches ? MOBILE_DOCK_AT : DOCK_END;
+}
 
 const NAV_LEFT = 20;
 const NAV_TOP = 22;
@@ -89,10 +118,19 @@ export function DockingLogo({
    */
   const probeRef = useRef<HTMLSpanElement>(null);
   const [heroPx, setHeroPx] = useState(HERO_MIN);
+  // Hero resting Y in px (HERO_TOP_VH of the viewport). Only re-read when
+  // the WIDTH changes: on a phone the height changes every time the URL
+  // bar slides, and following that would nudge the wordmark mid-scroll.
+  const [heroTopPx, setHeroTopPx] = useState(0);
+  const lastWidth = useRef(0);
   useEffect(() => {
     const measure = () => {
       const probe = probeRef.current;
       if (!probe) return;
+      if (window.innerWidth !== lastWidth.current) {
+        lastWidth.current = window.innerWidth;
+        setHeroTopPx((window.innerHeight * HERO_TOP_VH) / 100);
+      }
       const available = window.innerWidth - HERO_GUTTER * 2;
 
       // Pass 1 — rough ratio at the reference size.
@@ -126,11 +164,41 @@ export function DockingLogo({
   const textOp = useTransform(scrollY, [SWAP_START, SWAP_END], [1, 0]);
   const svgOp = useTransform(scrollY, [SWAP_START, SWAP_END], [0, 1]);
 
+  const isMobile = useIsMobile();
   const [docked, setDocked] = useState(false);
+  const [mDocked, setMDocked] = useState(false);
   useMotionValueEvent(scrollY, "change", (v) => {
     setDocked(v >= DOCK_END);
+    setMDocked((prev) => (prev ? v > MOBILE_UNDOCK_AT : v >= MOBILE_DOCK_AT));
   });
+  // A reload part-way down the page should come up already docked. Read on
+  // the next frame, once the browser has restored the scroll position.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      setDocked(window.scrollY >= DOCK_END);
+      setMDocked(window.scrollY >= MOBILE_DOCK_AT);
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
   const visible = !docked || showWithNav;
+  const triggered = isMobile && !reduce;
+  const dockedScale = DOCKED_PX / heroPx;
+
+  const letters = LETTERS.map((char, i) => (
+    <motion.span
+      key={i}
+      initial={reduce ? false : { x: 140, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{
+        delay: ENTRANCE_DELAY + i * LETTER_STAGGER,
+        duration: LETTER_DURATION,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      className="inline-block"
+    >
+      {char === " " ? "\u00A0" : char}
+    </motion.span>
+  ));
 
   return (
     <Link
@@ -138,36 +206,50 @@ export function DockingLogo({
       aria-label="Flora & Flame, home"
       className={`fixed left-0 top-0 ${behindMenu ? "z-40" : "z-[60]"}`}
     >
-      {/* ── Text wordmark ── hero display type, docks, then fades out ── */}
-      <motion.div
-        style={
-          reduce
-            ? {
-                x: `${NAV_LEFT}px`,
-                y: `${NAV_TOP}px`,
-                fontSize: `${DOCKED_PX}px`,
-                opacity: 0,
-              }
-            : { x, y, fontSize, opacity: visible ? textOp : 0 }
-        }
-        className="font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap text-neutral-50 will-change-[font-size,transform]"
-      >
-        {LETTERS.map((char, i) => (
-          <motion.span
-            key={i}
-            initial={reduce ? false : { x: 140, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{
-              delay: ENTRANCE_DELAY + i * LETTER_STAGGER,
-              duration: LETTER_DURATION,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="inline-block"
-          >
-            {char === " " ? "\u00A0" : char}
-          </motion.span>
-        ))}
-      </motion.div>
+      {/* ── Text wordmark ── hero display type, docks, then fades out ──
+           Two renderings of the same thing, keyed apart so switching
+           breakpoint remounts cleanly instead of handing one element both
+           scroll-driven styles and timed animations. */}
+      {triggered ? (
+        <motion.div
+          key="text-triggered"
+          initial={false}
+          animate={{
+            x: NAV_LEFT,
+            y: mDocked ? NAV_TOP : heroTopPx,
+            scale: mDocked ? dockedScale : 1,
+            opacity: mDocked ? 0 : 1,
+          }}
+          transition={{
+            duration: MOBILE_DOCK_SEC,
+            ease: DOCK_EASE,
+            // Text hands over to the script mark at the END of the dock,
+            // and is back first when undocking.
+            opacity: { duration: 0.2, delay: mDocked ? MOBILE_DOCK_SEC - 0.2 : 0 },
+          }}
+          style={{ fontSize: heroPx, transformOrigin: "0 0" }}
+          className="font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap text-neutral-50 will-change-transform"
+        >
+          {letters}
+        </motion.div>
+      ) : (
+        <motion.div
+          key="text-scrubbed"
+          style={
+            reduce
+              ? {
+                  x: `${NAV_LEFT}px`,
+                  y: `${NAV_TOP}px`,
+                  fontSize: `${DOCKED_PX}px`,
+                  opacity: 0,
+                }
+              : { x, y, fontSize, opacity: visible ? textOp : 0 }
+          }
+          className="font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap text-neutral-50 will-change-[font-size,transform]"
+        >
+          {letters}
+        </motion.div>
+      )}
 
       {/* ── Measuring probe ── never seen. Mirrors the wordmark's markup
            EXACTLY, including the per-letter inline-block spans: those
@@ -191,16 +273,30 @@ export function DockingLogo({
       {/* ── SVG wordmark ── appears at nav slot as text fades out.
            Fixed at docked position (no scroll motion — only opacity animates).
            Tune size and color here. */}
-      <motion.div
-        style={{
-          x: `${NAV_LEFT}px`,
-          y: `${NAV_TOP}px`,
-          opacity: reduce ? 1 : visible ? svgOp : 0,
-        }}
-        className="absolute left-0 top-0"
-      >
-        <Wordmark className="h-11 w-56" color="bg-neutral-50" />
-      </motion.div>
+      {triggered ? (
+        <motion.div
+          key="svg-triggered"
+          initial={false}
+          animate={{ opacity: mDocked && showWithNav ? 1 : 0 }}
+          transition={{ duration: 0.2, delay: mDocked ? MOBILE_DOCK_SEC - 0.2 : 0 }}
+          style={{ x: `${NAV_LEFT}px`, y: `${NAV_TOP}px` }}
+          className="absolute left-0 top-0"
+        >
+          <Wordmark className="h-11 w-56" color="bg-neutral-50" />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="svg-scrubbed"
+          style={{
+            x: `${NAV_LEFT}px`,
+            y: `${NAV_TOP}px`,
+            opacity: reduce ? 1 : visible ? svgOp : 0,
+          }}
+          className="absolute left-0 top-0"
+        >
+          <Wordmark className="h-11 w-56" color="bg-neutral-50" />
+        </motion.div>
+      )}
     </Link>
   );
 }

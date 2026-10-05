@@ -12,14 +12,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { DockingLogo, DOCK_END } from "@/components/docking-logo";
+import { DockingLogo, dockThreshold } from "@/components/docking-logo";
 import { Wordmark } from "@/components/wordmark";
 import { cn } from "@/lib/utils";
 
 /**
  * Auto-hide nav.
  *   – On the home page, the whole header (bar + links) stays hidden until
- *     the wordmark has fully docked (scrollY >= DOCK_END). Then it slides
+ *     the wordmark has docked (scrollY >= dockThreshold()). Then it slides
  *     in and the wordmark + links live together as one piece.
  *   – Off the home page, the header behaves normally from the start.
  *   – Post-dock, wordmark and header share the auto-hide state so they
@@ -46,7 +46,7 @@ export function Navbar() {
     };
 
     const onScroll = () => {
-      if (isHome) setDockComplete(window.scrollY >= DOCK_END);
+      if (isHome) setDockComplete(window.scrollY >= dockThreshold());
       revealAndScheduleHide();
     };
 
@@ -55,7 +55,7 @@ export function Navbar() {
     };
 
     revealAndScheduleHide();
-    if (isHome) setDockComplete(window.scrollY >= DOCK_END);
+    if (isHome) setDockComplete(window.scrollY >= dockThreshold());
 
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("pointermove", onMove, { passive: true });
