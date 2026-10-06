@@ -167,22 +167,46 @@ export function DockingLogo({
   const isMobile = useIsMobile();
   const [docked, setDocked] = useState(false);
   const [mDocked, setMDocked] = useState(false);
+  // The hand-over delay (text out → mark in) belongs to the dock move
+  // itself. It used to apply whenever the mark was docked, so when the nav
+  // auto-hid the mark lingered a beat after the header had gone. `handover`
+  // is true only for the duration of a dock move, and the delay rides on it.
+  const [handover, setHandover] = useState(false);
+  const mDockedRef = useRef(false);
+  const handoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useMotionValueEvent(scrollY, "change", (v) => {
     setDocked(v >= DOCK_END);
-    setMDocked((prev) => (prev ? v > MOBILE_UNDOCK_AT : v >= MOBILE_DOCK_AT));
+    const was = mDockedRef.current;
+    const now = was ? v > MOBILE_UNDOCK_AT : v >= MOBILE_DOCK_AT;
+    if (now !== was) {
+      mDockedRef.current = now;
+      setMDocked(now);
+      if (now) {
+        setHandover(true);
+        if (handoverTimer.current) clearTimeout(handoverTimer.current);
+        handoverTimer.current = setTimeout(() => setHandover(false), MOBILE_DOCK_SEC * 1000);
+      }
+    }
   });
+  useEffect(() => {
+    return () => {
+      if (handoverTimer.current) clearTimeout(handoverTimer.current);
+    };
+  }, []);
   // A reload part-way down the page should come up already docked. Read on
   // the next frame, once the browser has restored the scroll position.
   useEffect(() => {
     const id = requestAnimationFrame(() => {
       setDocked(window.scrollY >= DOCK_END);
-      setMDocked(window.scrollY >= MOBILE_DOCK_AT);
+      mDockedRef.current = window.scrollY >= MOBILE_DOCK_AT;
+      setMDocked(mDockedRef.current);
     });
     return () => cancelAnimationFrame(id);
   }, []);
   const visible = !docked || showWithNav;
   const triggered = isMobile && !reduce;
   const dockedScale = DOCKED_PX / heroPx;
+  const handoverDelay = handover ? MOBILE_DOCK_SEC - 0.2 : 0;
 
   const letters = LETTERS.map((char, i) => (
     <motion.span
@@ -225,7 +249,7 @@ export function DockingLogo({
             ease: DOCK_EASE,
             // Text hands over to the script mark at the END of the dock,
             // and is back first when undocking.
-            opacity: { duration: 0.2, delay: mDocked ? MOBILE_DOCK_SEC - 0.2 : 0 },
+            opacity: { duration: 0.2, delay: handoverDelay },
           }}
           style={{ fontSize: heroPx, transformOrigin: "0 0" }}
           className="font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap text-neutral-50 will-change-transform"
@@ -278,7 +302,7 @@ export function DockingLogo({
           key="svg-triggered"
           initial={false}
           animate={{ opacity: mDocked && showWithNav ? 1 : 0 }}
-          transition={{ duration: 0.2, delay: mDocked ? MOBILE_DOCK_SEC - 0.2 : 0 }}
+          transition={{ duration: 0.2, delay: handoverDelay }}
           style={{ x: `${NAV_LEFT}px`, y: `${NAV_TOP}px` }}
           className="absolute left-0 top-0"
         >
@@ -290,7 +314,12 @@ export function DockingLogo({
           style={{
             x: `${NAV_LEFT}px`,
             y: `${NAV_TOP}px`,
-            opacity: reduce ? 1 : visible ? svgOp : 0,
+            // Reduced motion: the mark is simply on whenever the nav is,
+            // off when it auto-hides. It used to be pinned at 1 here, which
+            // left it floating over the page content after the header had
+            // gone — the "icon stays and blocks the words" bug on phones
+            // with Reduce Motion enabled.
+            opacity: reduce ? (showWithNav ? 1 : 0) : visible ? svgOp : 0,
           }}
           className="absolute left-0 top-0"
         >

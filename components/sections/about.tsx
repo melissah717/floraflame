@@ -519,6 +519,9 @@ export function About() {
             <HeroPhoto
               src={IMAGES[0]}
               sizes={SIZES_MOBILE_HERO}
+              // Phone frame is tall and narrow; the interesting part of this
+              // photo (the grower and the plants) is on the right.
+              position="82% center"
               scale={mP1ImgScale}
               y={mP1ImgY}
               reduce={!!reduce}
@@ -551,7 +554,7 @@ export function About() {
       {/* Sits tight under the photo. The frame ends 8vh (desktop) / ~15svh
           (mobile) above the bottom of its stage, so the top padding here is
           kept small and mobile pulls up a little to close the extra gap. */}
-      <div className="-mt-[6svh] px-5 pb-[16vh] pt-[4vh] sm:px-8 lg:mt-0 lg:px-14 lg:pb-[22vh] lg:pt-[5vh]">
+      <div className="-mt-[12svh] px-5 pb-[16vh] pt-[4vh] sm:px-8 lg:mt-0 lg:px-14 lg:pb-[22vh] lg:pt-[5vh]">
         <div className="flex max-w-[1000px] flex-col gap-[1.1em]">
           {ABOUT_PARAGRAPHS.map((text, i) => (
             <Reveal key={i} delay={i * 0.05} y={20}>
@@ -578,8 +581,12 @@ function HeroPhoto({
   scale,
   y,
   reduce,
+  position = "center",
 }: {
   src: string;
+  /** object-position for the crop. The frame is portrait and the source
+   * is landscape, so this decides which part of the photo survives. */
+  position?: string;
   sizes: string;
   scale: MotionValue<number>;
   y: MotionValue<string>;
@@ -594,7 +601,7 @@ function HeroPhoto({
       }}
       className="absolute inset-x-0 will-change-transform"
     >
-      <Image src={src} alt="" fill sizes={sizes} className="object-cover" />
+      <Image src={src} alt="" fill sizes={sizes} className="object-cover" style={{ objectPosition: position }} />
     </motion.div>
   );
 }
