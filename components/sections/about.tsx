@@ -344,7 +344,16 @@ export function About() {
   return (
     <section id="about" className="scroll-mt-20 bg-neutral-900">
       {/* ── KEYHOLE VIDEO ────────────────────────────────────────────── */}
-      <div ref={videoRef} className={`relative ${SCROLL_LENGTH}`}>
+      {/* Soft-lock markers (see components/scroll-snap.tsx). Desktop: rest
+          at the top, fully open, or handed over to the stage. Phone: one
+          screen, so top or handed over. */}
+      <div
+        ref={videoRef}
+        data-snap-pin="full"
+        data-snap-stops="0,0.5,1"
+        data-snap-stops-mobile="0,1"
+        className={`relative ${SCROLL_LENGTH}`}
+      >
         <div className="sticky top-0 flex h-svh w-full items-center justify-center overflow-hidden bg-neutral-900 lg:h-screen">
           <motion.video
             // Keyed so a breakpoint change remounts rather than leaving one
@@ -378,7 +387,14 @@ export function About() {
       </div>
 
       {/* ── DESKTOP: row exits → hero appears → 3 paragraphs slide in from left ── */}
-      <div ref={aboutRef} className={`relative hidden ${ABOUT_SCROLL_LENGTH} lg:block`}>
+      {/* Stops: start, LIVING SOIL landed with the row at rest, photo grown,
+          and the pin's end. */}
+      <div
+        ref={aboutRef}
+        data-snap-pin="pin"
+        data-snap-stops="0,0.2,0.85,1"
+        className={`relative hidden ${ABOUT_SCROLL_LENGTH} lg:block`}
+      >
         <div className="sticky top-0 h-screen w-full overflow-hidden">
           {/* ── LIVING SOIL ── each word cuts in, hard, in the band above
               the photo row — two hits rather than a reveal — then both
@@ -473,7 +489,7 @@ export function About() {
       </div>
 
       {/* ── MOBILE: stack → (short scroll) → three leave, one grows ── */}
-      <div ref={mobileRef} className={`relative ${MOBILE_SCROLL_LENGTH} lg:hidden`}>
+      <div ref={mobileRef} data-snap-pin="pin" className={`relative ${MOBILE_SCROLL_LENGTH} lg:hidden`}>
         <div className="sticky top-0 h-svh w-full overflow-hidden">
           {[1, 2, 3].map((idx) => (
             <motion.div

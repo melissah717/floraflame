@@ -96,7 +96,7 @@ export function Hero() {
     // beat there.
     // Must stay longer than DOCK_END (500px) so the wordmark finishes
     // docking while the hero is still pinned.
-    <div className="relative h-[108svh] lg:h-[160vh]">
+    <div data-snap-pin="full" className="relative h-[108svh] lg:h-[160vh]">
       <section className="sticky top-0 h-svh overflow-hidden bg-neutral-900">
         <motion.div
           style={reduce ? undefined : { y: contentY }}

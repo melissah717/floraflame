@@ -182,6 +182,10 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
       className="scroll-mt-20 bg-neutral-800 px-5 py-16 sm:px-8 sm:py-20 lg:px-12"
     >
       <div className="mx-auto max-w-[88rem]">
+        {/* Soft magnet (components/scroll-snap.tsx): resting near this block
+            glides the heading, search and map, together, to the centre of
+            the screen. The results list below stays out of it. */}
+        <div data-snap="center">
         <motion.h2
           style={reduce ? undefined : { y: headingY, opacity: headingOpacity }}
           className="font-display text-[clamp(2.25rem,4.1vw,4.25rem)] leading-[1.02] lg:whitespace-nowrap"
@@ -254,10 +258,11 @@ export function FindUsClient({ stockists }: { stockists: Stockist[] }) {
               origin={origin}
               selected={selected}
               onSelectPin={selectShop}
-              className="h-[70vh] w-full overflow-hidden bg-neutral-700 sm:h-auto sm:aspect-[16/7]"
+              className="h-[min(55svh,460px)] w-full overflow-hidden bg-neutral-700 sm:h-auto sm:aspect-[16/7]"
             />
           </div>
         </Reveal>
+        </div>
 
         {!hasOrigin ? (
           <p className="mt-6 text-base text-neutral-400 sm:text-lg">

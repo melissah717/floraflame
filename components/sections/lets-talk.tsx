@@ -107,7 +107,7 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
   return (
     <section
       id="wholesale"
-      className="relative overflow-x-clip bg-neutral-900 px-5 py-20 sm:px-8 sm:py-28 xl:py-36"
+      className="relative overflow-x-clip bg-neutral-900 px-5 py-12 sm:px-8 sm:py-28 xl:py-36"
     >
       {/* Wrapper is `relative` so the artwork positions against the CARD,
           not the section. It is also the in-view trigger for everything. */}
@@ -115,6 +115,8 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
         initial={reduce ? false : "hidden"}
         whileInView="show"
         viewport={VIEWPORT}
+        // Soft magnet: resting near the form glides it to the centre.
+        data-snap="center"
         className="relative mx-auto w-full max-w-[760px]"
       >
         {/* ── DESKTOP artwork (xl+) ── */}
@@ -154,16 +156,18 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
         {/* ── Card ── */}
         <motion.div
           variants={card}
-          className="relative z-20 rounded-[20px] border border-[#2a2521] bg-[#1a1712] p-5 shadow-[0_50px_120px_rgba(0,0,0,0.7)] will-change-transform sm:rounded-[24px] sm:p-6 xl:p-[clamp(32px,4.5vw,52px)]"
+          // Never taller than the screen: on a short phone the card scrolls
+          // inside itself rather than pushing past the fold.
+          className="relative z-20 max-h-[calc(100svh-1.5rem)] overflow-y-auto rounded-[20px] border border-[#2a2521] bg-[#1a1712] p-5 shadow-[0_50px_120px_rgba(0,0,0,0.7)] will-change-transform sm:rounded-[24px] sm:p-6 lg:max-h-none lg:overflow-visible xl:p-[clamp(32px,4.5vw,52px)]"
         >
           <h2 className="font-display text-[clamp(1.75rem,5.5vw,3.25rem)] font-black leading-[0.95] tracking-[-0.015em] text-neutral-50">
             Contact us.
           </h2>
-          <p className="mt-2 max-w-[48ch] text-[15px] leading-[1.5] text-neutral-400 sm:mt-3 sm:text-base sm:leading-[1.55] xl:mt-4 xl:text-lg xl:leading-[1.6]">
+          <p className="mt-2 max-w-[48ch] text-[14px] leading-[1.45] text-neutral-400 sm:mt-3 sm:text-base sm:leading-[1.55] xl:mt-4 xl:text-lg xl:leading-[1.6]">
             Questions about a drop, press, a collab, or getting Flora &amp;
             Flame on your shelf. This goes straight to our inbox.
           </p>
-          <div className="mt-5 sm:mt-6 xl:mt-8">{children ?? <PlaceholderForm />}</div>
+          <div className="mt-4 sm:mt-6 xl:mt-8">{children ?? <PlaceholderForm />}</div>
         </motion.div>
       </motion.div>
     </section>

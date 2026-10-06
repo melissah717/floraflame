@@ -93,7 +93,7 @@ export function Wholesale() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-2.5 sm:gap-3 xl:gap-[18px]"
+      className="flex flex-col gap-2 sm:gap-3 xl:gap-[18px]"
       noValidate
     >
       <div className="grid grid-cols-2 gap-3 sm:gap-4">

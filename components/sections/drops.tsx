@@ -251,7 +251,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
         <Reveal>
           <ParallaxText speed={16}>
             <h2 className="max-w-[24ch] font-display text-3xl leading-[1.05] tracking-[-0.01em] sm:text-4xl lg:text-5xl">
-              Latest drops.
+              Browse our latest drops
             </h2>
           </ParallaxText>
         </Reveal>
