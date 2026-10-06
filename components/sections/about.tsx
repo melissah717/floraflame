@@ -130,14 +130,18 @@ const MOBILE_GROW_AT = 0.22;
 const MOBILE_SHRINK_AT = 0.08;
 const MOBILE_EXIT_SEC = 0.65;
 const MOBILE_GROW_SEC = 0.8;
-const MOBILE_STACK_TOP = ["68vh", "46vh", "24vh", "2vh"];
-const MOBILE_STACK_H = "20vh";
+// All phone geometry is in svh, matching the h-svh stage it sits in. On a
+// real phone vh is the LARGE viewport (toolbars hidden) and can run 25%+
+// taller than svh, so a frame placed in vh inside an svh stage reached
+// past the stage's bottom and under the paragraphs that follow.
+const MOBILE_STACK_TOP = ["68svh", "46svh", "24svh", "2svh"];
+const MOBILE_STACK_H = "20svh";
 const MOBILE_STACK_LEFT = "5vw";
 const MOBILE_STACK_W = "90vw";
 // Same inset-frame idea as desktop. The stage is h-svh, so keep the frame
 // comfortably inside it — 11vh + 66vh lands around 85% of a small viewport.
-const MOBILE_HERO_TOP = "11vh";
-const MOBILE_HERO_H = "66vh";
+const MOBILE_HERO_TOP = "11svh";
+const MOBILE_HERO_H = "66svh";
 
 // ── images ──
 const CLOUD = "https://res.cloudinary.com/g0mcdcfr/image/upload/f_auto,q_auto";
@@ -475,7 +479,7 @@ export function About() {
             <motion.div
               key={idx}
               initial={false}
-              animate={{ y: grown ? "-110vh" : "0vh" }}
+              animate={{ y: grown ? "-110svh" : "0svh" }}
               transition={{
                 duration: MOBILE_EXIT_SEC,
                 ease: EASE_OUT,
@@ -554,7 +558,7 @@ export function About() {
       {/* Sits tight under the photo. The frame ends 8vh (desktop) / ~15svh
           (mobile) above the bottom of its stage, so the top padding here is
           kept small and mobile pulls up a little to close the extra gap. */}
-      <div className="-mt-[12svh] px-5 pb-[16vh] pt-[4vh] sm:px-8 lg:mt-0 lg:px-14 lg:pb-[22vh] lg:pt-[5vh]">
+      <div className="-mt-[12svh] px-5 pb-[16vh] pt-[3svh] sm:px-8 lg:mt-0 lg:px-14 lg:pb-[22vh] lg:pt-[5vh]">
         <div className="flex max-w-[1000px] flex-col gap-[1.1em]">
           {ABOUT_PARAGRAPHS.map((text, i) => (
             <Reveal key={i} delay={i * 0.05} y={20}>
