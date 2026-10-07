@@ -55,7 +55,7 @@ const START_RADIUS = 14;
 // ── DESKTOP row → hero knobs ──
 // The paragraph phase no longer lives inside the pinned stage, so the
 // wrapper is shorter: hits → rest → exit → grow → a short hold → unpin.
-const ABOUT_SCROLL_LENGTH = "h-[320vh]";
+const ABOUT_SCROLL_LENGTH = "h-[290vh]";
 const ROW_LEFT = ["7vw", "29vw", "51vw", "73vw"];
 const ROW_TOP = "37vh";
 const ROW_W = "20vw";
@@ -66,12 +66,14 @@ const HERO_LEFT = "3vw";
 const HERO_TOP = "12vh";
 const HERO_W = "94vw";
 const HERO_H = "80vh";
-// Ranges are fractions of ABOUT_SCROLL_LENGTH. In scroll distance: LIVING
-// SOIL lands in the first ~50vh, the row leaves over 90vh, photo 1 grows
-// over the next 90vh (overlapping the tail of the exit), then holds for
-// ~60vh so the full frame reads before the stage unpins.
-const EXIT_RANGE = [0.28, 0.56] as const;
-const P1_MORPH_RANGE = [0.53, 0.81] as const;
+// Ranges are fractions of the pinned range (ABOUT_SCROLL_LENGTH − 100vh =
+// 190vh). In scroll distance: LIVING SOIL lands in the first ~35vh, the row
+// leaves over ~60vh, photo 1 grows over the next ~60vh (overlapping the
+// tail of the exit), then a short ~12vh beat before the stage unpins. The
+// story text below carries a snap magnet, so the scroll from here to the
+// text is a single glide rather than a screen of hand scrolling.
+const EXIT_RANGE = [0.324, 0.648] as const;
+const P1_MORPH_RANGE = [0.614, 0.937] as const;
 
 // ── HERO parallax (both breakpoints) ──
 // The photo inside the frame is taller than the frame by this much on each
@@ -112,7 +114,7 @@ const WORDS_SIZE = "min(14vw, 25vh)";
 // slide, no fade — so it lands like a stamp rather than arriving. The
 // two hits sit ~190px of scroll apart: far enough to read as two separate
 // impacts, close enough to feel like one gesture.
-const WORD_HITS = [0.07, 0.155] as const;
+const WORD_HITS = [0.081, 0.179] as const;
 // The recoil after each hit, in SECONDS — time-based, not scroll-based, so
 // the impact lands with the same snap however fast you happen to be
 // scrolling. Deliberately short: this is the shock settling, not an
@@ -392,7 +394,7 @@ export function About() {
       <div
         ref={aboutRef}
         data-snap-pin="pin"
-        data-snap-stops="0,0.2,0.85,1"
+        data-snap-stops="0,0.23,1"
         className={`relative hidden ${ABOUT_SCROLL_LENGTH} lg:block`}
       >
         <div className="sticky top-0 h-screen w-full overflow-hidden">
@@ -574,7 +576,13 @@ export function About() {
       {/* Sits tight under the photo. The frame ends 8vh (desktop) / ~15svh
           (mobile) above the bottom of its stage, so the top padding here is
           kept small and mobile pulls up a little to close the extra gap. */}
-      <div className="-mt-[12svh] px-5 pb-[16vh] pt-[3svh] sm:px-8 lg:mt-0 lg:px-14 lg:pb-[22vh] lg:pt-[5vh]">
+      {/* Soft magnet: from the full-size photo, one push glides straight to
+          the text instead of scrolling the whole stage off by hand. */}
+      <div
+        data-snap="start"
+        data-snap-offset="0.1"
+        className="-mt-[12svh] px-5 pb-[16vh] pt-[3svh] sm:px-8 lg:mt-0 lg:px-14 lg:pb-[22vh] lg:pt-[5vh]"
+      >
         <div className="flex max-w-[1000px] flex-col gap-[1.1em]">
           {ABOUT_PARAGRAPHS.map((text, i) => (
             <Reveal key={i} delay={i * 0.05} y={20}>

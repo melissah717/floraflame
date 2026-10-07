@@ -247,6 +247,9 @@ export function Drops({ strains }: { strains: Strain[] }) {
         <div className="absolute inset-x-0 bottom-0 h-[38vh] bg-gradient-to-t from-neutral-900 via-neutral-900/70 to-transparent" />
       </div>
 
+      {/* Soft magnet (components/scroll-snap.tsx): heading, stage and
+          carousel are centred on screen together when the page settles here. */}
+      <div data-snap="center">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <Reveal>
           <ParallaxText speed={16}>
@@ -571,6 +574,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
         <p className="mt-2 text-center text-[13px] tabular-nums tracking-[0.18em] text-neutral-500">
           {String(activeIndex + 1).padStart(2, "0")} / {String(SORTED.length).padStart(2, "0")}
         </p>
+      </div>
       </div>
     </section>
   );

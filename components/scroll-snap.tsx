@@ -20,8 +20,11 @@ import { MOBILE_MQ } from "@/hooks/use-is-mobile";
  *     (ADVANCE) glides on to the next stop; a small one eases back.
  *   data-snap-stops="0,0.2,1"           fractions of that range to rest on
  *   data-snap-stops-mobile="0,1"        same, below the lg breakpoint
+ *   data-snap-handoff                   the pin's last stop becomes the
+ *                                       magnet just past it, so leaving the
+ *                                       hero lands the next section centred
  *
- *   data-snap="start" | "center"
+ *   data-snap="start" | "center"      (+ data-snap-offset="0.1" for headroom)
  *     A soft magnet: resting close to it (closer ahead of you than behind)
  *     glides it into place. Used to centre the contact form, for example.
  *     Far away, nothing happens, so long reading passages scroll freely.
@@ -35,23 +38,26 @@ import { MOBILE_MQ } from "@/hooks/use-is-mobile";
  * Pages without markers are untouched (the farm carousel runs its own).
  */
 
-const WHEEL_SETTLE_MS = 220;
+const WHEEL_SETTLE_MS = 150;
 const TOUCH_SETTLE_MS = 170;
 const COOLDOWN_MS = 450;
-/** How far (fraction of the viewport) you have to push away from a resting
- * stop before the lock commits and carries you to the next one. About three
- * mouse-wheel clicks on a typical screen. Less than that and the page just
- * scrolls normally; leave it there and it eases back onto the stop. */
-const ADVANCE = 0.3;
+/** How far you have to push away from a resting stop before the lock
+ * commits and carries you to the next one: 20% of the screen, capped at
+ * 180px so a tall monitor doesn't need more scrolling than a laptop. That's
+ * two mouse-wheel clicks. Less than that and the page just scrolls
+ * normally; leave it there and it eases back onto the stop. */
+const ADVANCE = 0.2;
+const ADVANCE_MAX_PX = 180;
 /** Quiet time after an under-threshold push before easing back onto the
  * stop. Long enough that slow, deliberate clicks still add up. */
 const SNAP_BACK_MS = 900;
 /** Inside a pin segment, how far in (0–1) you must stop before it carries
  * you to the next stop when the gesture did NOT start on a stop. */
-const ENTRY_FRACTION = 0.3;
-/** Magnet reach, as a fraction of the viewport. */
-const POINT_AHEAD = 0.25;
-const POINT_BEHIND = 0.1;
+const ENTRY_FRACTION = 0.15;
+/** Magnet reach, as a fraction of the viewport. Ahead is generous: stopping
+ * anywhere within most of a screen of the next section carries you there. */
+const POINT_AHEAD = 0.85;
+const POINT_BEHIND = 0.25;
 /** Glide timing. Ease-in-out so it starts gently instead of lurching off
  * the mark, and long enough to read as a drift rather than a snap. */
 const EASE = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -66,6 +72,19 @@ function collect(vh: number) {
   const pins: Pin[] = [];
   const points: number[] = [];
 
+  document.querySelectorAll<HTMLElement>("[data-snap]").forEach((el) => {
+    if (!el.offsetHeight) return;
+    const r = el.getBoundingClientRect();
+    const top = r.top + y;
+    // A "center" block taller than the screen can't be centred without
+    // cutting its top off, so it lines its top up instead.
+    const centre = el.dataset.snap === "center" && r.height < vh * 0.96;
+    // data-snap-offset: extra room above a "start" target, as a fraction of
+    // the viewport, e.g. to clear the nav bar.
+    const offset = (Number(el.dataset.snapOffset) || 0) * vh;
+    points.push(Math.round(centre ? top + r.height / 2 - vh / 2 : top - offset));
+  });
+
   document.querySelectorAll<HTMLElement>("[data-snap-pin]").forEach((el) => {
     if (!el.offsetHeight) return; // hidden at this breakpoint
     const top = el.getBoundingClientRect().top + y;
@@ -76,17 +95,17 @@ function collect(vh: number) {
       .split(",")
       .map((f) => Math.round(top + Number(f) * span))
       .sort((a, b) => a - b);
-    pins.push({ start: top, end: top + span, stops });
-  });
-
-  document.querySelectorAll<HTMLElement>("[data-snap]").forEach((el) => {
-    if (!el.offsetHeight) return;
-    const r = el.getBoundingClientRect();
-    const top = r.top + y;
-    // A "center" block taller than the screen can't be centred without
-    // cutting its top off, so it lines its top up instead.
-    const centre = el.dataset.snap === "center" && r.height < vh * 0.96;
-    points.push(Math.round(centre ? top + r.height / 2 - vh / 2 : top));
+    let pinEnd = top + span;
+    if (el.dataset.snapHandoff !== undefined) {
+      const next = points
+        .filter((p) => p >= pinEnd - vh * 0.5 && p <= pinEnd + vh)
+        .sort((a, b) => Math.abs(a - pinEnd) - Math.abs(b - pinEnd))[0];
+      if (next !== undefined) {
+        stops[stops.length - 1] = next;
+        pinEnd = Math.max(pinEnd, next);
+      }
+    }
+    pins.push({ start: top, end: pinEnd, stops });
   });
 
   return { pins, points };
@@ -114,7 +133,9 @@ function decide(landing: number, base: number, vh: number): Decision {
     // Push measured from the stop the gesture (or run of slow clicks)
     // started on. Commit only once it is a deliberate push.
     if (baseStop !== undefined) {
-      if (Math.abs(moved) < ADVANCE * vh) return { kind: "hold", anchor: baseStop };
+      if (Math.abs(moved) < Math.min(ADVANCE * vh, ADVANCE_MAX_PX)) {
+        return { kind: "hold", anchor: baseStop };
+      }
       const to =
         moved > 0
           ? pin.stops.find((s) => s > baseStop) ?? pin.end
@@ -131,16 +152,20 @@ function decide(landing: number, base: number, vh: number): Decision {
     return { kind: "go", to: frac < 0.5 ? prev : next };
   }
 
+  // Between sections, the edges of every animated section pull as well, so
+  // the gap from one section to the next is never dead scroll you have to
+  // grind through by hand.
+  const magnets = [...points, ...pins.flatMap((p) => [p.start, p.end])];
   const dir = Math.sign(moved);
   const closest = (list: number[]) =>
     list.reduce<number | null>(
       (best, p) => (best === null || Math.abs(p - landing) < Math.abs(best - landing) ? p : best),
       null,
     );
-  const ahead = points.filter(
+  const ahead = magnets.filter(
     (p) => (dir >= 0 ? p >= landing : p <= landing) && Math.abs(p - landing) <= POINT_AHEAD * vh,
   );
-  const behind = points.filter((p) => Math.abs(p - landing) <= POINT_BEHIND * vh);
+  const behind = magnets.filter((p) => Math.abs(p - landing) <= POINT_BEHIND * vh);
   const to = closest(ahead.length && dir !== 0 ? ahead : behind);
   return to === null ? { kind: "none" } : { kind: "go", to };
 }
