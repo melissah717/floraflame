@@ -1,5 +1,5 @@
 /**
- * Wordmark — the "Flora & Flame" SVG rendered as a CSS mask so its color
+ * Wordmark — the "Flora & Flame" logo rendered as a CSS mask so its color
  * is controllable via any Tailwind background color (or a hex/rgb via
  * arbitrary value). The SVG's original fill is ignored — the visible color
  * comes from the container's background-color, which the mask cuts a
@@ -17,8 +17,17 @@
  * The mask-image auto-scales to fit via `contain`.
  */
 
+/**
+ * The mask is a transparent PNG that Cloudinary rasterises from the SVG
+ * (f_png), NOT the SVG itself. The source SVG is a Canva export whose
+ * lettering is an embedded bitmap cut out by SVG <mask>/<filter> elements.
+ * Chrome resolves that when the file is used as a CSS mask; iOS Safari
+ * doesn't, so it ignored the mask and painted the whole box solid white.
+ * A plain PNG alpha channel works as a mask everywhere. 1200px wide covers
+ * the largest use (≈240px) at 3× retina with room to spare.
+ */
 const WORDMARK_URL =
-  "https://res.cloudinary.com/g0mcdcfr/image/upload/v1785517828/text-logo.svg";
+  "https://res.cloudinary.com/g0mcdcfr/image/upload/f_png,w_1200/v1785517828/text-logo.svg";
 
 export function Wordmark({
   className = "",
