@@ -79,10 +79,10 @@ export function Navbar() {
   const scrollToContact = () => {
     setOpen(false);
     if (isHome) {
-      document.getElementById("wholesale")?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
-    router.push("/#wholesale");
+    router.push("/#contact");
   };
 
   return (
@@ -93,7 +93,7 @@ export function Navbar() {
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: showHeader ? 0 : -80, opacity: showHeader ? 1 : 0 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 z-50 w-full bg-neutral-900/85 backdrop-blur-md"
+        className="fixed top-0 z-50 w-full bg-neutral-900"
       >
         <nav
           aria-label="Primary"

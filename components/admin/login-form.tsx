@@ -102,7 +102,7 @@ export function LoginForm() {
           type="email"
           autoComplete="username"
           required
-          placeholder="you@floraflame.ca"
+          placeholder="you@floraandflame.co"
         />
       </Field>
 

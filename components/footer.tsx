@@ -23,8 +23,16 @@ export function SiteFooter() {
               Navigation
             </p>
             <ul className="mt-4 space-y-2 text-sm">
+              {/* Plain, crawlable links to each home-page section, with the
+                  same labels as the section headings. Google builds the
+                  "sitelinks" pills under a search result from links like
+                  these, so keep the wording short and stable. */}
               {[
                 ["Home", "/"],
+                ["Latest Drops", "/#drops"],
+                ["About", "/#about"],
+                ["Find Us", "/#find-us"],
+                ["Contact", "/#contact"],
                 ["Strains", "/strains"],
                 ["Learn", "/learn"],
                 ["Merch", "/merch"],

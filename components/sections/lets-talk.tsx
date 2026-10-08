@@ -106,7 +106,7 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
 
   return (
     <section
-      id="wholesale"
+      id="contact"
       className="relative overflow-x-clip bg-neutral-900 px-5 py-12 sm:px-8 sm:py-28 xl:py-36"
     >
       {/* Wrapper is `relative` so the artwork positions against the CARD,

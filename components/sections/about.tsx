@@ -42,7 +42,7 @@ import { useIsMobile } from "@/hooks/use-is-mobile";
 // ── keyhole knobs ──
 // Desktop pins for a screen while the keyhole scrubs open. Below lg there is
 // no pin at all: one screen tall, opens on a timer when it comes into view.
-const SCROLL_LENGTH = "h-svh lg:h-[200vh]";
+const SCROLL_LENGTH = "h-svh lg:h-[200vh] lg:motion-reduce:h-screen";
 const KEYHOLE_CLOSED = `inset(${28}% ${30}% ${28}% ${30}% round ${14}px)`;
 const KEYHOLE_OPEN = "inset(0% 0% 0% 0% round 0px)";
 const KEYHOLE_OPEN_SEC = 1.1;
@@ -55,7 +55,7 @@ const START_RADIUS = 14;
 // ── DESKTOP row → hero knobs ──
 // The paragraph phase no longer lives inside the pinned stage, so the
 // wrapper is shorter: hits → rest → exit → grow → a short hold → unpin.
-const ABOUT_SCROLL_LENGTH = "h-[290vh]";
+const ABOUT_SCROLL_LENGTH = "h-[290vh] motion-reduce:h-screen";
 const ROW_LEFT = ["7vw", "29vw", "51vw", "73vw"];
 const ROW_TOP = "37vh";
 const ROW_W = "20vw";
@@ -125,7 +125,7 @@ const WORD_PUNCH_SCALE = 1.06;
 // ── MOBILE stack → hero knobs ──
 // Half a screen of pin: enough to trigger the change and hold on the
 // result for a beat, nothing more.
-const MOBILE_SCROLL_LENGTH = "h-[150svh]";
+const MOBILE_SCROLL_LENGTH = "h-[150svh] motion-reduce:h-svh";
 // Fractions of that pin. Past GROW_AT the stack hands over to the big
 // photo; back below SHRINK_AT it returns. The gap is hysteresis.
 const MOBILE_GROW_AT = 0.22;
@@ -238,6 +238,16 @@ export function About() {
   const mobileRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const isMobile = useIsMobile();
+  // The <video> is remounted when the breakpoint resolves after hydration
+  // (it's keyed), and a client-created element doesn't always pick up the
+  // muted autoplay on iOS Safari. Re-assert muted and start it explicitly.
+  const videoElRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = videoElRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.play().catch(() => {});
+  }, [isMobile]);
   // Mobile keyhole: opens once, when most of it is on screen.
   const videoOpen = useInView(videoRef, { amount: 0.55, once: true });
 
@@ -329,7 +339,10 @@ export function About() {
   useMotionValueEvent(mobileProgress, "change", (p) => {
     setMGrown((prev) => (prev ? p > MOBILE_SHRINK_AT : p >= MOBILE_GROW_AT));
   });
-  const grown = !!reduce || mGrown;
+  // Reduce Motion keeps the opening layout (all four photos, captions on)
+  // and simply never runs the grow. It used to jump straight to the end
+  // state, which hid three of the four photos.
+  const grown = !reduce && mGrown;
   // Photo inside the frame eases out of its zoom as the frame grows.
   const mP1ImgScale = useMotionValue(HERO_GROW_SCALE);
   useEffect(() => {
@@ -344,7 +357,13 @@ export function About() {
   const mP1ImgY = useTransform(mobileExit, [0, 1], HERO_DRIFT);
 
   return (
-    <section id="about" className="scroll-mt-20 bg-neutral-900">
+    <section id="about" aria-labelledby="about-heading" className="scroll-mt-20 bg-neutral-900">
+      {/* The section's visible headline is artwork-style type that only
+          exists on desktop, so it gets a plain heading for screen readers
+          and search engines to name the section by. */}
+      <h2 id="about-heading" className="sr-only">
+        About Flora &amp; Flame
+      </h2>
       {/* ── KEYHOLE VIDEO ────────────────────────────────────────────── */}
       {/* Soft-lock markers (see components/scroll-snap.tsx). Desktop: rest
           at the top, fully open, or handed over to the stage. Phone: one
@@ -373,7 +392,11 @@ export function About() {
                 : undefined
             }
             transition={{ duration: KEYHOLE_OPEN_SEC, ease: EASE_OUT }}
-            autoPlay={!reduce}
+            // Plays with Reduce Motion on too: it's a slow, muted, ambient
+            // loop, and the setting already removes the scroll animation
+            // around it. Before, the section showed a frozen poster.
+            autoPlay
+            ref={videoElRef}
             muted
             loop
             playsInline
@@ -432,17 +455,13 @@ export function About() {
           {[1, 2, 3].map((idx) => (
             <motion.div
               key={idx}
-              style={
-                reduce
-                  ? { display: "none" }
-                  : {
-                      left: ROW_LEFT[idx],
-                      top: ROW_TOP,
-                      width: ROW_W,
-                      height: ROW_H,
-                      y: restY,
-                    }
-              }
+              style={{
+                left: ROW_LEFT[idx],
+                top: ROW_TOP,
+                width: ROW_W,
+                height: ROW_H,
+                ...(reduce ? {} : { y: restY }),
+              }}
               className="absolute overflow-hidden rounded-md"
             >
               <Image src={IMAGES[idx]} alt="" fill sizes={SIZES_ROW} className="object-cover" />
@@ -460,7 +479,7 @@ export function About() {
           <motion.div
             style={
               reduce
-                ? { left: HERO_LEFT, top: HERO_TOP, width: HERO_W, height: HERO_H }
+                ? { left: ROW_LEFT[0], top: ROW_TOP, width: ROW_W, height: ROW_H }
                 : { left: p1Left, top: p1Top, width: p1Width, height: p1Height }
             }
             className="absolute overflow-hidden rounded-md"
@@ -475,11 +494,11 @@ export function About() {
             {/* Overlay + blurb fade out early in the anchor morph so the
                 hero image reveals fully once the row is finished. */}
             <motion.div
-              style={reduce ? { opacity: 0 } : { opacity: p1OverlayOp }}
+              style={reduce ? { opacity: 1 } : { opacity: p1OverlayOp }}
               className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10"
             />
             <motion.div
-              style={reduce ? { opacity: 0 } : { opacity: p1OverlayOp }}
+              style={reduce ? { opacity: 1 } : { opacity: p1OverlayOp }}
               className="absolute inset-x-0 bottom-0 p-3 xl:p-4"
             >
               <p className={CAPTION_CLASS}>
@@ -509,7 +528,6 @@ export function About() {
                 top: MOBILE_STACK_TOP[idx],
                 width: MOBILE_STACK_W,
                 height: MOBILE_STACK_H,
-                ...(reduce ? { display: "none" } : {}),
               }}
               className="absolute overflow-hidden rounded-md will-change-transform"
             >

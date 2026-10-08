@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -10,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
       // because a disallow alone doesn't stop a discovered URL being listed.
       disallow: "/admin",
     },
-    sitemap: "https://floraflame.ca/sitemap.xml",
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

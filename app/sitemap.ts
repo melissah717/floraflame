@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getBlogPosts } from "@/lib/blog";
-
-const BASE_URL = "https://floraflame.ca";
+import { SITE_URL as BASE_URL } from "@/lib/site";
 
 // /merch is excluded on purpose — it's a thin placeholder page (see its
 // own noindex) with nothing unique for a search engine to index yet.

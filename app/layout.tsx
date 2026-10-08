@@ -3,6 +3,7 @@ import { Archivo, Karla } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 /**
  * Archivo — a sturdy grotesque with a wide weight range and a width axis.
@@ -24,8 +25,6 @@ const karla = Karla({
   variable: "--font-karla",
 });
 
-const SITE_URL = "https://floraflame.ca";
-const SITE_NAME = "Flora & Flame";
 const SITE_TITLE = "Flora & Flame · Living Soil Cannabis, Oakland CA";
 const SITE_DESCRIPTION =
   "Small-batch, no-till living soil cannabis grown by hand in Oakland, California. Pesticide-free, hand-trimmed flower for licensed retailers statewide.";

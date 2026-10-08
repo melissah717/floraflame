@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getBlogPost } from "@/lib/blog";
 import { Reveal } from "@/components/scroll-primitives";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +53,7 @@ export default async function KnowledgePostPage({
     dateModified: post.updatedAt,
     author: { "@type": "Organization", name: "Flora & Flame" },
     publisher: { "@type": "Organization", name: "Flora & Flame" },
-    mainEntityOfPage: `https://floraflame.ca/learn/the-knowledge/${slug}`,
+    mainEntityOfPage: `${SITE_URL}/learn/the-knowledge/${slug}`,
   };
 
   return (
