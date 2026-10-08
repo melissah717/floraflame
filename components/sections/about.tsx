@@ -3,10 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
-  animate,
   motion,
   useInView,
-  useMotionValue,
   useScroll,
   useTransform,
   useReducedMotion,
@@ -122,28 +120,18 @@ const WORD_HITS = [0.081, 0.179] as const;
 const WORD_PUNCH_SEC = 0.22;
 const WORD_PUNCH_SCALE = 1.06;
 
-// ── MOBILE stack → hero knobs ──
-// Half a screen of pin: enough to trigger the change and hold on the
-// result for a beat, nothing more.
-const MOBILE_SCROLL_LENGTH = "h-[150svh] motion-reduce:h-svh";
-// Fractions of that pin. Past GROW_AT the stack hands over to the big
-// photo; back below SHRINK_AT it returns. The gap is hysteresis.
-const MOBILE_GROW_AT = 0.22;
-const MOBILE_SHRINK_AT = 0.08;
-const MOBILE_EXIT_SEC = 0.65;
-const MOBILE_GROW_SEC = 0.8;
-// All phone geometry is in svh, matching the h-svh stage it sits in. On a
-// real phone vh is the LARGE viewport (toolbars hidden) and can run 25%+
-// taller than svh, so a frame placed in vh inside an svh stage reached
-// past the stage's bottom and under the paragraphs that follow.
-const MOBILE_STACK_TOP = ["68svh", "46svh", "24svh", "2svh"];
-const MOBILE_STACK_H = "20svh";
-const MOBILE_STACK_LEFT = "5vw";
-const MOBILE_STACK_W = "90vw";
-// Same inset-frame idea as desktop. The stage is h-svh, so keep the frame
-// comfortably inside it — 11vh + 66vh lands around 85% of a small viewport.
-const MOBILE_HERO_TOP = "11svh";
-const MOBILE_HERO_H = "66svh";
+// ── MOBILE stack ──
+// Below lg there's no pin and no scroll-driven motion: the four photos sit
+// in a plain full-width stack in normal flow. The only movement is the last
+// photo growing to its full size, on a timer, once it's mostly on screen.
+const MOBILE_GROW_SEC = 0.9;
+/** Each photo's resting height: small enough that all four, with their
+ * captions, fit on one phone screen together. Full width throughout. */
+const MOBILE_PHOTO_H = "18svh";
+/** Height the last photo grows to once it's in view. */
+const MOBILE_FINAL_H = "70svh";
+/** Display order, top to bottom: about-1 (the grow photo) comes last. */
+const MOBILE_ORDER = [3, 2, 1, 0] as const;
 
 // ── images ──
 const CLOUD = "https://res.cloudinary.com/g0mcdcfr/image/upload/f_auto,q_auto";
@@ -172,8 +160,8 @@ const IMAGES = [
 // (aspect ratio 3130 / 2075 = 1.51)
 const SIZES_ROW = "max(20vw, 83vh)"; //  55vh × 1.51
 const SIZES_HERO = "max(94vw, 121vh)"; //  80vh × 1.51
-const SIZES_MOBILE_ROW = "max(90vw, 31vh)"; //  20vh × 1.51
-const SIZES_MOBILE_HERO = "max(90vw, 100vh)"; //  66vh × 1.51
+const SIZES_MOBILE_ROW = "100vw"; // full width, shorter than the photo's own shape
+const SIZES_MOBILE_HERO = "max(100vw, 106svh)"; // 70svh × 1.51
 
 /**
  * Three-paragraph narrative. Each stands on its own so any can be cut
@@ -218,8 +206,10 @@ const PANEL_BLURBS = [
  */
 const CAPTION_CLASS =
   "font-sans text-[0.8rem] font-semibold uppercase tracking-[0.13em] text-white/95 xl:text-[0.85rem]";
+// On phones the captions sit under each photo rather than on a gradient, so
+// they take the site's quieter annotation colour.
 const CAPTION_CLASS_MOBILE =
-  "font-sans text-[0.85rem] font-semibold uppercase tracking-[0.13em] text-white/95";
+  "font-sans text-[0.75rem] font-semibold uppercase tracking-[0.13em] text-neutral-400";
 
 /**
  * The three paragraphs, Lightship-style: big, tight, line-height ~1, set at
@@ -235,7 +225,7 @@ const PARAGRAPH_VARIATION = "'wght' 450";
 export function About() {
   const videoRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
-  const mobileRef = useRef<HTMLDivElement>(null);
+  const lastPhotoRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const isMobile = useIsMobile();
   // The <video> is remounted when the breakpoint resolves after hydration
@@ -259,18 +249,10 @@ export function About() {
     target: aboutRef,
     offset: ["start start", "end end"],
   });
-  const { scrollYProgress: mobileProgress } = useScroll({
-    target: mobileRef,
-    offset: ["start start", "end end"],
-  });
   // 0 the moment each pinned stage unpins, 1 when it has fully scrolled
   // off — the window in which the hero photo lags behind its frame.
   const { scrollYProgress: aboutExit } = useScroll({
     target: aboutRef,
-    offset: ["end end", "end start"],
-  });
-  const { scrollYProgress: mobileExit } = useScroll({
-    target: mobileRef,
     offset: ["end end", "end start"],
   });
 
@@ -334,27 +316,10 @@ export function About() {
     });
   });
 
-  // Mobile: one boolean off the pin's progress, everything else is timed.
-  const [mGrown, setMGrown] = useState(false);
-  useMotionValueEvent(mobileProgress, "change", (p) => {
-    setMGrown((prev) => (prev ? p > MOBILE_SHRINK_AT : p >= MOBILE_GROW_AT));
-  });
-  // Reduce Motion keeps the opening layout (all four photos, captions on)
-  // and simply never runs the grow. It used to jump straight to the end
-  // state, which hid three of the four photos.
-  const grown = !reduce && mGrown;
-  // Photo inside the frame eases out of its zoom as the frame grows.
-  const mP1ImgScale = useMotionValue(HERO_GROW_SCALE);
-  useEffect(() => {
-    const controls = animate(mP1ImgScale, grown ? 1 : HERO_GROW_SCALE, {
-      duration: MOBILE_GROW_SEC,
-      ease: EASE_OUT,
-    });
-    return () => controls.stop();
-  }, [grown, mP1ImgScale]);
-  // The drift on the way out stays scroll-linked: it is a transform on an
-  // element that is already moving with the page, so lag can't show.
-  const mP1ImgY = useTransform(mobileExit, [0, 1], HERO_DRIFT);
+  // Mobile: the last photo grows once, when most of it is on screen.
+  // Reduce Motion shows it at full size from the start, with no animation.
+  const lastInView = useInView(lastPhotoRef, { amount: 0.6, once: true });
+  const grown = !!reduce || lastInView;
 
   return (
     <section id="about" aria-labelledby="about-heading" className="scroll-mt-20 bg-neutral-900">
@@ -509,81 +474,39 @@ export function About() {
         </div>
       </div>
 
-      {/* ── MOBILE: stack → (short scroll) → three leave, one grows ── */}
-      <div ref={mobileRef} data-snap-pin="pin" className={`relative ${MOBILE_SCROLL_LENGTH} lg:hidden`}>
-        <div className="sticky top-0 h-svh w-full overflow-hidden">
-          {[1, 2, 3].map((idx) => (
-            <motion.div
-              key={idx}
-              initial={false}
-              animate={{ y: grown ? "-110svh" : "0svh" }}
-              transition={{
-                duration: MOBILE_EXIT_SEC,
-                ease: EASE_OUT,
-                // Top photo leaves first on the way out, last on the way back.
-                delay: grown ? (3 - idx) * 0.05 : idx * 0.05,
-              }}
-              style={{
-                left: MOBILE_STACK_LEFT,
-                top: MOBILE_STACK_TOP[idx],
-                width: MOBILE_STACK_W,
-                height: MOBILE_STACK_H,
-              }}
-              className="absolute overflow-hidden rounded-md will-change-transform"
-            >
-              <Image src={IMAGES[idx]} alt="" fill sizes={SIZES_MOBILE_ROW} className="object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10" />
-              <div className="absolute inset-x-0 bottom-0 p-3">
-                <p className={CAPTION_CLASS_MOBILE}>
-                  {PANEL_BLURBS[idx]}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-
-          <motion.div
-            initial={false}
-            animate={{
-              top: grown ? MOBILE_HERO_TOP : MOBILE_STACK_TOP[0],
-              height: grown ? MOBILE_HERO_H : MOBILE_STACK_H,
-            }}
-            transition={{
-              duration: MOBILE_GROW_SEC,
-              ease: EASE_OUT,
-              // Let the others start clearing before this one expands.
-              delay: grown ? 0.12 : 0,
-            }}
-            style={{ left: MOBILE_STACK_LEFT, width: MOBILE_STACK_W }}
-            className="absolute overflow-hidden rounded-md"
-          >
-            <HeroPhoto
-              src={IMAGES[0]}
-              sizes={SIZES_MOBILE_HERO}
-              // Phone frame is tall and narrow; the interesting part of this
-              // photo (the grower and the plants) is on the right.
-              position="82% center"
-              scale={mP1ImgScale}
-              y={mP1ImgY}
-              reduce={!!reduce}
-            />
-            <motion.div
-              initial={false}
-              animate={{ opacity: grown ? 0 : 1 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10"
-            />
-            <motion.div
-              initial={false}
-              animate={{ opacity: grown ? 0 : 1 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-x-0 bottom-0 p-3"
-            >
-              <p className={CAPTION_CLASS_MOBILE}>
-                {PANEL_BLURBS[0]}
-              </p>
-            </motion.div>
-          </motion.div>
-        </div>
+      {/* ── MOBILE: four full-width photos in normal flow. No pin, no
+          scroll animation; the last one grows to full size by itself once
+          it's mostly in view. Captions sit under each photo. ── */}
+      <div className="flex flex-col gap-3 pt-8 lg:hidden">
+        {MOBILE_ORDER.map((idx) => {
+          const isLast = idx === 0;
+          return (
+            <figure key={idx}>
+              <motion.div
+                ref={isLast ? lastPhotoRef : undefined}
+                initial={false}
+                animate={isLast ? { height: grown ? MOBILE_FINAL_H : MOBILE_PHOTO_H } : undefined}
+                transition={{ duration: reduce ? 0 : MOBILE_GROW_SEC, ease: EASE_OUT }}
+                style={{ height: MOBILE_PHOTO_H }}
+                className="relative w-full overflow-hidden bg-neutral-800"
+              >
+                <Image
+                  src={IMAGES[idx]}
+                  alt=""
+                  fill
+                  sizes={isLast ? SIZES_MOBILE_HERO : SIZES_MOBILE_ROW}
+                  className="object-cover"
+                  // The grown frame is tall and narrow; the grower and the
+                  // plants are on the right of this photo.
+                  style={isLast ? { objectPosition: "82% center" } : undefined}
+                />
+              </motion.div>
+              <figcaption className={`mt-2 px-5 ${CAPTION_CLASS_MOBILE}`}>
+                {PANEL_BLURBS[idx]}
+              </figcaption>
+            </figure>
+          );
+        })}
       </div>
 
       {/* ── STORY — three paragraphs in normal flow, Lightship-style. The
@@ -591,15 +514,15 @@ export function About() {
           this reads as the caption to that image: no pin, no slide, just
           large type moving under the page's own momentum. Each paragraph
           gets the site's standard soft reveal on first view. ── */}
-      {/* Sits tight under the photo. The frame ends 8vh (desktop) / ~15svh
-          (mobile) above the bottom of its stage, so the top padding here is
-          kept small and mobile pulls up a little to close the extra gap. */}
+      {/* Sits tight under the photo. On desktop the frame ends 8vh above
+          the bottom of its stage, so the top padding here is kept small. */}
       {/* Soft magnet: from the full-size photo, one push glides straight to
           the text instead of scrolling the whole stage off by hand. */}
       <div
         data-snap="start"
         data-snap-offset="0.1"
-        className="-mt-[12svh] px-5 pb-[16vh] pt-[3svh] sm:px-8 lg:mt-0 lg:px-14 lg:pb-[22vh] lg:pt-[5vh]"
+        data-snap-only="desktop"
+        className="px-5 pb-[16vh] pt-12 sm:px-8 lg:px-14 lg:pb-[22vh] lg:pt-[5vh]"
       >
         <div className="flex max-w-[1000px] flex-col gap-[1.1em]">
           {ABOUT_PARAGRAPHS.map((text, i) => (

@@ -24,10 +24,12 @@ import { MOBILE_MQ } from "@/hooks/use-is-mobile";
  *                                       magnet just past it, so leaving the
  *                                       hero lands the next section centred
  *
- *   data-snap="start" | "center"      (+ data-snap-offset="0.1" for headroom)
- *     A soft magnet: resting close to it (closer ahead of you than behind)
- *     glides it into place. Used to centre the contact form, for example.
- *     Far away, nothing happens, so long reading passages scroll freely.
+ *   data-snap="start" | "center"      (+ data-snap-offset="0.1" for headroom,
+ *                                       data-snap-only="desktop" | "mobile")
+ *     A soft magnet: stopping a little short of it while scrolling toward
+ *     it glides it into place. It never pulls you backwards. Used to
+ *     centre the contact form, for example. Far away, nothing happens, so
+ *     long reading passages scroll freely.
  *
  * Wheel/trackpad: Lenis owns the scroll, so the landing spot is read from
  * its target and the settle starts as soon as the wheel goes quiet. Lenis
@@ -57,7 +59,6 @@ const ENTRY_FRACTION = 0.15;
 /** Magnet reach, as a fraction of the viewport. Ahead is generous: stopping
  * anywhere within most of a screen of the next section carries you there. */
 const POINT_AHEAD = 0.85;
-const POINT_BEHIND = 0.25;
 /** Glide timing. Ease-in-out so it starts gently instead of lurching off
  * the mark, and long enough to read as a drift rather than a snap. */
 const EASE = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -74,6 +75,9 @@ function collect(vh: number) {
 
   document.querySelectorAll<HTMLElement>("[data-snap]").forEach((el) => {
     if (!el.offsetHeight) return;
+    // data-snap-only="desktop" | "mobile": a magnet for one breakpoint only.
+    const only = el.dataset.snapOnly;
+    if ((only === "desktop" && mobile) || (only === "mobile" && !mobile)) return;
     const r = el.getBoundingClientRect();
     const top = r.top + y;
     // A "center" block taller than the screen can't be centred without
@@ -163,10 +167,15 @@ function decide(landing: number, base: number, vh: number): Decision {
       null,
     );
   const ahead = magnets.filter(
-    (p) => (dir >= 0 ? p >= landing : p <= landing) && Math.abs(p - landing) <= POINT_AHEAD * vh,
+    (p) => (dir > 0 ? p > landing : p < landing) && Math.abs(p - landing) <= POINT_AHEAD * vh,
   );
-  const behind = magnets.filter((p) => Math.abs(p - landing) <= POINT_BEHIND * vh);
-  const to = closest(ahead.length && dir !== 0 ? ahead : behind);
+  // Magnets only ever pull FORWARD, in the direction you were scrolling.
+  // Pulling back to the nearest point behind yanked people up to the edge
+  // they had just scrolled away from, and a one-step jump (a footer link
+  // like "About") reads as zero movement, which the old fallback treated as
+  // licence to pull too.
+  if (dir === 0) return { kind: "none" };
+  const to = closest(ahead);
   return to === null ? { kind: "none" } : { kind: "go", to };
 }
 
