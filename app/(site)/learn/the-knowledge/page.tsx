@@ -5,23 +5,22 @@ import { ArrowRight } from "lucide-react";
 import { getBlogPosts, type BlogPost } from "@/lib/blog";
 import { Reveal, RevealGroup, RevealItem } from "@/components/scroll-primitives";
 import { ComingSoonBanner } from "@/components/coming-soon-banner";
+import { LearnMore } from "@/components/learn-more";
 
-// Dating from when posts lived in a Google Sheet that could change at any
-// moment with no way to know. Posts are in Supabase now and the admin calls
-// revalidatePath() on save, so this could become a static route with
-// `revalidate` — left dynamic for now because that's a behaviour change to
-// make deliberately, not as a side effect of the migration.
-export const dynamic = "force-dynamic";
+// Static, refreshed hourly. The admin also calls revalidatePath() on every
+// post save, so edits show up right away; the hourly window is only a
+// backstop. Crawlers get a cached page instead of a fresh database round
+// trip on every hit.
+export const revalidate = 3600;
 
-const TITLE = "The Knowledge"
-const DESCRIPTION = "Notes from the grow, grouped by topic."
+const TITLE = "Grow Notes & Cannabis Articles"
+const DESCRIPTION =
+  "Articles and notes from the Flora & Flame grow in Oakland, California, grouped by topic, from living soil and cultivation to strains and curing."
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/learn/the-knowledge" },
-  openGraph: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
-  twitter: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
 }
 
 const GUTTER = "px-5 sm:px-8 lg:px-14";
@@ -46,6 +45,7 @@ export default async function TheKnowledgePage() {
   const sections = groupByBucket(posts);
 
   return (
+    <>
     <div className={`bg-neutral-900 pb-24 pt-32 text-neutral-50 sm:pb-32 sm:pt-48 ${GUTTER}`}>
       <Reveal>
         <h1 className="max-w-[16ch] font-display uppercase leading-[0.88] tracking-[-0.03em] text-[clamp(2.5rem,7vw,6.5rem)]">
@@ -68,6 +68,8 @@ export default async function TheKnowledgePage() {
         </div>
       )}
     </div>
+    <LearnMore current="/learn/the-knowledge" />
+    </>
   );
 }
 

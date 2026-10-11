@@ -372,7 +372,7 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
               </>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center p-8 text-center">
-                <p className="max-w-[16ch] font-display text-xl leading-snug text-neutral-500">
+                <p className="max-w-[16ch] font-display text-xl leading-snug text-neutral-400">
                   Pick a strain to see it up close
                 </p>
               </div>
@@ -486,7 +486,7 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <span className="min-w-[3rem] text-center text-xs tracking-[0.16em] text-neutral-500 tabular-nums">
+          <span className="min-w-[3rem] text-center text-xs tracking-[0.16em] text-neutral-400 tabular-nums">
             {activeIndex !== null ? activeIndex + 1 : "–"} / {batches.length}
           </span>
           <button

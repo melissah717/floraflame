@@ -251,11 +251,14 @@ export function ScrollMarquee({
   children,
   baseVelocity = 3,
   className,
+  paused = false,
 }: {
   children: ReactNode;
   /** % of width per second at rest. Negative starts it moving right. */
   baseVelocity?: number;
   className?: string;
+  /** Stops the strip where it is (driven by a pause control). */
+  paused?: boolean;
 }) {
   const reduce = useReducedMotion();
 
@@ -280,7 +283,7 @@ export function ScrollMarquee({
   const directionFactor = useRef(1);
 
   useAnimationFrame((_, delta) => {
-    if (reduce) return;
+    if (reduce || paused) return;
 
     let moveBy = directionFactor.current * baseVelocity * (delta / 1000);
 

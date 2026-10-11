@@ -1,18 +1,22 @@
 import type { Metadata } from "next";
 import { LivingSoil } from "@/components/sections/living-soil";
+import { LearnMore } from "@/components/learn-more";
 
-const TITLE = "The Soil"
+const TITLE = "No-Till Living Soil, Explained"
 const DESCRIPTION =
-  "No-till. No synthetics. No pesticides. It all comes down to one idea: living soil feeds the microbes that feed the plant."
+  "How no-till living soil works: microbes, fungi, worms, compost and cover crops feeding the plant instead of synthetic nutrients, and why it shows up in the flower."
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/learn/the-soil" },
-  openGraph: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
-  twitter: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
 }
 
 export default function TheSoilPage() {
-  return <LivingSoil />;
+  return (
+    <>
+      <LivingSoil />
+      <LearnMore current="/learn/the-soil" />
+    </>
+  );
 }

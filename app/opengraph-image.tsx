@@ -55,6 +55,19 @@ export default async function Image() {
         <div style={{ marginTop: 14, fontSize: 28, color: "#a29886" }}>
           Living Soil Cannabis · Oakland, CA
         </div>
+        {/* California requires the licensee's number on cannabis
+            advertising, and this image is what every shared link shows. */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 28,
+            fontSize: 20,
+            letterSpacing: 3,
+            color: "#a29886",
+          }}
+        >
+          LICENSE #C120000449-LIC · 21+ ONLY
+        </div>
       </div>
     ),
     { ...size }

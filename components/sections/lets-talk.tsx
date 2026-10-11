@@ -174,7 +174,7 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
 
 function PlaceholderForm() {
   return (
-    <p className="text-xs text-neutral-500">
+    <p className="text-xs text-neutral-400">
       Placeholder — pass your Wholesale form as children.
     </p>
   );

@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { ScrollMarquee } from "@/components/scroll-primitives";
+import { PauseButton } from "@/components/pause-button";
 
 const WORDS = ["Living Soil", "By Hand", "No-Till", "Small Batch", "Oakland"];
 
@@ -17,8 +19,10 @@ const WORDS = ["Living Soil", "By Hand", "No-Till", "Small Batch", "Oakland"];
  *   – Separator dimmed via opacity so it reads as a marker, not a shape
  */
 export function MarqueeReel() {
+  const [paused, setPaused] = useState(false);
   return (
     <section
+      aria-label="Living soil, by hand, no-till, small batch, Oakland"
       className="relative isolate overflow-hidden"
       style={{
         background:
@@ -39,9 +43,11 @@ export function MarqueeReel() {
       </video>
       */}
 
-      <div className="relative [mix-blend-mode:multiply]">
+      {/* The strip repeats the words endlessly, so screen readers get the
+          section's aria-label once instead of the loop. */}
+      <div aria-hidden="true" className="relative [mix-blend-mode:multiply]">
         <div className="bg-black py-10 sm:py-14">
-          <ScrollMarquee baseVelocity={0.6}>
+          <ScrollMarquee baseVelocity={0.6} paused={paused}>
             {WORDS.map((w) => (
               <span key={w} className="flex items-center gap-[3vw] pr-[3vw]">
                 <span className="font-display font-bold uppercase leading-[0.85] tracking-[-0.015em] text-white text-[clamp(3.5rem,16vw,10rem)]">
@@ -55,6 +61,14 @@ export function MarqueeReel() {
           </ScrollMarquee>
         </div>
       </div>
+
+      {/* Outside the multiply layer, or the blend would tint the button. */}
+      <PauseButton
+        paused={paused}
+        onToggle={() => setPaused((p) => !p)}
+        label="scrolling text"
+        className="absolute bottom-3 right-3 motion-reduce:hidden sm:bottom-4 sm:right-4"
+      />
     </section>
   );
 }

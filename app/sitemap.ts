@@ -1,11 +1,14 @@
 import type { MetadataRoute } from "next";
-import { getBlogPosts } from "@/lib/blog";
+import { getBlogPosts, isPlaceholderPost } from "@/lib/blog";
 import { SITE_URL as BASE_URL } from "@/lib/site";
+
+// Rebuilt at most hourly so new posts and pages show up without a deploy.
+export const revalidate = 3600;
 
 // /merch is excluded on purpose — it's a thin placeholder page (see its
 // own noindex) with nothing unique for a search engine to index yet.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const posts = await getBlogPosts();
+  const posts = (await getBlogPosts()).filter((p) => !isPlaceholderPost(p));
 
   /*
    * lastModified is only asserted where a real date exists.
@@ -41,6 +44,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.7,
     },
+    { url: `${BASE_URL}/accessibility`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${BASE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${BASE_URL}/terms`, changeFrequency: "yearly", priority: 0.2 },
   ];
 
   const postRoutes: MetadataRoute.Sitemap = posts.map((post) => ({

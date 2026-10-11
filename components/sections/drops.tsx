@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
@@ -128,19 +129,19 @@ function StrainInfo({
             <dl className="mt-3 flex max-w-md flex-col gap-2 text-sm sm:mt-5 lg:max-w-2xl">
               {strain.genetics && (
                 <div className="flex flex-wrap items-baseline gap-x-2">
-                  <dt className="tracking-[0.06em] text-neutral-500">Genetics</dt>
+                  <dt className="tracking-[0.06em] text-neutral-400">Genetics</dt>
                   <dd className="text-neutral-300">{strain.genetics}</dd>
                 </div>
               )}
               {strain.terpenes && (
                 <div className="flex flex-wrap items-baseline gap-x-2">
-                  <dt className="tracking-[0.06em] text-neutral-500">Terpenes</dt>
+                  <dt className="tracking-[0.06em] text-neutral-400">Terpenes</dt>
                   <dd className="text-neutral-300">{strain.terpenes.join(", ")}</dd>
                 </div>
               )}
               {strain.idealTime && (
                 <div className="flex flex-wrap items-baseline gap-x-2">
-                  <dt className="tracking-[0.06em] text-neutral-500">Best time</dt>
+                  <dt className="tracking-[0.06em] text-neutral-400">Best time</dt>
                   <dd className="text-neutral-300">{strain.idealTime}</dd>
                 </div>
               )}
@@ -279,7 +280,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
                 <NugZoom className="h-full w-full">
                   <Image
                     src={active.image}
-                    alt={active.name}
+                    alt={`${active.name} cannabis flower`}
                     fill
                     // NugZoom scales this image up 1.5x on hover via a CSS
                     // transform — the fetched source needs headroom above
@@ -288,7 +289,6 @@ export function Drops({ strains }: { strains: Strain[] }) {
                     sizes="(max-width: 640px) 280px, (max-width: 1024px) 420px, 600px"
                     draggable={false}
                     className="object-contain"
-                    priority
                   />
                 </NugZoom>
               </motion.div>
@@ -408,7 +408,11 @@ export function Drops({ strains }: { strains: Strain[] }) {
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === "ArrowLeft") step(-1);
-              if (e.key === "ArrowRight") step(1);
+              else if (e.key === "ArrowRight") step(1);
+              else if (e.key === "Home") setActiveSlug(SORTED[0]?.slug ?? activeSlug);
+              else if (e.key === "End") setActiveSlug(SORTED.at(-1)?.slug ?? activeSlug);
+              else return;
+              e.preventDefault();
             }}
             className="relative h-24 cursor-grab touch-none select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-50 active:cursor-grabbing sm:h-32"
             style={{ perspective: 1200 }}
@@ -434,6 +438,10 @@ export function Drops({ strains }: { strains: Strain[] }) {
                   role="option"
                   aria-selected={isActive}
                   aria-label={s.name}
+                  // The listbox itself is the single Tab stop and arrows
+                  // move within it; without this every strain was its
+                  // own Tab stop.
+                  tabIndex={-1}
                   onClick={() => setActiveSlug(s.slug)}
                   onHoverStart={() => setHoveredSlug(s.slug)}
                   onHoverEnd={() =>
@@ -520,7 +528,6 @@ export function Drops({ strains }: { strains: Strain[] }) {
                         // exact-fit image and going soft mid-animation.
                         sizes="240px"
                         draggable={false}
-                        priority={isActive}
                         className="pointer-events-none object-cover"
                       />
                     </div>
@@ -537,7 +544,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
               type="button"
               onClick={() => step(-1)}
               aria-label="Previous strain"
-              className="flex cursor-pointer items-center gap-1.5 text-xs font-medium tracking-[0.1em] text-neutral-300 transition-colors hover:text-neutral-50"
+              className="flex cursor-pointer items-center gap-1.5 py-2.5 text-xs font-medium tracking-[0.1em] text-neutral-300 transition-colors hover:text-neutral-50"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
               PREV
@@ -561,7 +568,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
               type="button"
               onClick={() => step(1)}
               aria-label="Next strain"
-              className="flex cursor-pointer items-center gap-1.5 text-xs font-medium tracking-[0.1em] text-neutral-300 transition-colors hover:text-neutral-50"
+              className="flex cursor-pointer items-center gap-1.5 py-2.5 text-xs font-medium tracking-[0.1em] text-neutral-300 transition-colors hover:text-neutral-50"
             >
               NEXT
               <ChevronRight className="h-3.5 w-3.5" />
@@ -569,9 +576,18 @@ export function Drops({ strains }: { strains: Strain[] }) {
           </div>
         </div>
 
-        <p className="mt-2 text-center text-[13px] tabular-nums tracking-[0.18em] text-neutral-500">
+        <p className="mt-2 text-center text-[13px] tabular-nums tracking-[0.18em] text-neutral-400">
           {String(activeIndex + 1).padStart(2, "0")} / {String(SORTED.length).padStart(2, "0")}
         </p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm">
+          <Link href="/strains" className="text-neutral-300 underline underline-offset-4 hover:text-neutral-50">
+            See every strain
+          </Link>
+          <Link href="/find-us" className="text-neutral-300 underline underline-offset-4 hover:text-neutral-50">
+            Find a shop near you
+          </Link>
+        </div>
       </div>
       </div>
     </section>

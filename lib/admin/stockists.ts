@@ -138,6 +138,7 @@ export async function saveStockist(
       return fail(error.message);
     }
     revalidatePath("/");
+    revalidatePath("/find-us");
     revalidatePath("/admin/stockists");
     return coords
       ? ok(`Saved “${name}”.`)
@@ -156,6 +157,7 @@ export async function saveStockist(
   }
 
   revalidatePath("/");
+  revalidatePath("/find-us");
   revalidatePath("/admin/stockists");
   redirect(`/admin/stockists/${data.id}?created=1${coords ? "" : "&geocode=failed"}`);
 }
@@ -174,6 +176,7 @@ export async function deleteStockist(formData: FormData): Promise<void> {
   }
 
   revalidatePath("/");
+  revalidatePath("/find-us");
   revalidatePath("/admin/stockists");
   redirect("/admin/stockists");
 }

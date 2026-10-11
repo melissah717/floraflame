@@ -3,11 +3,20 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getBlogPost } from "@/lib/blog";
+import { getBlogPost, getBlogPosts, isPlaceholderPost } from "@/lib/blog";
 import { Reveal } from "@/components/scroll-primitives";
-import { SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { breadcrumbs, jsonLd } from "@/lib/json-ld";
 
-export const dynamic = "force-dynamic";
+// Statically rendered and refreshed hourly (like the home page) instead
+// of force-dynamic: crawlers get a cached page fast, and new posts still
+// appear without a deploy since unknown slugs render on first request.
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const posts = await getBlogPosts();
+  return posts.filter((p) => !isPlaceholderPost(p)).map((p) => ({ slug: p.slug }));
+}
 
 export async function generateMetadata({
   params,
@@ -19,16 +28,24 @@ export async function generateMetadata({
   if (!post) return { title: "Not found" };
 
   const description = post.blurb || `Notes from the grow: ${post.title}.`
-  const socialTitle = `${post.title} | Flora & Flame`
 
   return {
     title: post.title,
     description,
     alternates: { canonical: `/learn/the-knowledge/${slug}` },
-    openGraph: post.heroImage
-      ? { title: socialTitle, description, images: [post.heroImage] }
-      : { title: socialTitle, description },
-    twitter: { title: socialTitle, description },
+    ...(isPlaceholderPost(post) ? { robots: { index: false, follow: true } } : {}),
+    // A full openGraph block (not just images) because setting any of it
+    // replaces the root's; siteName/locale have to be restated here.
+    openGraph: {
+      type: "article",
+      siteName: SITE_NAME,
+      locale: "en_US",
+      title: `${post.title} | ${SITE_NAME}`,
+      description,
+      publishedTime: post.publishedAt,
+      modifiedTime: post.updatedAt,
+      ...(post.heroImage ? { images: [post.heroImage] } : {}),
+    },
   }
 }
 
@@ -51,16 +68,32 @@ export default async function KnowledgePostPage({
     // post can't show a date in results and loses freshness signal.
     datePublished: post.publishedAt,
     dateModified: post.updatedAt,
-    author: { "@type": "Organization", name: "Flora & Flame" },
-    publisher: { "@type": "Organization", name: "Flora & Flame" },
+    author: { "@id": `${SITE_URL}/#organization` },
+    publisher: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}/icon-512.png`,
+    },
     mainEntityOfPage: `${SITE_URL}/learn/the-knowledge/${slug}`,
   };
+
+  const breadcrumbJsonLd = breadcrumbs([
+    ["Learn", "/learn"],
+    ["The Knowledge", "/learn/the-knowledge"],
+    [post.title, `/learn/the-knowledge/${slug}`],
+  ]);
 
   return (
     <article className="mx-auto max-w-3xl px-5 pb-24 pt-32 sm:px-8 sm:pt-40">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbJsonLd) }}
       />
       <Reveal>
         <Link

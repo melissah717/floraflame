@@ -43,6 +43,7 @@ type GateStatus = "checking" | "verified" | "unverified";
 export function AgeGate() {
   const [status, setStatus] = useState<GateStatus>("checking");
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const gateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setStatus(window.localStorage.getItem(STORAGE_KEY) === "true" ? "verified" : "unverified");
@@ -53,6 +54,20 @@ export function AgeGate() {
     return () => {
       document.body.style.overflow = "";
     };
+  }, [status]);
+
+  // While the gate is up, everything else on the page is made `inert`:
+  // not focusable, not clickable, hidden from screen readers. That's the
+  // focus trap aria-modal promises but doesn't enforce on its own —
+  // without it, Tab walks straight past the gate into the nav and links.
+  useEffect(() => {
+    if (status !== "unverified") return;
+    const siblings = Array.from(document.body.children).filter(
+      (el): el is HTMLElement =>
+        el instanceof HTMLElement && el !== gateRef.current && !el.inert
+    );
+    siblings.forEach((el) => (el.inert = true));
+    return () => siblings.forEach((el) => (el.inert = false));
   }, [status]);
 
   // Only once we know the gate is actually going to show — otherwise a
@@ -68,6 +83,11 @@ export function AgeGate() {
     // Lets CookieConsent (mounted alongside this, but hidden until the age
     // gate clears) know it can check localStorage and show itself.
     window.dispatchEvent(new Event("ff:age-verified"));
+    // The confirm button is about to unmount; without this, focus falls
+    // back to <body> and a keyboard user starts over from the top.
+    requestAnimationFrame(() =>
+      document.getElementById("main-content")?.focus({ preventScroll: true })
+    );
   };
 
   const decline = () => {
@@ -78,6 +98,7 @@ export function AgeGate() {
     <AnimatePresence>
       {status === "unverified" && (
         <motion.div
+          ref={gateRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="age-gate-heading"
@@ -128,14 +149,14 @@ export function AgeGate() {
                 ref={confirmRef}
                 type="button"
                 onClick={confirm}
-                className="rounded-full bg-neutral-50 px-8 py-3 text-sm text-neutral-900 transition-colors hover:scale-[1.03] hover:bg-neutral-200 active:scale-[0.98]"
+                className="rounded-full bg-neutral-50 px-8 py-3 text-sm text-neutral-900 transition-[background-color,scale] hover:scale-[1.03] hover:bg-neutral-200 active:scale-[0.98] motion-reduce:hover:scale-100"
               >
                 Yes, I&apos;m 21+
               </button>
               <button
                 type="button"
                 onClick={decline}
-                className="rounded-full border border-neutral-700 px-8 py-3 text-sm text-neutral-400 transition-colors hover:border-neutral-500 hover:text-neutral-50"
+                className="rounded-full border border-neutral-500 px-8 py-3 text-sm text-neutral-300 transition-colors hover:border-neutral-300 hover:text-neutral-50"
               >
                 No, exit
               </button>
@@ -143,7 +164,7 @@ export function AgeGate() {
 
             <motion.span
               variants={ITEM}
-              className="mt-10 text-[13px] uppercase tracking-[0.18em] text-neutral-600"
+              className="mt-10 text-[13px] uppercase tracking-[0.18em] text-neutral-400"
             >
               License #C120000449-LIC · 21+ only
             </motion.span>

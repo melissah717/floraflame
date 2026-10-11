@@ -48,9 +48,6 @@ export const metadata: Metadata = {
   creator: SITE_NAME,
   publisher: SITE_NAME,
   category: "business",
-  alternates: {
-    canonical: "/",
-  },
   robots: {
     index: true,
     follow: true,
@@ -62,18 +59,19 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  // No title/description here on purpose: Next copies each page's own
+  // title and description into og:/twitter: tags when these are absent, so
+  // a shared /strains link previews as "Strains", not the homepage. Pages
+  // should NOT set their own `openGraph` either — Next merges it shallowly,
+  // so a page-level block would replace siteName/locale below wholesale.
+  // The share image comes from app/opengraph-image.tsx.
   openGraph: {
     type: "website",
-    url: SITE_URL,
     siteName: SITE_NAME,
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
   },
   // Favicon/apple-touch-icon come from app/icon.png + app/apple-icon.png —
   // Next's file convention picks those up automatically, no manual `icons`

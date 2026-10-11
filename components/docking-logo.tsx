@@ -91,8 +91,12 @@ export const ENTRANCE_TOTAL_SEC =
 export function DockingLogo({
   showWithNav = true,
   behindMenu = false,
+  onFocusChange,
 }: {
   showWithNav?: boolean;
+  /** Keyboard focus on this link has to bring the (auto-hidden) nav back
+   * with it, or a Tab lands on an invisible link. */
+  onFocusChange?: (focused: boolean) => void;
   /** True while the mobile sheet is open. The wordmark normally sits above
    * the header (z-60) so it can dock into it, but the sheet is z-50 and the
    * logo was painting over the open menu. Dropping under it for the
@@ -228,6 +232,8 @@ export function DockingLogo({
     <Link
       href="/"
       aria-label="Flora & Flame, home"
+      onFocus={() => onFocusChange?.(true)}
+      onBlur={() => onFocusChange?.(false)}
       className={`fixed left-0 top-0 ${behindMenu ? "z-40" : "z-[60]"}`}
     >
       {/* ── Text wordmark ── hero display type, docks, then fades out ──

@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
 import { Breakdown } from "@/components/sections/breakdown";
+import { LearnMore } from "@/components/learn-more";
 
-const TITLE = "The Leaf"
+const TITLE = "Cannabinoids & Terpenes Explained"
 const DESCRIPTION =
-  "Cannabinoids, terpenes, and plant anatomy. The stuff that matters more than the number on the label."
+  "THC, CBD, myrcene, limonene and more: an interactive guide to cannabinoids, terpenes and cannabis plant anatomy, and why they matter more than the number on the label."
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/learn/the-leaf" },
-  // openGraph/twitter titles don't pick up the root layout's `%s | Flora
-  // & Flame` template the way the <title> tag does, so the site name is
-  // spelled out here to keep social previews consistent with the tab title.
-  openGraph: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
-  twitter: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
 }
 
 export default function TheLeafPage() {
-  return <Breakdown />;
+  return (
+    <>
+      <Breakdown />
+      <LearnMore current="/learn/the-leaf" />
+    </>
+  );
 }

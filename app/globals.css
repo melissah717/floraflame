@@ -126,6 +126,14 @@
   html {
     @apply font-sans;
     }
+  /* A visible keyboard focus ring everywhere (WCAG 2.4.7). The default
+     ring token at 50% was nearly invisible on the dark background. Only
+     :focus-visible, so mouse clicks don't draw it. Components can still
+     override with their own focus-visible utilities. */
+  :focus-visible {
+    outline: 2px solid #fafafa;
+    outline-offset: 2px;
+  }
 }
 
 

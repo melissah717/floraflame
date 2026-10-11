@@ -129,6 +129,13 @@ export function Hero() {
           <div className="relative z-10 w-full px-5 sm:px-8">
             <div className="mx-auto w-full max-w-7xl">
               <h1 className="font-display uppercase leading-[0.85] tracking-[-0.035em] text-white">
+                {/* The three display lines read as "no till living soil
+                    oakland ca" on their own: no brand and no "cannabis".
+                    Screen readers and search engines get this sentence
+                    instead; the visual lines are hidden from them. */}
+                <span className="sr-only">
+                  Flora &amp; Flame: no-till, living soil cannabis from Oakland, CA
+                </span>
                 {LINES.map((text, i) => {
                   // Per-line sizing so each line fills its width instead of
                   // wrapping. Different character counts + character widths
@@ -144,9 +151,9 @@ export function Hero() {
                     "text-[clamp(2rem,10vw,4rem)]",     // OAKLAND CA
                   ];
                   return (
-                    <span key={text} className="block overflow-hidden">
+                    <span key={text} aria-hidden="true" className="block overflow-hidden">
                       <motion.span
-                        initial={{ y: "115%" }}
+                        initial={reduce ? false : { y: "115%" }}
                         animate={{ y: 0 }}
                         transition={{
                           duration: 1,
@@ -171,10 +178,10 @@ export function Hero() {
           className="absolute inset-x-0 bottom-6 z-30 px-5 sm:px-8"
         >
           <div className="mx-auto flex w-full max-w-7xl items-end justify-between gap-8">
-            <p className="max-w-xl text-sm leading-relaxed text-neutral-500">
+            <p className="max-w-xl text-sm leading-relaxed text-neutral-400">
               Grown by people who actually give a f*ck.
             </p>
-            <span className="shrink-0 text-xs tracking-[0.04em] text-neutral-500">
+            <span className="shrink-0 text-xs tracking-[0.04em] text-neutral-400">
               Scroll ↓
             </span>
           </div>

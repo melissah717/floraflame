@@ -38,6 +38,21 @@ export function StockistMap({
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const [mapFailed, setMapFailed] = useState(false);
   const [ready, setReady] = useState(false);
+  // Mapbox (~1MB of JS plus tiles) only loads once the map is close to the
+  // viewport, so it never competes with the hero for bandwidth.
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const el = container.current;
+    if (!el || near) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setNear(true);
+      },
+      { rootMargin: "600px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near]);
 
   // Latest onSelectPin, held in a ref so effect 2 doesn't need it in its deps
   // — otherwise every parent render rebuilds all 45 markers and cancels any
@@ -49,7 +64,7 @@ export function StockistMap({
 
   // --- 1. create the map once ------------------------------------------
   useEffect(() => {
-    if (!token || !container.current || map.current) return;
+    if (!token || !near || !container.current || map.current) return;
     let cancelled = false;
 
     (async () => {
@@ -98,7 +113,7 @@ export function StockistMap({
       map.current = null;
       setReady(false);
     };
-  }, [token]);
+  }, [token, near]);
 
   // --- 2. rebuild pins when the list changes ---------------------------
   useEffect(() => {
@@ -124,8 +139,21 @@ export function StockistMap({
         el.style.cursor = "pointer";
         el.style.width = "14px";
         el.style.height = "14px";
+        // Keyboard-reachable: each pin is a button with the shop's name,
+        // so the map isn't mouse-only.
+        el.setAttribute("role", "button");
+        el.tabIndex = 0;
+        el.setAttribute("aria-label", [s.name, s.city].filter(Boolean).join(", "));
+        el.style.borderRadius = "9999px";
         // Lift the selection up to the parent so effect 3 can fly + bloom.
-        el.addEventListener("click", () => onSelectRef.current?.(stockistKey(s)));
+        const select = () => onSelectRef.current?.(stockistKey(s));
+        el.addEventListener("click", select);
+        el.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            select();
+          }
+        });
 
         const dot = document.createElement("div");
         dot.className =
@@ -155,7 +183,7 @@ export function StockistMap({
             </span>
             <a href="${directionsUrl(s)}" target="_blank" rel="noopener noreferrer"
                 style="display:inline-block;margin-top:12px;font-size:12px;letter-spacing:0.03em;color:#e0a94a;text-decoration:underline;text-underline-offset:3px">
-              Directions →
+              Directions <span aria-hidden="true">→</span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"> (opens in a new tab)</span>
             </a>
           </div>`
         )
@@ -306,7 +334,11 @@ export function StockistMap({
   // purple vignette sits on top as the "fog" (real setFog is a globe/3D
   // feature and barely shows on a flat top-down map).
   return (
-    <div className={`relative ${className ?? ""}`}>
+    <div
+      role="region"
+      aria-label="Map of shops that carry Flora & Flame"
+      className={`relative ${className ?? ""}`}
+    >
       <div ref={container} className="h-full w-full" />
       <div
         aria-hidden

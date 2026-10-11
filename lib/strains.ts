@@ -69,6 +69,8 @@ export type Strain = {
   idealTime?: string;
   /** METRC/COA batch code, e.g. "CB040326". */
   batchNumber?: string;
+  /** Certificate of analysis (lab results) PDF, when one is on file. */
+  labReportUrl?: string;
 };
 
 /**
@@ -107,6 +109,7 @@ type DropBatchRow = {
   terpenes: string[] | null;
   ideal_time: string | null;
   batch_number: string | null;
+  lab_report_url: string | null;
   new_until: string | null;
 };
 
@@ -139,11 +142,12 @@ function rowToStrain(row: DropBatchRow): Strain | null {
     terpenes: row.terpenes ?? undefined,
     idealTime: row.ideal_time ?? undefined,
     batchNumber: row.batch_number ?? undefined,
+    labReportUrl: row.lab_report_url || undefined,
   };
 }
 
 const SELECT_COLUMNS =
-  "slug, name, image, nug_image, spectrum, is_current, tags, description, genetics, terpenes, ideal_time, batch_number, new_until";
+  "slug, name, image, nug_image, spectrum, is_current, tags, description, genetics, terpenes, ideal_time, batch_number, lab_report_url, new_until";
 
 /** The batches shown in the homepage's "Latest Drops" section. */
 export async function getCurrentDrops(): Promise<Strain[]> {

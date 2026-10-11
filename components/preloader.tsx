@@ -55,6 +55,9 @@ export function Preloader() {
     <AnimatePresence>
       {!done && (
         <motion.div
+          // Purely decorative and gone in ~1.5s; a screen reader reading
+          // "37%… 52%…" would just be noise.
+          aria-hidden="true"
           exit={{ y: "-100%" }}
           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
           className="fixed inset-0 z-[100] flex flex-col justify-between bg-neutral-900 p-6 sm:p-10"

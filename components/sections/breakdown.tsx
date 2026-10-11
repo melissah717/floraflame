@@ -120,7 +120,7 @@ const CHAPTERS: Chapter[] = [
       {
         n: "04",
         title: "Caryophyllene",
-        body: "Spicy, woody, and peppery. Notable because beta-caryophyllene is studied for interacting with the CB2 receptor.",
+        body: "Spicy, woody, and peppery. Also found in black pepper and cloves, which is where that warm bite in the aroma comes from.",
         icon: Zap,
         accent: RGB.red,
         pct: 25,
@@ -144,14 +144,14 @@ const CHAPTERS: Chapter[] = [
       {
         n: "07",
         title: "Linalool",
-        body: "Floral and lavender-like with a lightly spicy finish. Commonly discussed in calmer, more aromatic terpene mixes.",
+        body: "Floral and lavender-like with a lightly spicy finish. The same aromatic found in lavender and many flowering herbs.",
         icon: Flower2,
         accent: RGB.indica,
       },
       {
         n: "08",
         title: "Humulene",
-        body: "Earthy, woody, and slightly hoppy-bitter. A sesquiterpene also found in hops and under study for anti-inflammatory potential.",
+        body: "Earthy, woody, and slightly hoppy-bitter. A sesquiterpene also found in hops, where it gives beer some of its herbal edge.",
         icon: Leaf,
         accent: RGB.slate,
       },
@@ -179,7 +179,7 @@ const CHAPTERS: Chapter[] = [
       {
         n: "12",
         title: "Nerolidol",
-        body: "Woody and citrusy with a subtle bitter finish. Being explored in the literature for antimicrobial and antiparasitic potential.",
+        body: "Woody and citrusy with a subtle bitter finish. Also found in jasmine, ginger, and tea tree.",
         icon: TreePine,
         accent: RGB.slate,
       },
@@ -930,13 +930,13 @@ function ChapterSideLabel({
     <div className="pointer-events-none absolute top-28 bottom-8 left-[-3.75rem] hidden lg:block">
       <div className="sticky top-28 flex h-[calc(100vh-8rem)] items-center justify-start">
         {disabled ? (
-          <div className="pl-1 text-[13px] tracking-[0.16em] text-neutral-500 uppercase [text-orientation:upright] [writing-mode:vertical-rl]">
+          <div className="pl-1 text-[13px] tracking-[0.16em] text-neutral-400 uppercase [text-orientation:upright] [writing-mode:vertical-rl]">
             <span style={{ color: accent }}>{title.replaceAll(" ", "  ")}</span>
           </div>
         ) : (
           <motion.div
             style={{ opacity, x, filter: blur }}
-            className="pl-1 text-[13px] tracking-[0.16em] text-neutral-500 uppercase [text-orientation:upright] [writing-mode:vertical-rl]"
+            className="pl-1 text-[13px] tracking-[0.16em] text-neutral-400 uppercase [text-orientation:upright] [writing-mode:vertical-rl]"
           >
             <span style={{ color: accent }}>{title.replaceAll(" ", "  ")}</span>
           </motion.div>
@@ -1009,7 +1009,7 @@ function TerpeneStackVisual({
               backgroundSize: "28px 28px",
             }}
           />
-          <div className="flex items-center justify-between text-[9px] tracking-[0.28em] text-neutral-500 uppercase">
+          <div className="flex items-center justify-between text-[9px] tracking-[0.28em] text-neutral-400 uppercase">
             <span>Effects</span>
             <span>Decode</span>
           </div>
@@ -1025,7 +1025,7 @@ function TerpeneStackVisual({
           <div className="relative mt-7 grid gap-3">
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-[1.15rem] bg-white/[0.04] px-3 py-3">
-                <span className="block text-[9px] tracking-[0.2em] text-neutral-500 uppercase">
+                <span className="block text-[9px] tracking-[0.2em] text-neutral-400 uppercase">
                   Cannabinoids
                 </span>
                 <span className="mt-1.5 block font-display text-[1.15rem] leading-none text-neutral-50">
@@ -1036,19 +1036,19 @@ function TerpeneStackVisual({
                 </span>
               </div>
               <div className="rounded-[1.15rem] bg-white/[0.04] px-3 py-3">
-                <span className="block text-[9px] tracking-[0.2em] text-neutral-500 uppercase">
+                <span className="block text-[9px] tracking-[0.2em] text-neutral-400 uppercase">
                   Terpenes
                 </span>
                 <span className="mt-1.5 block font-display text-[1.15rem] leading-none text-neutral-50">
                   Set character
                 </span>
                 <span className="mt-1.5 block text-[13px] leading-relaxed text-neutral-300">
-                  Aroma compounds steer mood, body feel, and clarity.
+                  Aroma compounds that give each strain its smell and flavor.
                 </span>
               </div>
             </div>
             <div className="rounded-[1.15rem] bg-white/[0.03] px-3 py-3">
-              <span className="block text-[9px] tracking-[0.2em] text-neutral-500 uppercase">
+              <span className="block text-[9px] tracking-[0.2em] text-neutral-400 uppercase">
                 Common notes
               </span>
               <div className="mt-3 grid grid-cols-2 gap-2">
@@ -1075,7 +1075,7 @@ function TerpeneStackVisual({
       </div>
       <div className="pointer-events-none mt-3 min-h-[6rem] sm:mt-4">
         <div className="flex min-h-[6rem] w-[14rem] flex-col justify-between rounded-[1.25rem] bg-[#0d0d0f] px-3.5 py-3 shadow-[0_10px_28px_rgb(0_0_0_/_0.22)]">
-          <span className="block text-[13px] tracking-[0.22em] text-neutral-500">
+          <span className="block text-[13px] tracking-[0.22em] text-neutral-400">
             OTHER POPULAR TERPENES
           </span>
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1290,7 +1290,7 @@ function ItemRow({
   )
 
   const numberNode = (
-    <span className="text-xs tracking-[0.04em] text-neutral-500 tabular-nums">
+    <span className="text-xs tracking-[0.04em] text-neutral-400 tabular-nums">
       {item.n}
     </span>
   )
@@ -1560,16 +1560,16 @@ function TerpeneWheelVisual({
             <span className="font-display text-lg leading-none">
               {activeTerpene.item.title}
             </span>
-            <span className="mt-1.5 text-[13px] tracking-[0.18em] text-neutral-500">
+            <span className="mt-1.5 text-[13px] tracking-[0.18em] text-neutral-400">
               {activeTerpene.item.pct}%
             </span>
           </>
         ) : (
           <>
-            <span className="text-[13px] tracking-[0.18em] text-neutral-500">
+            <span className="text-[13px] tracking-[0.18em] text-neutral-400">
               TERPENE
             </span>
-            <span className="text-[13px] tracking-[0.18em] text-neutral-500">
+            <span className="text-[13px] tracking-[0.18em] text-neutral-400">
               PROFILE
             </span>
           </>
@@ -1623,7 +1623,7 @@ function ArcSegment({
         }
       }}
       style={{ cursor: "pointer", opacity: isDimmed ? 0.35 : 1 }}
-      className="transition-opacity duration-200 focus-visible:outline-none"
+      className="transition-opacity duration-200 focus-visible:outline-none focus-visible:[filter:drop-shadow(0_0_1.5px_#fafafa)_drop-shadow(0_0_5px_#fafafa)]"
     >
       <motion.path
         d={d}
@@ -1856,7 +1856,7 @@ function LeaderLine({
         }
       }}
       style={{ cursor: "pointer", opacity: isDimmed ? 0.3 : 1 }}
-      className="transition-opacity duration-200 focus-visible:outline-none"
+      className="transition-opacity duration-200 focus-visible:outline-none focus-visible:[filter:drop-shadow(0_0_1.5px_#fafafa)_drop-shadow(0_0_5px_#fafafa)]"
     >
       <motion.line
         x1={anchor.x}
@@ -1959,7 +1959,7 @@ function ConsumptionVisual({
       style={skipChrome ? { opacity: 1 } : { opacity: wrapOpacity }}
       className="space-y-2.5"
     >
-      <div className="flex gap-8 text-xs tracking-[0.08em] text-neutral-500">
+      <div className="flex gap-8 text-xs tracking-[0.08em] text-neutral-400">
         <span className="w-20 shrink-0" />
         <motion.span
           style={skipChrome ? { x: 0 } : { x: onsetX }}
@@ -2067,7 +2067,7 @@ function ConsumptionBarRow({
             className="h-full origin-left rounded-full transition-[height] duration-200"
           />
         </div>
-        <p className="mt-1.5 text-xs text-neutral-500">
+        <p className="mt-1.5 text-xs text-neutral-400">
           {item.stat.onset.label}
         </p>
       </div>
@@ -2081,7 +2081,7 @@ function ConsumptionBarRow({
             className="h-full origin-left rounded-full"
           />
         </div>
-        <p className="mt-1.5 text-xs text-neutral-500">
+        <p className="mt-1.5 text-xs text-neutral-400">
           {item.stat.duration.label}
         </p>
       </div>

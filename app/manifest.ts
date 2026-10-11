@@ -8,14 +8,11 @@ export default function manifest(): MetadataRoute.Manifest {
       "Small-batch, no-till living soil cannabis grown in Oakland, CA.",
     start_url: "/",
     display: "standalone",
-    background_color: "#faf8f4",
+    background_color: "#171717",
     theme_color: "#000000",
     icons: [
-      {
-        src: "/logo.png",
-        sizes: "any",
-        type: "image/png",
-      },
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
   };
 }

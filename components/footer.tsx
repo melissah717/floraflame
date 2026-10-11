@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { NewsletterSignup } from "@/components/newsletter-signup";
-import { PrivacyPolicyModal, TermsModal } from "@/components/legal-modals";
 import { MarqueeReel } from "@/components/sections/marquee-reel";
 
 export function SiteFooter() {
@@ -35,6 +34,7 @@ export function SiteFooter() {
                 ["Contact", "/#contact"],
                 ["Strains", "/strains"],
                 ["Learn", "/learn"],
+                ["The Knowledge", "/learn/the-knowledge"],
                 ["Merch", "/merch"],
               ].map(([label, href]) => (
                 <li key={label}>
@@ -55,7 +55,7 @@ export function SiteFooter() {
             </p>
             <ul className="mt-4 space-y-2 text-sm">
               {[
-                ["Instagram", "https://instagram.com/floraandflameca"],
+                ["Instagram", "https://www.instagram.com/floraandflameca/"],
                 ["YouTube", "https://www.youtube.com/@FloraFlameCA"],
                 ["Weedmaps", "https://weedmaps.com/brands/flora-flame"],
               ].map(([label, href]) => (
@@ -67,6 +67,7 @@ export function SiteFooter() {
                     className="text-neutral-400 transition-colors hover:text-neutral-50"
                   >
                     {label}
+                    <span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 </li>
               ))}
@@ -75,32 +76,64 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-16 border-t border-neutral-800 pt-6">
-          {/* California Prop 65 — OEHHA safe-harbor warning for cannabis
-              products. Required disclosure, not a stylistic choice. */}
-          <p className="max-w-3xl text-xs leading-relaxed text-neutral-400">
-            <span className="font-semibold text-neutral-200">WARNING:</span>{" "}
-            This product can expose you to chemicals including marijuana
-            smoke, which is known to the State of California to cause
-            cancer, and delta-9-tetrahydrocannabinol (THC), which is known
-            to the State of California to cause birth defects or other
-            reproductive harm. For more information go to{" "}
+          {/*
+            California Prop 65 — OEHHA's safe-harbor warning for cannabis
+            smoke and THC (27 CCR § 25607.39, in force since Oct 2022). The
+            wording, the bold all-caps WARNING and the yellow triangle are
+            all part of the safe harbor; don't paraphrase or restyle them.
+          */}
+          <p className="max-w-3xl text-xs leading-relaxed text-neutral-300">
+            <svg
+              viewBox="0 0 24 21"
+              role="img"
+              aria-label="Warning symbol"
+              className="mr-1.5 inline-block h-3.5 w-4 -translate-y-px align-middle"
+            >
+              <path d="M12 1 23 20H1Z" fill="#facc15" stroke="#000" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M12 7.5v6" stroke="#000" strokeWidth="2.2" strokeLinecap="round" />
+              <circle cx="12" cy="16.6" r="1.25" fill="#000" />
+            </svg>
+            <strong className="font-bold text-neutral-50">WARNING:</strong>{" "}
+            Smoking cannabis increases your cancer risk and during pregnancy
+            exposes your child to delta-9-THC and other chemicals that can
+            affect your child&apos;s birthweight, behavior, and learning
+            ability. For more information go to{" "}
             <a
-              href="https://www.p65warnings.ca.gov"
+              href="https://www.p65warnings.ca.gov/cannabis"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="underline hover:text-neutral-50"
             >
-              www.P65Warnings.ca.gov
+              www.P65Warnings.ca.gov/cannabis
+              <span className="sr-only"> (opens in a new tab)</span>
             </a>
             .
           </p>
 
-          <div className="mt-6 flex flex-col gap-4 text-[13px] uppercase tracking-[0.18em] text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
+          <p className="mt-4 max-w-3xl text-xs leading-relaxed text-neutral-400">
+            For use only by adults 21 and older. Keep out of reach of
+            children. Flora &amp; Flame products are sold only through
+            state-licensed California retailers; we don&apos;t sell or ship
+            cannabis online.
+          </p>
+
+          <div className="mt-6 flex flex-col gap-4 text-[13px] uppercase tracking-[0.18em] text-neutral-400 lg:flex-row lg:items-center lg:justify-between">
             <span>© {new Date().getFullYear()} Flora &amp; Flame</span>
-            <div className="flex gap-5">
-              <PrivacyPolicyModal />
-              <TermsModal />
-            </div>
+            <nav aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-2">
+              {[
+                ["Privacy Policy", "/privacy"],
+                ["Terms", "/terms"],
+                ["Accessibility", "/accessibility"],
+              ].map(([label, href]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="transition-colors hover:text-neutral-50"
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
             <span>License #C120000449-LIC · 21+ only</span>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 
 /* ------------------------------------------------------------------ */
@@ -42,7 +43,14 @@ export function useLenis(): Lenis | null {
  * Drop <SmoothScroll /> once, near the top of app/layout.tsx.
  */
 export function SmoothScroll() {
+  useScrollToTopOnNavigate();
+
   useEffect(() => {
+    // Momentum scrolling is exactly the kind of motion Reduce Motion asks
+    // to switch off, so those visitors get the browser's native scroll.
+    // Everything that reads useLenis() already handles null.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     const lenis = new Lenis({
       // Higher = longer glide after release. 1.2s is the sweet spot for
       // most sites — cinematic without feeling floaty.
@@ -72,4 +80,56 @@ export function SmoothScroll() {
   }, []);
 
   return null;
+}
+/**
+ * Every new page starts at the top.
+ *
+ * Next.js scrolls to the top on navigation by itself, but Lenis keeps its
+ * own idea of the scroll position: following a link from halfway down the
+ * home page, Lenis carried that position onto the new page and dropped you
+ * near its bottom. So on each pathname change, jump both Lenis and the
+ * window to 0, instantly (no glide).
+ *
+ * Two exceptions, both left to the browser:
+ *   – Back/Forward, which should return you to where you were.
+ *   – Links with a #hash (e.g. /#contact), which should land on that spot.
+ */
+function useScrollToTopOnNavigate() {
+  const pathname = usePathname();
+  const lenis = useLenis();
+  const fromHistory = useRef(false);
+  const first = useRef(true);
+
+  useEffect(() => {
+    const onPop = () => {
+      fromHistory.current = true;
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  useEffect(() => {
+    // Initial load: the browser's own restore/anchor handling applies.
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    if (fromHistory.current) {
+      fromHistory.current = false;
+      return;
+    }
+    if (window.location.hash) return;
+
+    const toTop = () => {
+      lenis?.scrollTo(0, { immediate: true, force: true });
+      window.scrollTo(0, 0);
+    };
+    toTop();
+    // Once more after paint: Next's own scroll handling and late layout
+    // (images, pinned sections measuring themselves) can nudge it.
+    const id = requestAnimationFrame(toTop);
+    return () => cancelAnimationFrame(id);
+    // Only on navigation; a Lenis instance appearing isn't a navigation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 }

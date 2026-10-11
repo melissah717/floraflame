@@ -11,6 +11,7 @@ import {
 } from "motion/react"
 import { cn } from "@/lib/utils"
 import { useLenis } from "@/components/smooth-scroll"
+import { PauseButton } from "@/components/pause-button"
 
 /**
  * Scroll-snapped chapter carousel for the farm page.
@@ -116,6 +117,8 @@ export function FarmChapters() {
   const activeRef = useRef(0)
   const [active, setActive] = useState(0)
   const [tick, setTick] = useState(0)
+  // Pause for the slideshow and chapter video (WCAG 2.2.2).
+  const [paused, setPaused] = useState(false)
   const reduce = useReducedMotion()
   const lenis = useLenis()
 
@@ -142,10 +145,10 @@ export function FarmChapters() {
 
   // One shared clock for the hard-cut slideshow in the active frame.
   useEffect(() => {
-    if (reduce) return
+    if (reduce || paused) return
     const id = window.setInterval(() => setTick((t) => t + 1), FRAME_HOLD_MS)
     return () => window.clearInterval(id)
-  }, [reduce])
+  }, [reduce, paused])
 
   /** Page-Y of chapter i's snap point, and the stage height. */
   const measure = () => {
@@ -284,7 +287,10 @@ export function FarmChapters() {
         {/* LEFT — vertical track of padded frames */}
         <div className="relative h-1/2 w-full overflow-hidden md:h-full md:w-1/2">
           <motion.div
-            style={reduce ? undefined : { y: shift }}
+            // The tracks follow the scroll even with Reduce Motion on: the
+            // movement is the user's own scrolling, and without it every
+            // chapter after the first was unreachable.
+            style={{ y: shift }}
             className="flex h-full w-full flex-col will-change-transform"
           >
             {CHAPTERS.map((c, i) => (
@@ -303,7 +309,7 @@ export function FarmChapters() {
         {/* RIGHT — horizontal track of feature media */}
         <div className="relative h-1/2 w-full overflow-hidden md:h-full md:w-1/2">
           <motion.div
-            style={reduce ? undefined : { x: shift }}
+            style={{ x: shift }}
             className="flex h-full w-full will-change-transform"
           >
             {CHAPTERS.map((c, i) => (
@@ -311,6 +317,7 @@ export function FarmChapters() {
                 key={c.title}
                 feature={c.feature}
                 isActive={i === active}
+                paused={paused}
                 priority={i === 0}
               />
             ))}
@@ -333,6 +340,12 @@ export function FarmChapters() {
           ))}
         </div>
 
+        <PauseButton
+          paused={paused}
+          onToggle={() => setPaused((p) => !p)}
+          label="slideshow and video"
+          className="absolute bottom-4 right-4 z-20 sm:bottom-6 sm:right-6"
+        />
       </div>
     </div>
   )
@@ -379,10 +392,12 @@ function FrameCell({
 function FeatureCell({
   feature,
   isActive,
+  paused,
   priority,
 }: {
   feature: Feature
   isActive: boolean
+  paused: boolean
   priority: boolean
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -392,12 +407,12 @@ function FeatureCell({
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
-    if (isActive) {
+    if (isActive && !paused) {
       v.play().catch(() => {})
     } else {
       v.pause()
     }
-  }, [isActive])
+  }, [isActive, paused])
 
   return (
     <div className="relative h-full w-full shrink-0 overflow-hidden bg-black">

@@ -24,8 +24,6 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: "/merch" },
   robots: { index: false, follow: true },
-  openGraph: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
-  twitter: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
 }
 
 export default function MerchPage() {

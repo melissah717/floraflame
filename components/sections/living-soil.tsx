@@ -139,15 +139,13 @@ export function LivingSoil() {
               {HEADLINE.split(" ").map((word, index, words) => (
                 <Fragment key={`${word}-${index}`}>
                   <HeroWord word={word} index={index} disabled={!!reduce} />
-                  {/* Each word is its own inline-block span (for the
-                      slide-up reveal) with no actual whitespace text node
-                      between them, so browsers have nowhere to break the
-                      line — invisible on desktop where the sentence fits
-                      on one line anyway, but on mobile it can't wrap and
-                      silently overflows past the hero's overflow-hidden.
-                      wbr is an explicit, invisible break opportunity —
-                      exactly this case — without adding real spacing. */}
-                  {index < words.length - 1 && <wbr />}
+                  {/* A real space between the inline-block words: it's the
+                      line-break opportunity on mobile, and it keeps the
+                      heading's text "Living soil is a whole system." for
+                      screen readers and search engines. (A <wbr /> plus a
+                      spacer span looked the same but read as one long
+                      word: "Livingsoilisawholesystem.") */}
+                  {index < words.length - 1 && " "}
                 </Fragment>
               ))}
             </h1>
@@ -329,7 +327,7 @@ function SoilProfile({
       className="relative mx-auto w-full max-w-[29rem]"
     >
       <div className="relative overflow-hidden rounded-[1.5rem] border border-neutral-800 bg-[#0b0a08] p-4 shadow-[0_32px_90px_rgb(0_0_0_/_0.5)] sm:p-5">
-        <div className="flex items-center justify-between text-[13px] tracking-[0.22em] text-neutral-500 uppercase">
+        <div className="flex items-center justify-between text-[13px] tracking-[0.22em] text-neutral-400 uppercase">
           <span>Living Soil</span>
           <span>Ingredients</span>
         </div>
@@ -363,7 +361,7 @@ function SoilProfile({
             <div className="relative flex h-full items-center justify-between gap-5">
               <div>
                 <p className="font-display text-3xl leading-none">Soil</p>
-                <p className="mt-2 text-[13px] tracking-[0.22em] text-neutral-500 uppercase">
+                <p className="mt-2 text-[13px] tracking-[0.22em] text-neutral-400 uppercase">
                   Living inputs
                 </p>
               </div>
@@ -462,7 +460,7 @@ function SoilSigil({
                 style={{ backgroundColor: withAlpha(sigil.color, 0.62) }}
               />
             </div>
-            <span className="text-[13px] tracking-[0.2em] text-neutral-600 tabular-nums">
+            <span className="text-[13px] tracking-[0.2em] text-neutral-400 tabular-nums">
               0{index + 1}
             </span>
           </div>
@@ -476,7 +474,7 @@ function SoilSigil({
             <p className={hasSelection && !isSelected ? "font-display text-xl leading-none" : "font-display text-2xl leading-none"}>
               {sigil.label}
             </p>
-            <p className="mt-2 text-[13px] tracking-[0.22em] text-neutral-500 uppercase">
+            <p className="mt-2 text-[13px] tracking-[0.22em] text-neutral-400 uppercase">
               {sigil.note}
             </p>
             {isSelected && (
@@ -547,7 +545,7 @@ function SoilSystemVisual({
         }}
       />
 
-      <p className="relative text-[13px] tracking-[0.22em] text-neutral-500 uppercase">
+      <p className="relative text-[13px] tracking-[0.22em] text-neutral-400 uppercase">
         The cycle
       </p>
 
@@ -609,7 +607,7 @@ function SoilFlowStep({
       </div>
       <div className="pt-1.5">
         <p className="font-display text-lg leading-none">{step.label}</p>
-        <p className="mt-1.5 text-xs leading-relaxed text-neutral-500">{step.note}</p>
+        <p className="mt-1.5 text-xs leading-relaxed text-neutral-400">{step.note}</p>
       </div>
     </motion.div>
   );
@@ -648,11 +646,11 @@ function PrincipleRow({
         style={disabled ? undefined : { y, opacity }}
         className="grid gap-5 lg:grid-cols-[5rem_minmax(0,0.9fr)_minmax(0,1.2fr)] lg:gap-8"
       >
-        <span className="text-xs tabular-nums tracking-[0.16em] text-neutral-500">
+        <span className="text-xs tabular-nums tracking-[0.16em] text-neutral-400">
           {point.n}
         </span>
         <div>
-          <p className="text-[13px] tracking-[0.18em] text-neutral-500 uppercase">
+          <p className="text-[13px] tracking-[0.18em] text-neutral-400 uppercase">
             {point.eyebrow}
           </p>
           <h3 className="mt-2 font-display text-3xl leading-tight">
@@ -698,7 +696,6 @@ function HeroWord({
     return (
       <span className="inline-block whitespace-nowrap">
         {word}
-        <span className="inline-block w-[0.24em]" />
       </span>
     );
   }
@@ -719,7 +716,6 @@ function HeroWord({
         className="inline-block whitespace-nowrap"
       >
         {word}
-        <span className="inline-block w-[0.24em]" />
       </motion.span>
     </span>
   );

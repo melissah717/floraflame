@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { FindUs } from "@/components/sections/find-us";
 import { fetchStockists } from "@/lib/stockists";
+import { BreadcrumbJsonLd } from "@/lib/json-ld";
+import { StockistDirectory } from "@/components/stockist-directory";
 
 /**
  * /find-us — the same map and search as the home page section, at its own
@@ -22,8 +24,6 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: "/find-us" },
-    openGraph: { title: `${title} | Flora & Flame`, description },
-    twitter: { title: `${title} | Flora & Flame`, description },
   };
 }
 
@@ -31,7 +31,9 @@ export default function FindUsPage() {
   // pt-20 clears the fixed nav; the section brings its own padding below.
   return (
     <div className="bg-neutral-900 pt-20 text-neutral-50">
+      <BreadcrumbJsonLd trail={[["Find Us", "/find-us"]]} />
       <FindUs headingLevel="h1" />
+      <StockistDirectory />
     </div>
   );
 }

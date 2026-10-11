@@ -205,8 +205,11 @@ export function FindUsClient({
 
         <Reveal delay={0.1}>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <form onSubmit={runSearch} className="flex flex-1 gap-2">
+            <form onSubmit={runSearch} role="search" className="flex flex-1 gap-2">
               <input
+                type="search"
+                name="location"
+                autoComplete="postal-code"
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -214,18 +217,19 @@ export function FindUsClient({
                 }}
                 placeholder="City or zip, try SF, Oakland, 95351"
                 aria-label="Search by city or zip"
-                className="w-full border-0 border-b border-neutral-600 bg-transparent px-0 py-3 text-lg outline-none transition-colors placeholder:text-neutral-500 focus:border-neutral-50 sm:text-xl"
+                className="w-full border-0 border-b border-neutral-500 bg-transparent px-0 py-3 text-lg outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-50 sm:text-xl"
               />
               <button
                 type="submit"
                 disabled={searching}
-                className="shrink-0 rounded-full bg-neutral-50 px-7 py-3.5 text-base text-neutral-900 transition-colors hover:bg-neutral-200 disabled:opacity-60"
+                className="shrink-0 rounded-full bg-neutral-50 px-7 py-3.5 text-base text-neutral-900 transition-colors hover:bg-neutral-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-50 disabled:opacity-60"
               >
                 {searching ? "Searching…" : "Search"}
               </button>
             </form>
 
             <button
+              type="button"
               onClick={useMyLocation}
               className="shrink-0 text-base text-neutral-400 underline-offset-4 transition-colors hover:text-neutral-50 hover:underline sm:ml-4"
             >
@@ -234,6 +238,9 @@ export function FindUsClient({
           </div>
         </Reveal>
 
+        {/* One live region for every outcome, so a screen reader hears
+            what the search did without having to go looking. */}
+        <div role="status" aria-live="polite">
         {geoState === "denied" && (
           <p className="mt-3 text-base text-neutral-400">
             Couldn&apos;t get your location, search by city or zip instead.
@@ -250,8 +257,12 @@ export function FindUsClient({
         {originLabel && !noMatch && (
           <p className="mt-4 text-base text-neutral-400">
             Nearest to <span className="text-neutral-50">{originLabel}</span>
+            <span className="sr-only">
+              : {shown.length} {shown.length === 1 ? "shop" : "shops"} listed below the map.
+            </span>
           </p>
         )}
+        </div>
 
         {/* Pins come from `shown`, so the map and list always agree. */}
         <Reveal delay={0.1}>
@@ -363,37 +374,42 @@ function StockistCard({
   return (
     <div className="flex items-start justify-between gap-6 border-t border-neutral-700 py-6">
       <div className="min-w-0">
-        <button
-          // Explicit type. A <button> with no type defaults to "submit",
-          // which triggers form behaviour and unexpected scrolling if it
-          // ever ends up inside a form.
-          type="button"
-          onClick={onSelect}
-          className="group flex items-baseline text-left"
-        >
-          <motion.h3
-            animate={{
-              // Archivo is a variable font, so weight is a continuous
-              // axis — 800 → 900 reads as emphasis, not a swap to a
-              // different typeface.{}
-              fontWeight: isSelected ? 900 : 800,
-              color: isSelected ? ACCENT : "#faf8f4",
-            }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            className="font-display text-2xl transition-opacity group-hover:opacity-60"
+        {/* Heading wraps the button (not the other way round) so it still
+            counts as a heading; aria-pressed says whether it's selected. */}
+        <h3 className="font-display text-2xl">
+          <button
+            // Explicit type. A <button> with no type defaults to "submit",
+            // which triggers form behaviour and unexpected scrolling if it
+            // ever ends up inside a form.
+            type="button"
+            onClick={onSelect}
+            aria-pressed={isSelected}
+            className="group flex items-baseline text-left"
           >
-            {stockist.name}
-          </motion.h3>
+            <motion.span
+              animate={{
+                // Archivo is a variable font, so weight is a continuous
+                // axis — 800 → 900 reads as emphasis, not a swap to a
+                // different typeface.
+                fontWeight: isSelected ? 900 : 800,
+                color: isSelected ? ACCENT : "#faf8f4",
+              }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="transition-opacity group-hover:opacity-60"
+            >
+              {stockist.name}
+            </motion.span>
 
-          {typeof stockist.miles === "number" && (
-            <span className="ml-3 shrink-0 text-sm tabular-nums text-neutral-400">
-              {stockist.miles < 10
-                ? stockist.miles.toFixed(1)
-                : Math.round(stockist.miles)}{" "}
-              mi
-            </span>
-          )}
-        </button>
+            {typeof stockist.miles === "number" && (
+              <span className="ml-3 shrink-0 font-sans text-sm font-normal tabular-nums text-neutral-400">
+                {stockist.miles < 10
+                  ? stockist.miles.toFixed(1)
+                  : Math.round(stockist.miles)}{" "}
+                mi
+              </span>
+            )}
+          </button>
+        </h3>
 
         <p className="mt-1 text-base text-neutral-400">
           {location}
@@ -412,7 +428,8 @@ function StockistCard({
         className="group mt-1 inline-flex shrink-0 items-center gap-2 text-base tracking-[0.02em] text-neutral-400 transition-colors hover:text-neutral-50"
       >
         Directions
-        <span className="transition-transform duration-300 group-hover:translate-x-1">
+        <span className="sr-only"> to {stockist.name} (opens in a new tab)</span>
+        <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-1">
           →
         </span>
       </a>

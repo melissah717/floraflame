@@ -31,7 +31,11 @@ export default function SiteLayout({
       <Preloader />
       <SmoothScroll />
       <Navbar />
-      <main id="main-content">{children}</main>
+      {/* tabIndex -1 lets the skip link and the age gate move focus here
+          programmatically without adding it to the Tab order. */}
+      <main id="main-content" tabIndex={-1} className="outline-none">
+        {children}
+      </main>
       <SiteFooter />
     </>
   );

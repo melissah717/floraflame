@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   motion,
   useInView,
@@ -12,6 +13,7 @@ import {
   type MotionValue,
 } from "motion/react";
 import { Reveal } from "@/components/scroll-primitives";
+import { PauseButton } from "@/components/pause-button";
 
 /**
  * About — scroll TRIGGERS each step; the steps themselves play on timers,
@@ -142,6 +144,15 @@ const IMAGES = [
   `${CLOUD}/v1786660988/about-4_exdoyo.webp`,
 ];
 
+/** Alt text for IMAGES, same order. Describes what's in each photo, so
+ * the images are found in image search and make sense read aloud. */
+const IMAGE_ALTS = [
+  "Growers walking a canopy of cannabis plants under grow lights in the Oakland grow room",
+  "A grower on a lift raising a freshly harvested cannabis plant overhead",
+  "Gloved growers hanging harvested cannabis branches on a drying rack",
+  "A grower tending young cannabis plants in mulched living soil beds",
+];
+
 /**
  * ── `sizes` and the object-cover trap ──
  *
@@ -234,12 +245,17 @@ export function About() {
   // iOS Safari can refuse muted autoplay on a video React created on the
   // client. Re-assert muted and start it explicitly.
   const videoElRef = useRef<HTMLVideoElement>(null);
+  // Only plays while near the viewport: no decoding a 1600px video
+  // offscreen, and the download doesn't compete with the hero on load.
+  const videoNear = useInView(videoRef, { margin: "300px 0px" });
+  const [videoPaused, setVideoPaused] = useState(false);
   useEffect(() => {
     const v = videoElRef.current;
     if (!v) return;
     v.muted = true;
-    v.play().catch(() => {});
-  }, []);
+    if (videoNear && !videoPaused) v.play().catch(() => {});
+    else v.pause();
+  }, [videoNear, videoPaused]);
   // Keyhole: opens once, when most of it is on screen.
   const videoOpen = useInView(videoRef, { amount: 0.55, once: true });
 
@@ -310,12 +326,12 @@ export function About() {
             // Plays with Reduce Motion on too: it's a slow, muted, ambient
             // loop, and the setting already removes the scroll animation
             // around it. Before, the section showed a frozen poster.
-            autoPlay
             ref={videoElRef}
             muted
             loop
             playsInline
-            preload="auto"
+            preload="none"
+            aria-hidden="true"
             poster="https://res.cloudinary.com/g0mcdcfr/video/upload/so_0,q_auto,w_1200/v1786661231/About_drone_i8aaia.jpg"
           >
             <source
@@ -323,6 +339,12 @@ export function About() {
               type="video/mp4"
             />
           </motion.video>
+          <PauseButton
+            paused={videoPaused}
+            onToggle={() => setVideoPaused((p) => !p)}
+            label="drone video"
+            className="absolute bottom-5 right-5 sm:bottom-8 sm:right-8"
+          />
         </div>
       </div>
 
@@ -373,7 +395,7 @@ export function About() {
               style={{ left: ROW_LEFT[idx], top: ROW_TOP, width: ROW_W, height: ROW_H }}
               className="absolute overflow-hidden"
             >
-              <Image src={IMAGES[idx]} alt="" fill sizes={SIZES_ROW} className="object-cover" />
+              <Image src={IMAGES[idx]} alt={IMAGE_ALTS[idx]} fill sizes={SIZES_ROW} className="object-cover" />
               {/* Dim overlay — permanent on the exiting panels, so blurb reads. */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10" />
               {/* Blurb, bottom of panel */}
@@ -397,6 +419,7 @@ export function About() {
           >
             <HeroPhoto
               src={IMAGES[0]}
+              alt={IMAGE_ALTS[0]}
               sizes={SIZES_HERO}
               grown={desktopGrown}
               y={p1ImgY}
@@ -442,7 +465,7 @@ export function About() {
                   className="absolute inset-0 flex items-center justify-center px-[6vw]"
                 >
                   <div className="flex max-w-[75ch] flex-col items-center gap-[1em]">
-                    <p className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-neutral-300">
+                    <p className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-neutral-200">
                       About Us
                     </p>
                     {ABOUT_PARAGRAPHS.map((text, i) => (
@@ -454,6 +477,16 @@ export function About() {
                         {text}
                       </p>
                     ))}
+                    {/* Out of the Tab order until the story is showing, so
+                        keyboard focus never lands on an invisible link. */}
+                    <Link
+                      href="/learn/the-soil"
+                      tabIndex={desktopGrown ? undefined : -1}
+                      aria-hidden={desktopGrown ? undefined : true}
+                      className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-neutral-50 underline underline-offset-[6px]"
+                    >
+                      How living soil works
+                    </Link>
                   </div>
                 </motion.div>
               </>
@@ -480,7 +513,7 @@ export function About() {
               >
                 <Image
                   src={IMAGES[idx]}
-                  alt=""
+                  alt={IMAGE_ALTS[idx]}
                   fill
                   sizes={isLast ? SIZES_MOBILE_HERO : SIZES_MOBILE_ROW}
                   className="object-cover"
@@ -514,6 +547,12 @@ export function About() {
               </p>
             </Reveal>
           ))}
+          <Link
+            href="/learn/the-soil"
+            className="self-start text-sm font-semibold uppercase tracking-[0.18em] text-neutral-50 underline underline-offset-[6px]"
+          >
+            How living soil works
+          </Link>
         </div>
       </div>
     </section>
@@ -528,6 +567,7 @@ export function About() {
  */
 function HeroPhoto({
   src,
+  alt,
   sizes,
   grown,
   y,
@@ -535,6 +575,7 @@ function HeroPhoto({
   position = "center",
 }: {
   src: string;
+  alt: string;
   /** object-position for the crop. */
   position?: string;
   sizes: string;
@@ -555,7 +596,7 @@ function HeroPhoto({
       }}
       className="absolute inset-x-0 will-change-transform"
     >
-      <Image src={src} alt="" fill sizes={sizes} className="object-cover" style={{ objectPosition: position }} />
+      <Image src={src} alt={alt} fill sizes={sizes} className="object-cover" style={{ objectPosition: position }} />
     </motion.div>
   );
 }

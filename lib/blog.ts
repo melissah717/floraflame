@@ -62,6 +62,15 @@ export const BLOG_POSTS: BlogPost[] = [
 ];
 
 /**
+ * True for the stand-in rows above. They only exist so the index doesn't
+ * render empty during an outage, so they're kept out of the sitemap and
+ * marked noindex — otherwise Google could index a "fetch is failing" page.
+ */
+export function isPlaceholderPost(post: BlogPost) {
+  return BLOG_POSTS.includes(post);
+}
+
+/**
  * Title → URL segment. Shared with the admin, which offers it as the
  * default slug for a new post but lets you override it — so renaming a
  * post's title later doesn't have to break its URL.

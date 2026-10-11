@@ -3,17 +3,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Reveal } from "@/components/scroll-primitives";
+import { BreadcrumbJsonLd } from "@/lib/json-ld";
 
-const TITLE = "Learn"
+const TITLE = "Learn About Living Soil Cannabis"
 const DESCRIPTION =
-  "Cannabinoids and terpenes, the no-till growing method, life inside the Oakland facility, and notes from the grow, all in one place."
+  "Cannabinoids and terpenes, how no-till living soil works, a look inside our Oakland grow, and notes from the garden, from a small-batch California cultivator."
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/learn" },
-  openGraph: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
-  twitter: { title: `${TITLE} | Flora & Flame`, description: DESCRIPTION },
 }
 
 const IMG = "https://res.cloudinary.com/g0mcdcfr/image/upload";
@@ -65,6 +64,7 @@ const GUTTER = "px-5 sm:px-8 lg:px-14";
 export default function LearnPage() {
   return (
     <div className={`bg-neutral-900 pb-24 pt-32 text-neutral-50 sm:pb-32 sm:pt-48 ${GUTTER}`}>
+      <BreadcrumbJsonLd trail={[["Learn", "/learn"]]} />
       <Reveal>
         <h1 className="max-w-[16ch] font-display uppercase leading-[0.88] tracking-[-0.03em] text-[clamp(2.5rem,7vw,6.5rem)]">
           More than what&apos;s on the label
