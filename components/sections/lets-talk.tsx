@@ -115,8 +115,6 @@ export function LetsTalk({ children }: { children?: ReactNode }) {
         initial={reduce ? false : "hidden"}
         whileInView="show"
         viewport={VIEWPORT}
-        // Soft magnet: resting near the form glides it to the centre.
-        data-snap="center"
         className="relative mx-auto w-full max-w-[760px]"
       >
         {/* ── DESKTOP artwork (xl+) ── */}

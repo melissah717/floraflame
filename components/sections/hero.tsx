@@ -21,7 +21,7 @@ import {
  * On scroll: the whole section pins for ~1.5 viewports thanks to the tall
  * wrapper — hero gets its own scroll time before the next section starts
  * covering.
- * No fancy scale/opacity — just plain sticky pinning.
+ * No pin: the hero is one screen and the page scrolls straight on.
  */
 
 const LINES = ["no till", "living soil", "oakland ca"];
@@ -90,13 +90,10 @@ export function Hero() {
   const cueOpacity = useTransform(scrollY, [0, h * 0.12], [1, 0]);
 
   return (
-    // Tall wrapper = longer sticky pin. Desktop keeps the long pin; on
-    // phones the same 180vh was most of two screens of nothing happening
-    // before the next section started to cover, so it's cut to a short
-    // beat there.
-    // Must stay longer than DOCK_END (500px) so the wordmark finishes
-    // docking while the hero is still pinned.
-    <div data-snap-pin="full" data-snap-handoff className="relative h-[108svh] lg:h-[160vh]">
+    // One screen, no pin: the page scrolls straight on from the hero. The
+    // wordmark docks on a trigger (see docking-logo.tsx), so it no longer
+    // needs scroll room here.
+    <div className="relative h-svh">
       <section className="sticky top-0 h-svh overflow-hidden bg-neutral-900">
         <motion.div
           style={reduce ? undefined : { y: contentY }}

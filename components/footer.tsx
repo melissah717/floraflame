@@ -31,7 +31,7 @@ export function SiteFooter() {
                 ["Home", "/"],
                 ["Latest Drops", "/#drops"],
                 ["About", "/#about"],
-                ["Find Us", "/#find-us"],
+                ["Find Us", "/find-us"],
                 ["Contact", "/#contact"],
                 ["Strains", "/strains"],
                 ["Learn", "/learn"],

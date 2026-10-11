@@ -12,66 +12,66 @@ import {
   type MotionValue,
 } from "motion/react";
 import { Reveal } from "@/components/scroll-primitives";
-import { useIsMobile } from "@/hooks/use-is-mobile";
 
 /**
- * About — three acts, same shape on desktop and mobile.
+ * About — scroll TRIGGERS each step; the steps themselves play on timers,
+ * so how fast or unevenly you scroll never changes how they look.
  *
- *   1. Keyhole video opens up (unchanged).
- *   2. DESKTOP: LIVING SOIL hits → 4 photos row → photos 2-4 slide up →
- *      photo 1 grows into a big inset frame that fills the viewport, holds
- *      a beat, then the stage unpins and scrolls off. As it leaves, the
- *      photo inside the frame drifts slower than the frame (parallax), the
- *      way Lightship's hero visual does.
- *   3. MOBILE: same idea rotated 90°, but TRIGGERED rather than scrubbed.
- *      The keyhole opens on a timer when it scrolls into view. The photo
- *      stack pins for half a screen; a short scroll in, the three photos
- *      leave and photo 1 grows into the inset frame on a timer, then it
- *      unpins with the same parallax. Touch scroll events arrive late and
- *      in bursts, so tying layout to them frame by frame stuttered, and the
- *      long pins it needed were a lot of thumb travel for one idea.
- *   4. BOTH: the three paragraphs follow in normal flow underneath, set
- *      large and tight (Lightship's "From our aerodynamic profile…" block)
- *      and left to scroll naturally under the site's momentum scroll.
+ *   1. Drone video (one screen, no pin): the keyhole opens by itself once
+ *      most of it is on screen.
+ *   2. DESKTOP (pins for one extra screen): LIVING SOIL stamps in as the
+ *      stage arrives; a short scroll in sends the photo row away and grows
+ *      photo 1 to fill the whole screen; the tint and the story then fade
+ *      up over it (restaurantflore.com's menu section). The rest of the pin
+ *      is reading time, with the text drifting slowly.
+ *   3. PHONES: four full-width photos in normal flow; the last grows to
+ *      full size by itself once it's in view. The story follows below.
+ *
+ * Reduce Motion: no pins, nothing moves; all four photos and the story
+ * text are shown in their resting layout.
  *
  * STICKY TRAP: the tall wrappers must NOT have an overflow-hidden ancestor.
  */
 
 // ── keyhole knobs ──
-// Desktop pins for a screen while the keyhole scrubs open. Below lg there is
-// no pin at all: one screen tall, opens on a timer when it comes into view.
-const SCROLL_LENGTH = "h-svh lg:h-[200vh] lg:motion-reduce:h-screen";
+// One screen tall at every size, no pin: the video opens on a timer the
+// moment most of it is on screen, instead of being scrubbed open by scroll.
+const SCROLL_LENGTH = "h-svh lg:h-screen";
 const KEYHOLE_CLOSED = `inset(${28}% ${30}% ${28}% ${30}% round ${14}px)`;
 const KEYHOLE_OPEN = "inset(0% 0% 0% 0% round 0px)";
 const KEYHOLE_OPEN_SEC = 1.1;
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
-const OPEN_END = 0.65;
-const START_INSET_X = 30;
-const START_INSET_Y = 28;
-const START_RADIUS = 14;
 
 // ── DESKTOP row → hero knobs ──
-// The paragraph phase no longer lives inside the pinned stage, so the
-// wrapper is shorter: hits → rest → exit → grow → a short hold → unpin.
-const ABOUT_SCROLL_LENGTH = "h-[290vh] motion-reduce:h-screen";
-const ROW_LEFT = ["7vw", "29vw", "51vw", "73vw"];
+// The stage pins for one extra screen, and the scroll only TRIGGERS its
+// steps; the steps themselves play on timers. LIVING SOIL stamps in as the
+// stage arrives, a short scroll in sends the row away and grows photo 1 to
+// fill the whole screen, then the tint and story fade up over it. The rest
+// of the pin is reading time, with the text drifting slowly.
+const ABOUT_SCROLL_LENGTH = "h-[200vh] motion-reduce:h-screen";
+// Full-bleed row: four photos edge to edge with a hairline gap between
+// them (0.4vw ≈ 6px at 1440). (100 − 3 × 0.4) / 4 = 24.7vw each.
+const ROW_LEFT = ["0vw", "25.1vw", "50.2vw", "75.3vw"];
 const ROW_TOP = "37vh";
-const ROW_W = "20vw";
+const ROW_W = "24.7vw";
 const ROW_H = "55vh";
-// Final frame: a big inset panel with a thin margin all round, sitting just
-// under the nav — Lightship's hero-visual proportions.
-const HERO_LEFT = "3vw";
-const HERO_TOP = "12vh";
-const HERO_W = "94vw";
-const HERO_H = "80vh";
-// Ranges are fractions of the pinned range (ABOUT_SCROLL_LENGTH − 100vh =
-// 190vh). In scroll distance: LIVING SOIL lands in the first ~35vh, the row
-// leaves over ~60vh, photo 1 grows over the next ~60vh (overlapping the
-// tail of the exit), then a short ~12vh beat before the stage unpins. The
-// story text below carries a snap magnet, so the scroll from here to the
-// text is a single glide rather than a screen of hand scrolling.
-const EXIT_RANGE = [0.324, 0.648] as const;
-const P1_MORPH_RANGE = [0.614, 0.937] as const;
+// Final frame: the whole screen, edge to edge.
+const HERO_LEFT = "0vw";
+const HERO_TOP = "0vh";
+const HERO_W = "100vw";
+const HERO_H = "100vh";
+/** Pin progress past which the row leaves and photo 1 grows; back below
+ * DESKTOP_SHRINK_AT it returns. The gap is hysteresis. */
+const DESKTOP_GROW_AT = 0.12;
+const DESKTOP_SHRINK_AT = 0.05;
+const ROW_EXIT_SEC = 0.8;
+const GROW_SEC = 1.1;
+/** Tint and story fade in once the photo has (nearly) finished growing. */
+const STORY_DELAY_SEC = 0.85;
+const STORY_FADE_SEC = 0.7;
+const STORY_TINT = 0.6;
+/** Gentle drift while you read: scroll-linked, so it's smooth, not stepped. */
+const STORY_DRIFT: [string, string] = ["6vh", "-6vh"];
 
 // ── HERO parallax (both breakpoints) ──
 // The photo inside the frame is taller than the frame by this much on each
@@ -87,32 +87,32 @@ const HERO_DRIFT: [string, string] = ["-6vh", "6vh"];
 // Sits in the empty band above the photo row while the row rests, reveals a
 // word at a time, then rides the row's own exit transform off the top.
 const WORDS = ["Living", "Soil"] as const;
-// The row runs from ROW_LEFT[0] to ROW_LEFT[3] + ROW_W — 7vw to 93vw. The
-// type is pinned to exactly that span so it lines up with the outer edges
-// of the first and last photo.
-const WORDS_LEFT = ROW_LEFT[0];
-const WORDS_WIDTH = "86vw";
+// The row now runs the full width, so the type spans the screen too, with
+// a 2vw gutter each side so the letters don't touch the edges.
+const WORDS_LEFT = "2vw";
+const WORDS_WIDTH = "96vw";
 // Anchored by its BOTTOM edge, which lands 3vh above ROW_TOP (37vh). Using
 // bottom rather than top means the gap to the photos stays put no matter
 // how tall the type ends up.
 const WORDS_BOTTOM = "66vh";
 // Tuned by measurement: "LIVING SOIL" in Archivo 800 at 15vw ran ~90.6vw
-// of ink (measured at 1440px), so 15 × 86 / 90.6 ≈ 14.2vw would fill the
-// row exactly. Set a little under that — landing right on the container
+// of ink (measured at 1440px), so 15 × 96 / 90.6 ≈ 15.9vw would fill the
+// span exactly. Set a little under that — landing right on the container
 // width puts the flex items at the shrink threshold, and a shrunk item
-// would have its word quietly clipped. 14vw lands at ~98% of the row.
+// would have its word quietly clipped. 15.6vw lands at ~98% of the span.
 // Both terms are vw, so the fit holds at every window width — only a
 // change to the string or the typeface needs re-deriving.
 //
-// The vh term guards short, wide windows, where type sized purely off the
-// width grows tall enough to collide with the nav. It can only ever make
-// the line narrower than the row, never wider.
-const WORDS_SIZE = "min(14vw, 25vh)";
+// The second term guards short, wide windows, where type sized purely off
+// the width grows tall enough to run up under the nav. The words sit on a
+// baseline 34vh from the top (WORDS_BOTTOM), the line box is 1em tall, and
+// the nav is 80px, so 1em must stay under 34vh − 80px (8px of air added).
+// It can only ever make the line narrower than the span, never wider.
+const WORDS_SIZE = "min(15.6vw, calc(34vh - 88px))";
 // Two hard cuts, NOT a reveal. Each word is simply off, then on — no
-// slide, no fade — so it lands like a stamp rather than arriving. The
-// two hits sit ~190px of scroll apart: far enough to read as two separate
-// impacts, close enough to feel like one gesture.
-const WORD_HITS = [0.081, 0.179] as const;
+// slide, no fade — so it lands like a stamp rather than arriving. They fire
+// on a timer once the stage is most of the way on screen, this far apart.
+const WORD_GAP_SEC = 0.35;
 // The recoil after each hit, in SECONDS — time-based, not scroll-based, so
 // the impact lands with the same snap however fast you happen to be
 // scrolling. Deliberately short: this is the shock settling, not an
@@ -158,8 +158,8 @@ const IMAGES = [
  * Keep each value in sync with the *largest* box its image ever animates to.
  */
 // (aspect ratio 3130 / 2075 = 1.51)
-const SIZES_ROW = "max(20vw, 83vh)"; //  55vh × 1.51
-const SIZES_HERO = "max(94vw, 121vh)"; //  80vh × 1.51
+const SIZES_ROW = "max(25vw, 83vh)"; //  55vh × 1.51
+const SIZES_HERO = "max(100vw, 151vh)"; // 100vh × 1.51
 const SIZES_MOBILE_ROW = "100vw"; // full width, shorter than the photo's own shape
 const SIZES_MOBILE_HERO = "max(100vw, 106svh)"; // 70svh × 1.51
 
@@ -221,100 +221,63 @@ const CAPTION_CLASS_MOBILE =
 const PARAGRAPH_CLASS =
   "font-display text-[clamp(1.35rem,2.4vw,2.75rem)] leading-[1.1] tracking-[-0.025em] text-neutral-50";
 const PARAGRAPH_VARIATION = "'wght' 450";
+/** The same story set over the darkened photo on desktop: centred, a size
+ * down so all three paragraphs sit inside the frame together. */
+const OVERLAY_PARAGRAPH_CLASS =
+  "font-display text-center text-[clamp(1rem,min(1.45vw,2.5vh),1.65rem)] leading-[1.32] tracking-[-0.01em] text-neutral-50";
 
 export function About() {
   const videoRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const lastPhotoRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-  const isMobile = useIsMobile();
-  // The <video> is remounted when the breakpoint resolves after hydration
-  // (it's keyed), and a client-created element doesn't always pick up the
-  // muted autoplay on iOS Safari. Re-assert muted and start it explicitly.
+  // iOS Safari can refuse muted autoplay on a video React created on the
+  // client. Re-assert muted and start it explicitly.
   const videoElRef = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const v = videoElRef.current;
     if (!v) return;
     v.muted = true;
     v.play().catch(() => {});
-  }, [isMobile]);
-  // Mobile keyhole: opens once, when most of it is on screen.
+  }, []);
+  // Keyhole: opens once, when most of it is on screen.
   const videoOpen = useInView(videoRef, { amount: 0.55, once: true });
 
-  const { scrollYProgress: videoProgress } = useScroll({
-    target: videoRef,
-    offset: ["start start", "end end"],
-  });
   const { scrollYProgress: aboutProgress } = useScroll({
     target: aboutRef,
     offset: ["start start", "end end"],
   });
-  // 0 the moment each pinned stage unpins, 1 when it has fully scrolled
-  // off — the window in which the hero photo lags behind its frame.
+  // 0 the moment the stage unpins, 1 when it has fully scrolled off — the
+  // window in which the photo lags behind its frame.
   const { scrollYProgress: aboutExit } = useScroll({
     target: aboutRef,
     offset: ["end end", "end start"],
   });
 
-  // Keyhole (unchanged)
-  const clipPath = useTransform(videoProgress, (p) => {
-    const t = Math.min(p / OPEN_END, 1);
-    const x = START_INSET_X * (1 - t);
-    const y = START_INSET_Y * (1 - t);
-    const r = START_RADIUS * (1 - t);
-    return `inset(${y}% ${x}% ${y}% ${x}% round ${r}px)`;
-  });
-  const scale = useTransform(videoProgress, [0, OPEN_END], [1.08, 1]);
-
-  // Desktop photo transforms
-  const restY = useTransform(aboutProgress, [...EXIT_RANGE], ["0vh", "-110vh"]);
-  const p1Left = useTransform(aboutProgress, [...P1_MORPH_RANGE], [ROW_LEFT[0], HERO_LEFT]);
-  const p1Top = useTransform(aboutProgress, [...P1_MORPH_RANGE], [ROW_TOP, HERO_TOP]);
-  const p1Width = useTransform(aboutProgress, [...P1_MORPH_RANGE], [ROW_W, HERO_W]);
-  const p1Height = useTransform(aboutProgress, [...P1_MORPH_RANGE], [ROW_H, HERO_H]);
-  // Overlay + blurb on the anchor photo fades out early in its morph, so
-  // the full hero image is visible before it reaches its final position.
-  // Input ranges below are spelled out edge to edge (0 … 1). Opacity and
-  // transform values get pre-sampled into keyframes, and a range that stops
-  // short of 1 was extrapolated past its last stop instead of held, which
-  // brought the overlay back up to full strength by the end of the hold.
-  const p1OverlayOp = useTransform(
-    aboutProgress,
-    [0, P1_MORPH_RANGE[0], P1_MORPH_RANGE[0] + 0.08, 1],
-    [1, 1, 0, 0],
-  );
-  // Photo inside the frame: settles from a slight zoom as the frame grows,
-  // then drifts down while the stage scrolls off.
-  const p1ImgScale = useTransform(
-    aboutProgress,
-    [0, P1_MORPH_RANGE[0], P1_MORPH_RANGE[1], 1],
-    [HERO_GROW_SCALE, HERO_GROW_SCALE, 1, 1],
-  );
-  const p1ImgY = useTransform(aboutExit, [0, 1], HERO_DRIFT);
-
-  /**
-   * LIVING / SOIL — plain React state, deliberately NOT a scroll-linked
-   * MotionValue.
-   *
-   * The obvious implementation is useTransform over a hair-thin input
-   * range, e.g. [hit - 0.0005, hit] → [0, 1], to fake a step function.
-   * That does not survive: Motion pre-samples scroll-linked transforms
-   * into keyframes at a fixed resolution, and a step that narrow falls
-   * between samples, so it comes out smeared into a gradual ramp. The
-   * word fades instead of hitting — the exact thing this is not meant
-   * to do.
-   *
-   * A boolean flipped from a scroll subscription can't be interpolated,
-   * so the cut stays a cut. Returning the previous tuple when nothing
-   * changed keeps this from re-rendering on every scroll frame.
-   */
-  const [hits, setHits] = useState<[boolean, boolean]>([false, false]);
+  // Desktop: one boolean off the pin's progress; everything it sets off is
+  // timed, so how fast you scroll never changes how the animation plays.
+  const [dGrown, setDGrown] = useState(false);
   useMotionValueEvent(aboutProgress, "change", (p) => {
-    setHits((prev) => {
-      const next: [boolean, boolean] = [p >= WORD_HITS[0], p >= WORD_HITS[1]];
-      return next[0] === prev[0] && next[1] === prev[1] ? prev : next;
-    });
+    setDGrown((prev) => (prev ? p > DESKTOP_SHRINK_AT : p >= DESKTOP_GROW_AT));
   });
+  const desktopGrown = !reduce && dGrown;
+  const p1ImgY = useTransform(aboutExit, [0, 1], HERO_DRIFT);
+  const storyY = useTransform(aboutProgress, [0, DESKTOP_GROW_AT, 1], [STORY_DRIFT[0], STORY_DRIFT[0], STORY_DRIFT[1]]);
+
+  // LIVING / SOIL stamp in on a timer once the stage is most of the way on
+  // screen. Plain booleans, so each word is a hard cut, not a fade.
+  const stageRef = useRef<HTMLDivElement>(null);
+  const stageInView = useInView(stageRef, { amount: 0.6 });
+  const [hits, setHits] = useState<[boolean, boolean]>([false, false]);
+  useEffect(() => {
+    if (!stageInView || reduce) return;
+    const first = window.setTimeout(() => setHits([true, false]), 0);
+    const second = window.setTimeout(() => setHits([true, true]), WORD_GAP_SEC * 1000);
+    return () => {
+      window.clearTimeout(first);
+      window.clearTimeout(second);
+    };
+  }, [stageInView, reduce]);
 
   // Mobile: the last photo grows once, when most of it is on screen.
   // Reduce Motion shows it at full size from the start, with no animation.
@@ -330,26 +293,13 @@ export function About() {
         About Flora &amp; Flame
       </h2>
       {/* ── KEYHOLE VIDEO ────────────────────────────────────────────── */}
-      {/* Soft-lock markers (see components/scroll-snap.tsx). Desktop: rest
-          at the top, fully open, or handed over to the stage. Phone: one
-          screen, so top or handed over. */}
-      <div
-        ref={videoRef}
-        data-snap-pin="full"
-        data-snap-stops="0,0.5,1"
-        data-snap-stops-mobile="0,1"
-        className={`relative ${SCROLL_LENGTH}`}
-      >
+      <div ref={videoRef} className={`relative ${SCROLL_LENGTH}`}>
         <div className="sticky top-0 flex h-svh w-full items-center justify-center overflow-hidden bg-neutral-900 lg:h-screen">
           <motion.video
-            // Keyed so a breakpoint change remounts rather than leaving one
-            // element holding both scroll-driven styles and timed targets.
-            key={isMobile ? "triggered" : "scrubbed"}
             className="h-full w-full object-cover will-change-[clip-path,transform]"
-            style={reduce || isMobile ? undefined : { clipPath, WebkitClipPath: clipPath, scale }}
             initial={false}
             animate={
-              !reduce && isMobile
+              !reduce
                 ? {
                     clipPath: videoOpen ? KEYHOLE_OPEN : KEYHOLE_CLOSED,
                     scale: videoOpen ? 1 : 1.08,
@@ -376,26 +326,18 @@ export function About() {
         </div>
       </div>
 
-      {/* ── DESKTOP: row exits → hero appears → 3 paragraphs slide in from left ── */}
-      {/* Stops: start, LIVING SOIL landed with the row at rest, photo grown,
-          and the pin's end. */}
-      <div
-        ref={aboutRef}
-        data-snap-pin="pin"
-        data-snap-stops="0,0.23,1"
-        className={`relative hidden ${ABOUT_SCROLL_LENGTH} lg:block`}
-      >
-        <div className="sticky top-0 h-screen w-full overflow-hidden">
+      {/* ── DESKTOP: LIVING SOIL + row → photo fills the screen → story ── */}
+      <div ref={aboutRef} className={`relative hidden ${ABOUT_SCROLL_LENGTH} lg:block`}>
+        <div ref={stageRef} className="sticky top-0 h-screen w-full overflow-hidden">
           {/* ── LIVING SOIL ── each word cuts in, hard, in the band above
               the photo row — two hits rather than a reveal — then both
               leave on the row's own exit transform so the type and the
               photos clear the screen as one move. */}
           <motion.h2
-            style={
-              reduce
-                ? { left: WORDS_LEFT, bottom: WORDS_BOTTOM, width: WORDS_WIDTH, fontSize: WORDS_SIZE }
-                : { left: WORDS_LEFT, bottom: WORDS_BOTTOM, width: WORDS_WIDTH, fontSize: WORDS_SIZE, y: restY }
-            }
+            initial={false}
+            animate={{ y: desktopGrown ? "-110vh" : "0vh" }}
+            transition={{ duration: ROW_EXIT_SEC, ease: EASE_OUT }}
+            style={{ left: WORDS_LEFT, bottom: WORDS_BOTTOM, width: WORDS_WIDTH, fontSize: WORDS_SIZE }}
             className="absolute z-10 flex items-end gap-[0.2em] font-display uppercase tracking-[-0.03em] whitespace-nowrap text-neutral-50 will-change-transform"
           >
             {WORDS.map((word, i) => (
@@ -420,14 +362,16 @@ export function About() {
           {[1, 2, 3].map((idx) => (
             <motion.div
               key={idx}
-              style={{
-                left: ROW_LEFT[idx],
-                top: ROW_TOP,
-                width: ROW_W,
-                height: ROW_H,
-                ...(reduce ? {} : { y: restY }),
+              initial={false}
+              animate={{ y: desktopGrown ? "-110vh" : "0vh" }}
+              transition={{
+                duration: ROW_EXIT_SEC,
+                ease: EASE_OUT,
+                // Leave left to right, come back right to left.
+                delay: desktopGrown ? (idx - 1) * 0.06 : (3 - idx) * 0.06,
               }}
-              className="absolute overflow-hidden rounded-md"
+              style={{ left: ROW_LEFT[idx], top: ROW_TOP, width: ROW_W, height: ROW_H }}
+              className="absolute overflow-hidden"
             >
               <Image src={IMAGES[idx]} alt="" fill sizes={SIZES_ROW} className="object-cover" />
               {/* Dim overlay — permanent on the exiting panels, so blurb reads. */}
@@ -442,34 +386,78 @@ export function About() {
           ))}
 
           <motion.div
-            style={
-              reduce
-                ? { left: ROW_LEFT[0], top: ROW_TOP, width: ROW_W, height: ROW_H }
-                : { left: p1Left, top: p1Top, width: p1Width, height: p1Height }
+            initial={false}
+            animate={
+              desktopGrown
+                ? { left: HERO_LEFT, top: HERO_TOP, width: HERO_W, height: HERO_H, borderRadius: 0 }
+                : { left: ROW_LEFT[0], top: ROW_TOP, width: ROW_W, height: ROW_H, borderRadius: 0 }
             }
-            className="absolute overflow-hidden rounded-md"
+            transition={{ duration: GROW_SEC, ease: EASE_OUT, delay: desktopGrown ? 0.15 : 0 }}
+            className="absolute overflow-hidden"
           >
             <HeroPhoto
               src={IMAGES[0]}
               sizes={SIZES_HERO}
-              scale={p1ImgScale}
+              grown={desktopGrown}
               y={p1ImgY}
               reduce={!!reduce}
             />
             {/* Overlay + blurb fade out early in the anchor morph so the
                 hero image reveals fully once the row is finished. */}
             <motion.div
-              style={reduce ? { opacity: 1 } : { opacity: p1OverlayOp }}
+              initial={false}
+              animate={{ opacity: desktopGrown ? 0 : 1 }}
+              transition={{ duration: 0.3 }}
               className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10"
             />
             <motion.div
-              style={reduce ? { opacity: 1 } : { opacity: p1OverlayOp }}
+              initial={false}
+              animate={{ opacity: desktopGrown ? 0 : 1 }}
+              transition={{ duration: 0.3 }}
               className="absolute inset-x-0 bottom-0 p-3 xl:p-4"
             >
               <p className={CAPTION_CLASS}>
                 {PANEL_BLURBS[0]}
               </p>
             </motion.div>
+
+            {/* Story over the photo: a black tint fades up, then the three
+                paragraphs, centred, drifting a little slower than the page.
+                Skipped under Reduce Motion, where the photo stays in the
+                row and the story renders below in normal flow instead. */}
+            {!reduce && (
+              <>
+                <motion.div
+                  aria-hidden
+                  initial={false}
+                  animate={{ opacity: desktopGrown ? STORY_TINT : 0 }}
+                  transition={{ duration: STORY_FADE_SEC, delay: desktopGrown ? STORY_DELAY_SEC : 0 }}
+                  className="pointer-events-none absolute inset-0 bg-black"
+                />
+                <motion.div
+                  initial={false}
+                  animate={{ opacity: desktopGrown ? 1 : 0 }}
+                  transition={{ duration: STORY_FADE_SEC, delay: desktopGrown ? STORY_DELAY_SEC : 0 }}
+                  style={{ y: storyY }}
+                  className="absolute inset-0 flex items-center justify-center px-[6vw]"
+                >
+                  <div className="flex max-w-[75ch] flex-col items-center gap-[1em]">
+                    <p className="font-sans text-xs font-semibold uppercase tracking-[0.3em] text-neutral-300">
+                      About Us
+                    </p>
+                    {ABOUT_PARAGRAPHS.map((text, i) => (
+                      <p
+                        key={i}
+                        className={OVERLAY_PARAGRAPH_CLASS}
+                        style={{ fontVariationSettings: PARAGRAPH_VARIATION }}
+                      >
+                        {text}
+                      </p>
+                    ))}
+                  </div>
+                </motion.div>
+              </>
+            )}
           </motion.div>
         </div>
       </div>
@@ -514,16 +502,10 @@ export function About() {
           this reads as the caption to that image: no pin, no slide, just
           large type moving under the page's own momentum. Each paragraph
           gets the site's standard soft reveal on first view. ── */}
-      {/* Sits tight under the photo. On desktop the frame ends 8vh above
-          the bottom of its stage, so the top padding here is kept small. */}
-      {/* Soft magnet: from the full-size photo, one push glides straight to
-          the text instead of scrolling the whole stage off by hand. */}
-      <div
-        data-snap="start"
-        data-snap-offset="0.1"
-        data-snap-only="desktop"
-        className="px-5 pb-[16vh] pt-12 sm:px-8 lg:px-14 lg:pb-[22vh] lg:pt-[5vh]"
-      >
+      {/* On desktop the story is set over the photo inside the pinned
+          stage instead, so this flow version is phones only, plus desktop
+          with Reduce Motion, where that overlay is skipped. */}
+      <div className="px-5 pb-[16vh] pt-12 sm:px-8 lg:hidden lg:px-14 lg:pb-[22vh] lg:pt-[5vh] lg:motion-reduce:block">
         <div className="flex max-w-[1000px] flex-col gap-[1.1em]">
           {ABOUT_PARAGRAPHS.map((text, i) => (
             <Reveal key={i} delay={i * 0.05} y={20}>
@@ -547,26 +529,29 @@ export function About() {
 function HeroPhoto({
   src,
   sizes,
-  scale,
+  grown,
   y,
   reduce,
   position = "center",
 }: {
   src: string;
-  /** object-position for the crop. The frame is portrait and the source
-   * is landscape, so this decides which part of the photo survives. */
+  /** object-position for the crop. */
   position?: string;
   sizes: string;
-  scale: MotionValue<number>;
+  /** Eases out of a slight zoom as the frame grows. */
+  grown: boolean;
   y: MotionValue<string>;
   reduce: boolean;
 }) {
   return (
     <motion.div
+      initial={false}
+      animate={reduce ? undefined : { scale: grown ? 1 : HERO_GROW_SCALE }}
+      transition={{ duration: GROW_SEC, ease: EASE_OUT }}
       style={{
         top: `-${HERO_BLEED}`,
         bottom: `-${HERO_BLEED}`,
-        ...(reduce ? {} : { scale, y }),
+        ...(reduce ? {} : { y }),
       }}
       className="absolute inset-x-0 will-change-transform"
     >

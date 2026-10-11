@@ -10,7 +10,6 @@ import {
   useMotionValueEvent,
 } from "motion/react";
 import { Wordmark } from "@/components/wordmark";
-import { MOBILE_MQ, useIsMobile } from "@/hooks/use-is-mobile";
 
 /**
  * FLORA & FLAME wordmark with a cross-fade "morph" at the terminal.
@@ -57,7 +56,7 @@ const DOCK_EASE = [0.22, 1, 0.36, 1] as const;
 /** Scroll distance after which the wordmark counts as docked, for whoever
  * needs to gate on it (the navbar). Client-only. */
 export function dockThreshold() {
-  return window.matchMedia(MOBILE_MQ).matches ? MOBILE_DOCK_AT : DOCK_END;
+  return MOBILE_DOCK_AT;
 }
 
 const NAV_LEFT = 20;
@@ -164,7 +163,6 @@ export function DockingLogo({
   const textOp = useTransform(scrollY, [SWAP_START, SWAP_END], [1, 0]);
   const svgOp = useTransform(scrollY, [SWAP_START, SWAP_END], [0, 1]);
 
-  const isMobile = useIsMobile();
   const [docked, setDocked] = useState(false);
   const [mDocked, setMDocked] = useState(false);
   // The hand-over delay (text out → mark in) belongs to the dock move
@@ -204,7 +202,9 @@ export function DockingLogo({
     return () => cancelAnimationFrame(id);
   }, []);
   const visible = !docked || showWithNav;
-  const triggered = isMobile && !reduce;
+  // Triggered at every size now: scroll past MOBILE_DOCK_AT and it docks on
+  // a timer, scroll back to the top and it returns. No scrubbing.
+  const triggered = !reduce;
   const dockedScale = DOCKED_PX / heroPx;
   const handoverDelay = handover ? MOBILE_DOCK_SEC - 0.2 : 0;
 

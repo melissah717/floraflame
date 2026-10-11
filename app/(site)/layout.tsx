@@ -4,7 +4,6 @@ import { Preloader } from "@/components/preloader";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/footer";
 import { SmoothScroll } from "@/components/smooth-scroll"
-import { ScrollSnap } from "@/components/scroll-snap";;
 
 /**
  * The public site's shell. Everything that used to sit in the root layout
@@ -31,7 +30,6 @@ export default function SiteLayout({
       <CookieConsent />
       <Preloader />
       <SmoothScroll />
-        <ScrollSnap />
       <Navbar />
       <main id="main-content">{children}</main>
       <SiteFooter />

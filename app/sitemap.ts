@@ -28,6 +28,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE_URL, changeFrequency: "weekly", priority: 1 },
     { url: `${BASE_URL}/strains`, changeFrequency: "weekly", priority: 0.8 },
+    // Stockists change as the sheet does, so weekly is honest.
+    { url: `${BASE_URL}/find-us`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE_URL}/learn`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE_URL}/learn/the-leaf`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/learn/the-soil`, changeFrequency: "monthly", priority: 0.7 },

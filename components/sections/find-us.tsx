@@ -10,7 +10,12 @@ import { FindUsClient } from "@/components/sections/find-us-client";
  * visitors), while search and geolocation need to be client-side. One
  * component can't be both.
  */
-export async function FindUs() {
+export async function FindUs({
+  headingLevel = "h2",
+}: {
+  /** "h1" when this is the page itself (/find-us), "h2" as a home section. */
+  headingLevel?: "h1" | "h2";
+} = {}) {
   const stockists = await fetchStockists();
-  return <FindUsClient stockists={stockists} />;
+  return <FindUsClient stockists={stockists} headingLevel={headingLevel} />;
 }
