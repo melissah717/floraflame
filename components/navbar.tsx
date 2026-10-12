@@ -26,6 +26,18 @@ import { cn } from "@/lib/utils";
  *     fade together after HIDE_DELAY of no scroll/hover-near-top.
  */
 const HIDE_DELAY = 1500;
+
+/**
+ * Routes where the header stays put instead of auto-hiding.
+ *
+ * The auto-hide earns its keep on the home page, where the point is to let
+ * the hero wordmark stand on its own. On a browsing page it's just the nav
+ * disappearing while you're using it. /strains is one long card browser, so
+ * you are reaching for the nav constantly and it had gone every time.
+ *
+ * Matches the route and anything beneath it.
+ */
+const PINNED_ROUTES = ["/strains"];
 const HOVER_ZONE = 80;
 
 const NAV_LINKS = [
@@ -43,6 +55,9 @@ function isCurrent(pathname: string, href: string) {
 export function Navbar() {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isPinned = PINNED_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
   const [visible, setVisible] = useState(true);
   const [open, setOpen] = useState(false);
   // Off home: gate is always open (no dock happens there).
@@ -70,7 +85,7 @@ export function Navbar() {
     const revealAndScheduleHide = () => {
       setVisible(true);
       if (hideTimer.current) clearTimeout(hideTimer.current);
-      if (!hoverMql.matches) return;
+      if (isPinned || !hoverMql.matches) return;
       hideTimer.current = setTimeout(() => setVisible(false), HIDE_DELAY);
     };
 
@@ -98,7 +113,7 @@ export function Navbar() {
       hoverMql.removeEventListener("change", revealAndScheduleHide);
       if (hideTimer.current) clearTimeout(hideTimer.current);
     };
-  }, [isHome]);
+  }, [isHome, isPinned]);
 
   const wantsNav = visible || open;
   // Header shows only when the wordmark has arrived at its docked home,

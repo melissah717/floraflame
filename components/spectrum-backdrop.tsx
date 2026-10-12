@@ -151,14 +151,42 @@ function AuroraBackdrop({ from, to, flip }: { from: string; to: string; flip?: b
 
 // Balanced Hybrid — sonar-style rings pulsing outward from center.
 function RippleBackdrop({ color }: { color: string }) {
+  /*
+   * This was animating all along — rings measured 271px, 489px, 672px over
+   * three seconds — but nobody could see it.
+   *
+   * It was the only backdrop drawn as a HAIRLINE: a 1px border at
+   * opacity-25, against near-black, with no glow and no blend mode. Its
+   * siblings are all filled and lit — EmberDrift runs its container at
+   * 0.58 with box-shadowed particles peaking at 0.95, EnergyStreak the
+   * same, Aurora leans on mix-blend-screen. Effective brightness here came
+   * out around 0.15 on a single pixel, so Balanced Hybrid looked like a
+   * dead panel next to every other spectrum position.
+   *
+   * Same sonar idea, same timing — just given the weight the others have.
+   */
   return (
-    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-25">
+    <div
+      className="absolute inset-0 flex items-center justify-center overflow-hidden"
+      style={{ opacity: 0.55 }}
+    >
+      {/* Ambient core so the panel isn't empty between pulses — the job the
+          blur-3xl gradient does for the ember and streak backdrops. */}
+      <div
+        className="absolute h-full w-full blur-3xl"
+        style={{
+          background: `radial-gradient(circle at center, ${color}, transparent 65%)`,
+          opacity: 0.22,
+        }}
+      />
       {[0, 1, 2, 3].map((i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full border"
-          style={{ borderColor: color }}
-          initial={{ width: 40, height: 40, opacity: 0.6 }}
+          className="absolute rounded-full border-2"
+          // Glow on the stroke, the same trick the embers use to stay
+          // legible at small sizes.
+          style={{ borderColor: color, boxShadow: `0 0 24px ${color}` }}
+          initial={{ width: 40, height: 40, opacity: 0.75 }}
           animate={{ width: 900, height: 900, opacity: 0 }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeOut", delay: i * 2 }}
         />
