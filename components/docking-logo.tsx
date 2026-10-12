@@ -65,6 +65,15 @@ const HERO_TOP_VH = 10;
 
 const DOCKED_PX = 40;
 const HERO_MIN = 40;
+/**
+ * Vertical room the hero headline needs below the wordmark, in px.
+ *
+ * "NO TILL / LIVING SOIL / OAKLAND CA" is clamped at 112/112/64px with
+ * leading-[0.85], so it settles at ~245px tall and stays there at any
+ * width past ~470px. 150 is that block's half-height plus a breathing gap,
+ * which is what the cap below has to clear.
+ */
+const HEADLINE_RESERVE = 150;
 // Gutter left at each end of the hero wordmark. The text is sized to fill
 // everything between them, so this is the only thing keeping it off the
 // screen edges. It matches NAV_LEFT so the wordmark's left edge doesn't
@@ -151,6 +160,29 @@ export function DockingLogo({
       const actual = probe.getBoundingClientRect().width;
       if (actual) size *= available / actual;
 
+      /*
+       * Ceiling for short, wide windows.
+       *
+       * Everything above sizes the wordmark purely off WIDTH, so a 2:1
+       * viewport makes it tall enough to crash into the hero headline —
+       * measured at 1410x700: wordmark bottom 241 against headline top
+       * 228, a 14px overlap. The headline is centred in the section and
+       * has no idea the wordmark exists, so the guard has to live here.
+       *
+       * The headline's top edge is (viewportHeight - 245) / 2 and the
+       * wordmark starts at HERO_TOP_VH, which gives the cap below. It only
+       * binds on viewports shorter than ~800px at desktop widths, so the
+       * edge-to-edge sizing the hero is built around is untouched at any
+       * normal window — and on phones, where the width-derived size is
+       * tiny, it never binds at all.
+       *
+       * Same guard the LIVING SOIL type carries in about.tsx, which hit
+       * this first.
+       */
+      const maxByHeight =
+        (window.innerHeight * (50 - HERO_TOP_VH)) / 100 - HEADLINE_RESERVE;
+      if (maxByHeight > HERO_MIN) size = Math.min(size, maxByHeight);
+
       setHeroPx(Math.max(HERO_MIN, size));
     };
     measure();
@@ -229,12 +261,26 @@ export function DockingLogo({
   ));
 
   return (
+    <>
     <Link
       href="/"
       aria-label="Flora & Flame, home"
       onFocus={() => onFocusChange?.(true)}
       onBlur={() => onFocusChange?.(false)}
-      className={`fixed left-0 top-0 ${behindMenu ? "z-40" : "z-[60]"}`}
+      /*
+       * pointer-events-none here, auto on the marks below.
+       *
+       * The wordmark docks by SCALING its child (matrix(0.228,…) — a 175px
+       * glyph drawn at 40px), but a transform on the child doesn't shrink
+       * THIS element's layout box. The Link stayed 1400x175 at z-[60], an
+       * invisible full-width hit area pinned over the header, and every nav
+       * link under it was dead: elementFromPoint returned this Link for
+       * Home, Strains, Find Us, Learn, Merch, Subscribe and Get in touch.
+       *
+       * Letting only the marks take clicks means the hit area is whatever
+       * you can actually see, because those ARE transformed.
+       */
+      className={`pointer-events-none fixed left-0 top-0 ${behindMenu ? "z-40" : "z-[60]"}`}
     >
       {/* ── Text wordmark ── hero display type, docks, then fades out ──
            Two renderings of the same thing, keyed apart so switching
@@ -258,7 +304,7 @@ export function DockingLogo({
             opacity: { duration: 0.2, delay: handoverDelay },
           }}
           style={{ fontSize: heroPx, transformOrigin: "0 0" }}
-          className="font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap text-neutral-50 will-change-transform"
+          className="pointer-events-auto font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap text-neutral-50 will-change-transform"
         >
           {letters}
         </motion.div>
@@ -275,30 +321,11 @@ export function DockingLogo({
                 }
               : { x, y, fontSize, opacity: visible ? textOp : 0 }
           }
-          className="font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap text-neutral-50 will-change-[font-size,transform]"
+          className="pointer-events-auto font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap text-neutral-50 will-change-[font-size,transform]"
         >
           {letters}
         </motion.div>
       )}
-
-      {/* ── Measuring probe ── never seen. Mirrors the wordmark's markup
-           EXACTLY, including the per-letter inline-block spans: those
-           suppress the kerning a plain string would get, so a plain-string
-           probe would measure narrower than the real thing and the
-           wordmark would overhang the screen. `visibility: hidden` rather
-           than `display: none`, which would measure zero. */}
-      <span
-        ref={probeRef}
-        aria-hidden
-        className="pointer-events-none invisible absolute left-0 top-0 font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap"
-        style={{ fontSize: `${PROBE_PX}px` }}
-      >
-        {LETTERS.map((char, i) => (
-          <span key={i} className="inline-block">
-            {char === " " ? "\u00A0" : char}
-          </span>
-        ))}
-      </span>
 
       {/* ── SVG wordmark ── appears at nav slot as text fades out.
            Fixed at docked position (no scroll motion — only opacity animates).
@@ -310,7 +337,7 @@ export function DockingLogo({
           animate={{ opacity: mDocked && showWithNav ? 1 : 0 }}
           transition={{ duration: 0.2, delay: handoverDelay }}
           style={{ x: `${NAV_LEFT}px`, y: `${NAV_TOP}px` }}
-          className="absolute left-0 top-0"
+          className="pointer-events-auto absolute left-0 top-0"
         >
           <Wordmark className="h-11 w-56" color="bg-neutral-50" />
         </motion.div>
@@ -327,11 +354,42 @@ export function DockingLogo({
             // with Reduce Motion enabled.
             opacity: reduce ? (showWithNav ? 1 : 0) : visible ? svgOp : 0,
           }}
-          className="absolute left-0 top-0"
+          className="pointer-events-auto absolute left-0 top-0"
         >
           <Wordmark className="h-11 w-56" color="bg-neutral-50" />
         </motion.div>
       )}
     </Link>
+
+      {/* ── Measuring probe ── never seen. Mirrors the wordmark's markup
+           EXACTLY, including the per-letter inline-block spans: those
+           suppress the kerning a plain string would get, so a plain-string
+           probe would measure narrower than the real thing and the
+           wordmark would overhang the screen. `visibility: hidden` rather
+           than `display: none`, which would measure zero.
+
+           A SIBLING of the <Link>, not a child of it. measure() leaves this
+           span at the last size it tested — ~175px at a 1440px viewport,
+           so ~1400px wide — and inside the Link that became the LINK's hit
+           area. An invisible measuring element was sitting at z-[60] across
+           the top of the page, swallowing every click meant for the nav.
+           Out here its size is nobody else's problem.
+
+           `fixed` rather than `absolute`: it was positioned against the
+           Link, which is itself fixed at 0,0, so this keeps it put now that
+           it has no positioned ancestor. */}
+      <span
+        ref={probeRef}
+        aria-hidden
+        className="pointer-events-none invisible fixed left-0 top-0 font-display font-black uppercase leading-none tracking-[-0.02em] whitespace-nowrap"
+        style={{ fontSize: `${PROBE_PX}px` }}
+      >
+        {LETTERS.map((char, i) => (
+          <span key={i} className="inline-block">
+            {char === " " ? "\u00A0" : char}
+          </span>
+        ))}
+      </span>
+    </>
   );
 }

@@ -53,9 +53,24 @@ export function Navbar() {
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    /*
+     * Auto-hide only where a hover can bring the header back.
+     *
+     * The hide is predicated on an affordance that only exists with a
+     * pointer: move the mouse into the top HOVER_ZONE and the header
+     * returns. A touch device emits no pointermove while idle, so once
+     * HIDE_DELAY elapsed the header sat at translateY(-80px) opacity 0 —
+     * measured — and the only way back was to scroll. Tapping where the
+     * hamburger had been did nothing, because it was genuinely off-screen.
+     *
+     * (hover: hover) is false on touch, so there the header simply stays.
+     */
+    const hoverMql = window.matchMedia("(hover: hover)");
+
     const revealAndScheduleHide = () => {
       setVisible(true);
       if (hideTimer.current) clearTimeout(hideTimer.current);
+      if (!hoverMql.matches) return;
       hideTimer.current = setTimeout(() => setVisible(false), HIDE_DELAY);
     };
 
@@ -73,9 +88,14 @@ export function Navbar() {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("pointermove", onMove, { passive: true });
+    // An iPad gaining or losing a trackpad flips this mid-session; re-run
+    // so a device that just lost hover doesn't keep a pending hide timer.
+    hoverMql.addEventListener("change", revealAndScheduleHide);
+
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("pointermove", onMove);
+      hoverMql.removeEventListener("change", revealAndScheduleHide);
       if (hideTimer.current) clearTimeout(hideTimer.current);
     };
   }, [isHome]);
