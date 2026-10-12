@@ -44,6 +44,7 @@ export function useLenis(): Lenis | null {
  */
 export function SmoothScroll() {
   useScrollToTopOnNavigate();
+  useSamePageLinksScrollToTop();
 
   useEffect(() => {
     // Momentum scrolling is exactly the kind of motion Reduce Motion asks
@@ -132,4 +133,39 @@ function useScrollToTopOnNavigate() {
     // Only on navigation; a Lenis instance appearing isn't a navigation.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+}
+
+/**
+ * A link to the page you're already on scrolls you back to the top.
+ *
+ * Tapping the Flora & Flame logo (or "Home" in the menu) while on the home
+ * page is a navigation to the same URL, which Next treats as a no-op, so
+ * the tap looked dead, worst on phones where there's no other quick way
+ * back up. One delegated listener covers every such link on the site.
+ * Links with a #hash are left alone: those mean "go to that section".
+ */
+function useSamePageLinksScrollToTop() {
+  const lenis = useLenis();
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      // Not checking e.defaultPrevented: next/link always prevents the
+      // default to run its own navigation, so every Link click arrives here
+      // already "prevented".
+      if (e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.("a[href]");
+      if (!(a instanceof HTMLAnchorElement) || a.target === "_blank") return;
+
+      const url = new URL(a.href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      if (url.pathname !== window.location.pathname || url.hash) return;
+
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (lenis) lenis.scrollTo(0, { immediate: reduce });
+      else window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [lenis]);
 }
