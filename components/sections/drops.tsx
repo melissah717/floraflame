@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { type Strain } from "@/lib/strains";
 import { RGB, anchorForSpectrum, colorForHybrid } from "@/lib/spectrum";
-import { SpectrumBackdrop } from "@/components/spectrum-backdrop";
+import { RippleBackdrop, SpectrumBackdrop } from "@/components/spectrum-backdrop";
 import { NugZoom } from "@/components/nug-zoom";
 import { ParallaxText, Reveal } from "@/components/scroll-primitives";
 import { cn } from "@/lib/utils";
@@ -233,7 +233,11 @@ export function Drops({ strains }: { strains: Strain[] }) {
             transition={{ duration: 0.7, ease: "easeInOut" }}
             className="absolute inset-0"
           >
-            <SpectrumBackdrop spectrum={active.spectrum} />
+            {/* Balanced Hybrid's ripple is drawn on the product image
+                instead (see the stage below), so it stays inside that box. */}
+            {active.spectrum !== "Balanced Hybrid" && (
+              <SpectrumBackdrop spectrum={active.spectrum} />
+            )}
           </motion.div>
         </AnimatePresence>
 
@@ -268,6 +272,24 @@ export function Drops({ strains }: { strains: Strain[] }) {
               style={{ backgroundColor: color, opacity: 0.35 }}
               aria-hidden
             />
+            {/* Balanced Hybrid ripple, centred on the flower and clipped to
+                this box. Its own overflow-hidden wrapper rather than one on
+                the box itself, so NugZoom's hover zoom isn't cropped. */}
+            <AnimatePresence>
+              {active.spectrum === "Balanced Hybrid" && (
+                <motion.div
+                  key="ripple"
+                  aria-hidden
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.7, ease: "easeInOut" }}
+                  className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
+                >
+                  <RippleBackdrop color={RGB.hybrid} fit />
+                </motion.div>
+              )}
+            </AnimatePresence>
             <AnimatePresence mode="wait">
               <motion.div
                 key={active.slug}

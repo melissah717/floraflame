@@ -150,7 +150,12 @@ function AuroraBackdrop({ from, to, flip }: { from: string; to: string; flip?: b
 }
 
 // Balanced Hybrid — sonar-style rings pulsing outward from center.
-function RippleBackdrop({ color }: { color: string }) {
+//
+// `fit`: rings grow to the container's own edge instead of a fixed 900px,
+// for when this sits inside a single image's box (the home page Drops
+// section) rather than behind a whole panel. The 900px rings spilled
+// across the heading and text there.
+export function RippleBackdrop({ color, fit = false }: { color: string; fit?: boolean }) {
   /*
    * This was animating all along — rings measured 271px, 489px, 672px over
    * three seconds — but nobody could see it.
@@ -168,7 +173,9 @@ function RippleBackdrop({ color }: { color: string }) {
   return (
     <div
       className="absolute inset-0 flex items-center justify-center overflow-hidden"
-      style={{ opacity: 0.55 }}
+      // Fitted to an image it's a quiet accent, not the panel's whole
+      // backdrop: dimmer overall, hairline rings, a soft glow.
+      style={{ opacity: fit ? 0.3 : 0.55 }}
     >
       {/* Ambient core so the panel isn't empty between pulses — the job the
           blur-3xl gradient does for the ember and streak backdrops. */}
@@ -176,18 +183,18 @@ function RippleBackdrop({ color }: { color: string }) {
         className="absolute h-full w-full blur-3xl"
         style={{
           background: `radial-gradient(circle at center, ${color}, transparent 65%)`,
-          opacity: 0.22,
+          opacity: fit ? 0.12 : 0.22,
         }}
       />
       {[0, 1, 2, 3].map((i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full border-2"
+          className={`absolute rounded-full ${fit ? "border" : "border-2"}`}
           // Glow on the stroke, the same trick the embers use to stay
           // legible at small sizes.
-          style={{ borderColor: color, boxShadow: `0 0 24px ${color}` }}
-          initial={{ width: 40, height: 40, opacity: 0.75 }}
-          animate={{ width: 900, height: 900, opacity: 0 }}
+          style={{ borderColor: color, boxShadow: `0 0 ${fit ? 8 : 24}px ${color}` }}
+          initial={fit ? { width: "10%", height: "10%", opacity: 0.75 } : { width: 40, height: 40, opacity: 0.75 }}
+          animate={fit ? { width: "100%", height: "100%", opacity: 0 } : { width: 900, height: 900, opacity: 0 }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeOut", delay: i * 2 }}
         />
       ))}
