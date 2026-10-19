@@ -68,12 +68,13 @@ const HERO_MIN = 40;
 /**
  * Vertical room the hero headline needs below the wordmark, in px.
  *
- * "NO TILL / LIVING SOIL / OAKLAND CA" is clamped at 112/112/64px with
- * leading-[0.85], so it settles at ~245px tall and stays there at any
- * width past ~470px. 150 is that block's half-height plus a breathing gap,
- * which is what the cap below has to clear.
+ * "LIVING / SOIL / OAKLAND CA" is a justified block capped at 30rem wide
+ * (each line sized to that width, see hero.tsx), which at leading-[0.85]
+ * settles at ~340px tall past ~550px of viewport width. 200 is that
+ * block's half-height plus a breathing gap, which is what the cap below
+ * has to clear.
  */
-const HEADLINE_RESERVE = 150;
+const HEADLINE_RESERVE = 200;
 // Gutter left at each end of the hero wordmark. The text is sized to fill
 // everything between them, so this is the only thing keeping it off the
 // screen edges. It matches NAV_LEFT so the wordmark's left edge doesn't
@@ -169,7 +170,7 @@ export function DockingLogo({
        * 228, a 14px overlap. The headline is centred in the section and
        * has no idea the wordmark exists, so the guard has to live here.
        *
-       * The headline's top edge is (viewportHeight - 245) / 2 and the
+       * The headline's top edge is (viewportHeight - 340) / 2 and the
        * wordmark starts at HERO_TOP_VH, which gives the cap below. It only
        * binds on viewports shorter than ~800px at desktop widths, so the
        * edge-to-edge sizing the hero is built around is untouched at any

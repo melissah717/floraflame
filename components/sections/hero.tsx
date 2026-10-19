@@ -24,7 +24,14 @@ import {
  * No pin: the hero is one screen and the page scrolls straight on.
  */
 
-const LINES = ["no till", "living soil", "oakland ca"];
+const LINES = ["living", "soil", "oakland ca"];
+/**
+ * Width of each line per 1px of font-size, measured in the browser
+ * (Archivo, uppercase, tracking -0.035em). Dividing the target width by
+ * these gives each line the font size that makes all three equally wide.
+ * Re-measure if the words, font or tracking change.
+ */
+const LINE_RATIOS = [3.582, 2.445, 6.8];
 const PANEL_IMAGE = "/logo.png";
 
 export function Hero() {
@@ -128,28 +135,22 @@ export function Hero() {
               between them. */}
           <div className="relative z-10 w-full px-5 sm:px-8">
             <div className="mx-auto w-full max-w-7xl">
-              <h1 className="font-display uppercase leading-[0.85] tracking-[-0.035em] text-white">
-                {/* The three display lines read as "no till living soil
-                    oakland ca" on their own: no brand and no "cannabis".
+              <h1 className="font-display uppercase leading-[0.85] tracking-[-0.035em] text-white [--hw:min(100vw-2.5rem,30rem)] sm:[--hw:min(100vw-4rem,30rem)]">
+                {/* The display lines read as "living soil oakland ca" on
+                    their own: no brand and no "cannabis".
                     Screen readers and search engines get this sentence
                     instead; the visual lines are hidden from them. */}
                 <span className="sr-only">
-                  Flora &amp; Flame: no-till, living soil cannabis from Oakland, CA
+                  Flora &amp; Flame: living soil cannabis from Oakland, CA
                 </span>
                 {LINES.map((text, i) => {
-                  // Per-line sizing so each line fills its width instead of
-                  // wrapping. Different character counts + character widths
-                  // need different font sizes to hit that goal.
-                  //   i=0 NO TILL      — 7 chars, narrow letters, can go BIG
-                  //   i=1 LIVING SOIL  — 11 chars, mixed
-                  //   i=2 OAKLAND CA   — 10 chars but wide letters (O/A/D),
-                  //                      also intentionally smaller as a
-                  //                      hierarchy footnote
-                  const perLineSize = [
-                    "text-[clamp(4.5rem,24vw,7rem)]",   // NO TILL
-                    "text-[clamp(3.5rem,18vw,7rem)]",   // LIVING SOIL
-                    "text-[clamp(2rem,10vw,4rem)]",     // OAKLAND CA
-                  ];
+                  // Every line is set to the SAME width (a justified block),
+                  // so each needs its own font size: a short word like SOIL
+                  // goes much bigger than OAKLAND CA. Size = target width /
+                  // that word's width-per-1px-of-font (LINE_RATIOS, measured
+                  // in Archivo Black at this tracking). The target width is
+                  // --hw on the h1.
+                  const fontSize = `calc(var(--hw) / ${LINE_RATIOS[i]})`;
                   return (
                     <span key={text} aria-hidden="true" className="block overflow-hidden">
                       <motion.span
@@ -160,7 +161,8 @@ export function Hero() {
                           delay: 2.4 + i * 0.13,
                           ease: [0.22, 1, 0.36, 1],
                         }}
-                        className={`block ${perLineSize[i]}`}
+                        className="block whitespace-nowrap"
+                        style={{ fontSize }}
                       >
                         {text}
                       </motion.span>
