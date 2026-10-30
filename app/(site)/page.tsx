@@ -38,7 +38,7 @@ const ORGANIZATION_JSON_LD = {
   url: SITE_URL,
   logo: `${SITE_URL}/icon-512.png`,
   description:
-    "Small-batch, no-till living soil cannabis cultivator based in Oakland, California.",
+    "Small-batch, no-till indoor living soil cannabis cultivator based in Oakland, California.",
   foundingDate: "2017",
   sameAs: [
     "https://www.youtube.com/@FloraFlameCA",

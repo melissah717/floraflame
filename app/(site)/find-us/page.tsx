@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const stockists = await fetchStockists();
   const count = stockists.length;
   const title = "Find Us · Dispensaries Near You";
-  const description = `Find Flora & Flame living soil cannabis at ${count} licensed dispensaries across California. Search by city or zip, or use your location to see the closest shops.`;
+  const description = `Find Flora & Flame indoor living soil cannabis at ${count} licensed dispensaries across California. Search by city or zip, or use your location to see the closest shops.`;
 
   return {
     title,

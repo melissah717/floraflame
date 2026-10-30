@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Flora & Flame",
     short_name: "Flora & Flame",
     description:
-      "Small-batch, no-till living soil cannabis grown in Oakland, CA.",
+      "Small-batch, no-till indoor living soil cannabis grown in Oakland, CA.",
     start_url: "/",
     display: "standalone",
     background_color: "#171717",

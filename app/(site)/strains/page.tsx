@@ -8,9 +8,9 @@ import { getArchiveBatches } from "@/lib/strains"
 // time, without giving up static generation the way force-dynamic would.
 export const revalidate = 3600
 
-const TITLE = "Living Soil Cannabis Strains"
+const TITLE = "Indoor Living Soil Cannabis Strains"
 const DESCRIPTION =
-  "Every strain Flora & Flame has grown in Oakland, California: what's in rotation now, with genetics and terpene profiles, plus the full archive of past batches."
+  "Every indoor living soil strain Flora & Flame has grown in Oakland, California: what's in rotation now, with genetics and terpene profiles, plus the full archive of past batches."
 
 export const metadata: Metadata = {
   title: TITLE,

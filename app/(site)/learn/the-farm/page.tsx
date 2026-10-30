@@ -3,9 +3,9 @@ import { Reveal } from "@/components/scroll-primitives";
 import { FarmChapters } from "@/components/sections/farm-chapters";
 import { LearnMore } from "@/components/learn-more";
 
-const TITLE = "Inside Our Oakland Cannabis Farm"
+const TITLE = "Inside Our Indoor Oakland Cannabis Farm"
 const DESCRIPTION =
-  "Photos and video from inside the Flora & Flame grow in Oakland, California: the rooms, the plants and the hands that grow and trim every small batch."
+  "Photos and video from inside the Flora & Flame indoor living soil grow in Oakland, California: the rooms, the plants and the hands that grow and trim every small batch."
 
 export const metadata: Metadata = {
   title: TITLE,

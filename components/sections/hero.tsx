@@ -24,14 +24,14 @@ import {
  * No pin: the hero is one screen and the page scrolls straight on.
  */
 
-const LINES = ["living", "soil", "oakland ca"];
+const LINES = ["indoor", "living", "soil", "oakland ca"];
 /**
  * Width of each line per 1px of font-size, measured in the browser
  * (Archivo, uppercase, tracking -0.035em). Dividing the target width by
  * these gives each line the font size that makes all three equally wide.
  * Re-measure if the words, font or tracking change.
  */
-const LINE_RATIOS = [3.582, 2.445, 6.8];
+const LINE_RATIOS = [4.217, 3.591, 2.449, 6.828];
 const PANEL_IMAGE = "/logo.png";
 
 export function Hero() {
@@ -135,13 +135,13 @@ export function Hero() {
               between them. */}
           <div className="relative z-10 w-full px-5 sm:px-8">
             <div className="mx-auto w-full max-w-7xl">
-              <h1 className="font-display uppercase leading-[0.85] tracking-[-0.035em] text-white [--hw:min(100vw-2.5rem,30rem)] sm:[--hw:min(100vw-4rem,30rem)]">
+              <h1 className="font-display uppercase leading-[0.85] tracking-[-0.035em] text-white [--hw:min(100vw-2.5rem,26rem)] sm:[--hw:min(100vw-4rem,26rem)]">
                 {/* The display lines read as "living soil oakland ca" on
                     their own: no brand and no "cannabis".
                     Screen readers and search engines get this sentence
                     instead; the visual lines are hidden from them. */}
                 <span className="sr-only">
-                  Flora &amp; Flame: living soil cannabis from Oakland, CA
+                  Flora &amp; Flame: indoor living soil cannabis from Oakland, CA
                 </span>
                 {LINES.map((text, i) => {
                   // Every line is set to the SAME width (a justified block),

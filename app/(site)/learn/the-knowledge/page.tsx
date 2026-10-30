@@ -15,7 +15,7 @@ export const revalidate = 3600;
 
 const TITLE = "Grow Notes & Cannabis Articles"
 const DESCRIPTION =
-  "Articles and notes from the Flora & Flame grow in Oakland, California, grouped by topic, from living soil and cultivation to strains and curing."
+  "Articles and notes from the Flora & Flame indoor living soil grow in Oakland, California, grouped by topic, from living soil and cultivation to strains and curing."
 
 export const metadata: Metadata = {
   title: TITLE,
