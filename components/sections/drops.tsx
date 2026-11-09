@@ -120,8 +120,35 @@ function StrainInfo({
         </button>
       </div>
 
-      {showDescription && (
-        <div>
+      {/* Height-animated reveal: the block grows from 0 to its natural
+          height (and everything below slides, rather than jumps, out of
+          the way) while the copy fades in a beat behind the edge. On
+          close the copy fades first so the panel never collapses over
+          still-opaque text. initial={false} keeps the invisible measuring
+          copies below (and a first paint with it already open) static. */}
+      <AnimatePresence initial={false}>
+        {showDescription && (
+          <motion.div
+            key="description"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{
+              height: "auto",
+              opacity: 1,
+              transition: {
+                height: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+                opacity: { duration: 0.3, ease: "easeOut", delay: 0.1 },
+              },
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+              transition: {
+                height: { duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.05 },
+                opacity: { duration: 0.15, ease: "easeIn" },
+              },
+            }}
+            className="w-full overflow-hidden"
+          >
           <p className="mt-3 max-w-md text-sm leading-relaxed text-neutral-50 sm:mt-4 sm:text-base lg:max-w-2xl lg:text-lg">
             {strain.description}
           </p>
@@ -147,8 +174,9 @@ function StrainInfo({
               )}
             </dl>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
@@ -318,24 +346,35 @@ export function Drops({ strains }: { strains: Strain[] }) {
           </div>
 
           <div ref={infoColumnRef} className="relative flex flex-col items-center text-center lg:items-start lg:text-left">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active.slug}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.3 }}
-                style={{ minHeight: descriptionOpen ? expandedMinH : collapsedMinH }}
-                className="flex flex-col items-center lg:items-start"
-              >
-                <StrainInfo
-                  strain={active}
-                  color={color}
-                  showDescription={descriptionOpen}
-                  onToggleDescription={() => setDescriptionOpen((v) => !v)}
-                />
-              </motion.div>
-            </AnimatePresence>
+            {/* The reserved min-height lives on this wrapper (outside the
+                strain crossfade) and is tweened in step with the description
+                reveal, so toggling More/Less slides the rail and carousel
+                below instead of snapping them — and switching strains never
+                re-animates it. */}
+            <motion.div
+              initial={false}
+              animate={{ minHeight: (descriptionOpen ? expandedMinH : collapsedMinH) ?? 0 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="flex w-full flex-col items-center lg:items-start"
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active.slug}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex w-full flex-col items-center lg:items-start"
+                >
+                  <StrainInfo
+                    strain={active}
+                    color={color}
+                    showDescription={descriptionOpen}
+                    onToggleDescription={() => setDescriptionOpen((v) => !v)}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
 
             {/* Invisible — exists only so ResizeObserver + the layout effect
                 above can measure every strain's natural height (collapsed
