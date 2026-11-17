@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ScrollMarquee } from "@/components/scroll-primitives";
 import { PauseButton } from "@/components/pause-button";
 
-const WORDS = ["Living Soil", "By Hand", "No-Till", "Small Batch", "Oakland"];
+const WORDS = ["Living Soil", "By Hand", "Flora & Flame", "Small Batch", "Oakland"];
 
 /**
  * Full-bleed reel for the top of the footer. Big letters, gradient (later:
@@ -22,7 +22,7 @@ export function MarqueeReel() {
   const [paused, setPaused] = useState(false);
   return (
     <section
-      aria-label="Living soil, by hand, no-till, small batch, Oakland"
+      aria-label="Living soil, by hand, Flora & Flame, small batch, Oakland"
       className="relative isolate overflow-hidden"
       style={{
         background:
