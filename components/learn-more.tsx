@@ -23,8 +23,8 @@ export function LearnMore({ current }: { current: LearnHref }) {
 
   return (
     <nav
-      aria-labelledby="learn-more-heading"
-      className="border-t border-neutral-700 bg-neutral-900 px-5 py-16 text-neutral-50 sm:px-8 sm:py-20 lg:px-14"
+      aria-label="Keep learning"
+      className="bg-neutral-900 px-5 py-16 text-neutral-50 sm:px-8 sm:py-20 lg:px-14"
     >
       <BreadcrumbJsonLd
         trail={[
@@ -32,18 +32,12 @@ export function LearnMore({ current }: { current: LearnHref }) {
           [page.title, page.href],
         ]}
       />
-      <h2
-        id="learn-more-heading"
-        className="text-[13px] uppercase tracking-[0.18em] text-neutral-400"
-      >
-        Keep learning
-      </h2>
-      <ul className="mt-6 grid gap-4 sm:grid-cols-3">
+      <ul className="grid gap-4 sm:grid-cols-3">
         {others.map((p) => (
           <li key={p.href}>
             <Link
               href={p.href}
-              className="group flex h-full items-start justify-between gap-4 border-t border-neutral-700 pt-4"
+              className="group flex h-full items-start justify-between gap-4 rounded-2xl bg-neutral-700/50 p-6 transition-colors hover:bg-neutral-700/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-50 motion-reduce:transition-none sm:p-7"
             >
               <span>
                 <span className="block font-display text-2xl">{p.title}</span>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LivingSoil } from "@/components/sections/living-soil";
+import { TheSoil } from "@/components/sections/the-soil";
 import { LearnMore } from "@/components/learn-more";
 
 const TITLE = "Indoor No-Till Living Soil, Explained"
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function TheSoilPage() {
   return (
     <>
-      <LivingSoil />
+      <TheSoil />
       <LearnMore current="/learn/the-soil" />
     </>
   );
