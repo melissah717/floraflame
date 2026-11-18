@@ -1,16 +1,11 @@
 import Link from "next/link";
 
 import { listBatches } from "@/lib/admin/strains";
-import { listPosts } from "@/lib/admin/posts";
 import { listStockists } from "@/lib/admin/stockists";
 import { strainIssues, worstSeverity } from "@/lib/admin/strain-issues";
 
 export default async function AdminOverviewPage() {
-  const [batches, posts, stockists] = await Promise.all([
-    listBatches(),
-    listPosts(),
-    listStockists(),
-  ]);
+  const [batches, stockists] = await Promise.all([listBatches(), listStockists()]);
 
   const current = batches.filter((b) => b.is_current);
   // Same check the strains list and the edit form use, so the three can't
@@ -18,7 +13,6 @@ export default async function AdminOverviewPage() {
   const needsAttention = batches.filter(
     (b) => worstSeverity(strainIssues(b)) === "warn"
   );
-  const drafts = posts.filter((p) => !p.published);
   // Geocoding is allowed to fail on save, and a stockist without
   // coordinates is silently dropped from the map — so it gets counted here
   // rather than discovered later.
@@ -38,16 +32,6 @@ export default async function AdminOverviewPage() {
             ? `${current.length} in rotation: ${current.map((b) => b.name).join(", ")}`
             : "Nothing is in rotation — the homepage is showing placeholders.",
       warn: current.length === 0 || needsAttention.length > 0,
-    },
-    {
-      href: "/admin/posts",
-      title: "Posts",
-      stat: `${posts.length} post${posts.length === 1 ? "" : "s"}`,
-      detail:
-        drafts.length > 0
-          ? `${drafts.length} draft${drafts.length === 1 ? "" : "s"} not yet published`
-          : "All published.",
-      warn: false,
     },
     {
       href: "/admin/stockists",
@@ -71,7 +55,7 @@ export default async function AdminOverviewPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         {cards.map((card) => (
           <Link
             key={card.href}

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Breakdown } from "@/components/sections/breakdown";
 import { LearnMore } from "@/components/learn-more";
+import { ArticleJsonLd } from "@/lib/json-ld";
 
 const TITLE = "Cannabinoids & Terpenes Explained"
 const DESCRIPTION =
-  "THC, CBD, myrcene, limonene and more: an interactive guide to cannabinoids, terpenes and cannabis plant anatomy, and why they matter more than the number on the label."
+  "THC, CBD, myrcene, limonene and more: a guide to cannabinoids, terpenes and cannabis plant anatomy, and why they matter more than the THC number."
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 export default function TheLeafPage() {
   return (
     <>
+      <ArticleJsonLd path="/learn/the-leaf" headline={TITLE} description={DESCRIPTION} />
       <Breakdown />
       <LearnMore current="/learn/the-leaf" />
     </>

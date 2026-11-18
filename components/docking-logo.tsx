@@ -276,7 +276,7 @@ export function DockingLogo({
        * THIS element's layout box. The Link stayed 1400x175 at z-[60], an
        * invisible full-width hit area pinned over the header, and every nav
        * link under it was dead: elementFromPoint returned this Link for
-       * Home, Strains, Find Us, Learn, Merch, Subscribe and Get in touch.
+       * Home, Strains, Find Us, Events, Learn, Subscribe and Get in touch.
        *
        * Letting only the marks take clicks means the hit area is whatever
        * you can actually see, because those ARE transformed.

@@ -33,9 +33,8 @@ export function SiteFooter() {
                 ["Find Us", "/find-us"],
                 ["Contact", "/#contact"],
                 ["Strains", "/strains"],
+                ["Events", "/events"],
                 ["Learn", "/learn"],
-                ["The Knowledge", "/learn/the-knowledge"],
-                ["Merch", "/merch"],
               ].map(([label, href]) => (
                 <li key={label}>
                   <Link

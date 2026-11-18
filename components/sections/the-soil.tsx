@@ -1,14 +1,15 @@
-"use client";
+"use client"
 
-import { Fragment, useRef, type CSSProperties, type ReactNode } from "react";
-import Image from "next/image";
+import { Fragment, useRef, type CSSProperties, type ReactNode } from "react"
+import Image from "next/image"
+import { SOIL_SOURCES } from "@/lib/soil-sources"
 import {
   motion,
   useReducedMotion,
   useScroll,
   useTransform,
   type MotionValue,
-} from "motion/react";
+} from "motion/react"
 
 /* ------------------------------------------------------------------ */
 /* Content. This is DRAFT copy, written from the photos and from what   */
@@ -24,7 +25,7 @@ const HERO = {
     src: "/soil/bed.jpg",
     alt: "Cannabis stems rising from fabric pots filled with dark living soil, each marked with a small plant tag",
   },
-};
+}
 
 const INTRO = {
   statement:
@@ -34,7 +35,7 @@ const INTRO = {
     "Each bed is built on compost and kept alive by worms, fungi and microbes. They break down what we add at the surface into food the roots can take up, so nothing synthetic goes into the feed.",
     "Leaving the soil alone is the point. Digging tears up the fungal threads and the channels that old roots and worms leave behind. Left in place, they are there for the next plant.",
   ],
-};
+}
 
 const CHAPTERS = [
   {
@@ -62,30 +63,15 @@ const CHAPTERS = [
       src: "/soil/mulch.jpg",
       alt: "Straw and dried leaves mulching a living soil bed, with young cover crop seedlings coming up around a cannabis stem",
     },
-    caption: "Straw and old leaves over the bed, with new cover crop coming through.",
+    caption:
+      "Straw and old leaves over the bed, with new cover crop coming through.",
   },
-];
+]
 
-/** Numbered to match the footnote markers: 1 in the opening statement,
- * 2 in the cover crop chapter, 3 in the mulch chapter. */
-const SOURCES = [
-  {
-    text: "USDA Natural Resources Conservation Service. Principles for High Functioning Soils.",
-    href: "https://www.nrcs.usda.gov/sites/default/files/2023-07/NRCS-Principles-for-High-Functioning-Soils-Factsheet.pdf",
-  },
-  {
-    text: "Sustainable Agriculture Research and Education (SARE). Benefits of Cover Crops, in Managing Cover Crops Profitably, 3rd edition.",
-    href: "https://sare.org/publications/managing-cover-crops-profitably/benefits-of-cover-crops",
-  },
-  {
-    text: "University of Minnesota Extension. Mulching for soil and garden health.",
-    href: "https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/mulching-for-soil-and-garden-health",
-  },
-];
 
 /* ------------------------------------------------------------------ */
 
-const GUTTER = "px-5 sm:px-8 lg:px-14";
+const GUTTER = "px-5 sm:px-8 lg:px-14"
 
 export function TheSoil() {
   return (
@@ -102,7 +88,7 @@ export function TheSoil() {
       ))}
       <Sources />
     </article>
-  );
+  )
 }
 
 /**
@@ -123,19 +109,19 @@ export function TheSoil() {
  * no layout switch after hydration.
  */
 function Hero() {
-  const trackRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
     target: trackRef,
     offset: ["start start", "end end"],
-  });
+  })
 
-  const p = useTransform(scrollYProgress, [0, 0.85], [0, 1]);
-  const clipLeft = useTransform(p, [0, 1], ["58%", "0%"]);
-  const clipRight = useTransform(p, [0, 1], ["3.5%", "0%"]);
-  const clipTop = useTransform(p, [0, 1], ["4%", "0%"]);
-  const clipBottom = useTransform(p, [0, 1], ["6%", "0%"]);
-  const shift = useTransform(p, [0, 1], ["27vw", "0vw"]);
-  const scale = useTransform(p, [0, 1], [1.12, 1]);
+  const p = useTransform(scrollYProgress, [0, 0.85], [0, 1])
+  const clipLeft = useTransform(p, [0, 1], ["58%", "0%"])
+  const clipRight = useTransform(p, [0, 1], ["3.5%", "0%"])
+  const clipTop = useTransform(p, [0, 1], ["4%", "0%"])
+  const clipBottom = useTransform(p, [0, 1], ["6%", "0%"])
+  const shift = useTransform(p, [0, 1], ["27vw", "0vw"])
+  const scale = useTransform(p, [0, 1], [1.12, 1])
 
   const vars = {
     "--cl": clipLeft,
@@ -144,10 +130,10 @@ function Hero() {
     "--cb": clipBottom,
     "--shift": shift,
     "--scale": scale,
-  } as unknown as CSSProperties;
+  } as unknown as CSSProperties
 
   const WINDOW =
-    "lg:motion-safe:[clip-path:inset(var(--ct)_var(--cr)_var(--cb)_var(--cl))]";
+    "lg:motion-safe:[clip-path:inset(var(--ct)_var(--cr)_var(--cb)_var(--cl))]"
 
   return (
     <div ref={trackRef} className="relative lg:motion-safe:h-[220vh]">
@@ -181,28 +167,27 @@ function Hero() {
         </motion.div>
       </div>
     </div>
-  );
+  )
 }
 
 /** The hero's words. Rendered twice at the same spot: once solid (the
  * real <h1>), once for the layer above the photo. */
 function HeroText({ overPhoto = false }: { overPhoto?: boolean }) {
-  const Heading = overPhoto ? "div" : "h1";
+  const Heading = overPhoto ? "div" : "h1"
   return (
     <div
       className={`${GUTTER} lg:motion-safe:absolute lg:motion-safe:bottom-[9%] lg:motion-safe:left-0 lg:motion-safe:w-[60%]`}
     >
       <Heading
         className={`font-display text-[clamp(3.5rem,11vw,11rem)] leading-[0.88] uppercase ${
-          overPhoto
-            ? "text-neutral-50"
-            : ""
+          overPhoto ? "text-neutral-50" : ""
         }`}
       >
-        {HERO.heading.split(" ").map((word) => (
-          <span key={word} className="block">
-            {word}
-          </span>
+        {HERO.heading.split(" ").map((word, index) => (
+          <Fragment key={word}>
+            {index > 0 && " "}
+            <span className="block">{word}</span>
+          </Fragment>
         ))}
       </Heading>
       <p
@@ -213,7 +198,7 @@ function HeroText({ overPhoto = false }: { overPhoto?: boolean }) {
         {HERO.lead}
       </p>
     </div>
-  );
+  )
 }
 
 /**
@@ -224,13 +209,13 @@ function HeroText({ overPhoto = false }: { overPhoto?: boolean }) {
  * everything hugging the left edge.
  */
 function Intro() {
-  const ref = useRef<HTMLParagraphElement>(null);
-  const reduce = useReducedMotion();
+  const ref = useRef<HTMLParagraphElement>(null)
+  const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 85%", "end 45%"],
-  });
-  const words = INTRO.statement.split(" ");
+  })
+  const words = INTRO.statement.split(" ")
 
   return (
     <section className={`${GUTTER} py-24 sm:py-36`}>
@@ -261,7 +246,7 @@ function Intro() {
         ))}
       </div>
     </section>
-  );
+  )
 }
 
 /** One word of the statement: dim until the scroll reaches its slot. */
@@ -272,18 +257,18 @@ function LitWord({
   end,
   disabled,
 }: {
-  children: ReactNode;
-  progress: MotionValue<number>;
-  start: number;
-  end: number;
-  disabled: boolean;
+  children: ReactNode
+  progress: MotionValue<number>
+  start: number
+  end: number
+  disabled: boolean
 }) {
-  const opacity = useTransform(progress, [start, end], [0.22, 1]);
+  const opacity = useTransform(progress, [start, end], [0.22, 1])
   return (
     <motion.span style={disabled ? undefined : { opacity }}>
       {children}
     </motion.span>
-  );
+  )
 }
 
 function Chapter({
@@ -291,9 +276,9 @@ function Chapter({
   refNumber,
   flip,
 }: {
-  chapter: (typeof CHAPTERS)[number];
-  refNumber: number;
-  flip: boolean;
+  chapter: (typeof CHAPTERS)[number]
+  refNumber: number
+  flip: boolean
 }) {
   return (
     <section className={`${GUTTER} pb-24 sm:pb-36`}>
@@ -309,7 +294,10 @@ function Chapter({
           </h2>
           <div className="mt-8 space-y-6">
             {chapter.paragraphs.map((text, index) => (
-              <p key={text} className="max-w-md text-lg leading-relaxed text-neutral-300">
+              <p
+                key={text}
+                className="max-w-md text-lg leading-relaxed text-neutral-300"
+              >
                 {text}
                 {index === 0 && <Ref n={refNumber} />}
               </p>
@@ -318,7 +306,7 @@ function Chapter({
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 /**
@@ -330,28 +318,28 @@ function SwipeFigure({
   image,
   from,
 }: {
-  image: { src: string; alt: string };
-  from: "left" | "right";
+  image: { src: string; alt: string }
+  from: "left" | "right"
 }) {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLElement>(null)
 
   const { scrollYProgress: reveal } = useScroll({
     target: ref,
     offset: ["start 95%", "start 40%"],
-  });
+  })
   const { scrollYProgress: travel } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
-  });
+  })
 
-  const closed = useTransform(reveal, [0, 1], ["55%", "0%"]);
-  const drift = useTransform(travel, [0, 1], ["-5%", "5%"]);
+  const closed = useTransform(reveal, [0, 1], ["55%", "0%"])
+  const drift = useTransform(travel, [0, 1], ["-5%", "5%"])
 
   const vars = {
     "--l": from === "right" ? closed : "0%",
     "--r": from === "left" ? closed : "0%",
     "--drift": drift,
-  } as unknown as CSSProperties;
+  } as unknown as CSSProperties
 
   return (
     <motion.figure
@@ -369,7 +357,7 @@ function SwipeFigure({
         />
       </div>
     </motion.figure>
-  );
+  )
 }
 
 /** A footnote marker that jumps to its entry in the Sources list. */
@@ -384,7 +372,7 @@ function Ref({ n }: { n: number }): ReactNode {
         {n}
       </a>
     </sup>
-  );
+  )
 }
 
 function Sources() {
@@ -397,7 +385,7 @@ function Sources() {
         Sources
       </h2>
       <ol className="mt-6 max-w-3xl space-y-4 text-base leading-relaxed text-neutral-300">
-        {SOURCES.map((source, index) => (
+        {SOIL_SOURCES.map((source, index) => (
           <li
             key={index}
             id={`source-${index + 1}`}
@@ -419,5 +407,5 @@ function Sources() {
         ))}
       </ol>
     </section>
-  );
+  )
 }

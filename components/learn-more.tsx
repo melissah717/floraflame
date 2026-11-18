@@ -6,13 +6,12 @@ const PAGES = [
   { href: "/learn/the-leaf", title: "The Leaf", blurb: "Cannabinoids, terpenes and plant anatomy" },
   { href: "/learn/the-soil", title: "The Soil", blurb: "How no-till living soil works" },
   { href: "/learn/the-farm", title: "The Farm", blurb: "Inside the Oakland grow" },
-  { href: "/learn/the-knowledge", title: "The Knowledge", blurb: "Notes from the grow" },
 ] as const
 
 type LearnHref = (typeof PAGES)[number]["href"]
 
 /**
- * Footer for each Learn page: links to the other three, plus the page's
+ * Footer for each Learn page: links to the other two, plus the page's
  * breadcrumb structured data. Pages that only link "up" to /learn leave
  * Google (and readers) a dead end; cross-links pass relevance between them
  * and keep people reading.
@@ -32,7 +31,7 @@ export function LearnMore({ current }: { current: LearnHref }) {
           [page.title, page.href],
         ]}
       />
-      <ul className="grid gap-4 sm:grid-cols-3">
+      <ul className="grid gap-4 sm:grid-cols-2">
         {others.map((p) => (
           <li key={p.href}>
             <Link

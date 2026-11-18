@@ -1,4 +1,4 @@
-import { SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 /**
  * Serializes structured data for a `<script type="application/ld+json">`.
@@ -35,6 +35,60 @@ export function BreadcrumbJsonLd({ trail }: { trail: [string, string][] }) {
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs(trail)) }}
+    />
+  );
+}
+
+/**
+ * Article schema for the editorial Learn pages. Ties the page to the
+ * brand (author and publisher both point at the Organization defined on
+ * the home page) and, where a page cites sources, lists them as
+ * `citation`. Dates are left out on purpose: these pages have no real
+ * publish date, and an invented one is worse than none.
+ */
+export function ArticleJsonLd({
+  path,
+  headline,
+  description,
+  image,
+  citation,
+}: {
+  path: string;
+  headline: string;
+  description: string;
+  image?: string;
+  citation?: { text: string; href: string }[];
+}) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline,
+    description,
+    ...(image ? { image: image.startsWith("http") ? image : `${SITE_URL}${image}` } : {}),
+    author: { "@id": `${SITE_URL}/#organization` },
+    publisher: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}/icon-512.png`,
+    },
+    mainEntityOfPage: `${SITE_URL}${path}`,
+    inLanguage: "en-US",
+    ...(citation?.length
+      ? {
+          citation: citation.map((c) => ({
+            "@type": "CreativeWork",
+            name: c.text,
+            url: c.href,
+          })),
+        }
+      : {}),
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: jsonLd(data) }}
     />
   );
 }

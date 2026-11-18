@@ -578,9 +578,12 @@ export function Drops({ strains }: { strains: Strain[] }) {
                   />
                   <div className="relative z-10 h-full w-full overflow-hidden rounded-full bg-neutral-800">
                     <div className="absolute inset-1.5 overflow-hidden rounded-full">
+                      {/* The button is already labelled with the strain
+                          name, so this alt doesn't change what a screen
+                          reader says; it's what image search reads. */}
                       <Image
                         src={s.image}
-                        alt=""
+                        alt={`${s.name} cannabis flower`}
                         fill
                         // Requested well above the card's actual on-screen
                         // size so the hover scale-up (and the coverflow's

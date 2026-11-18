@@ -44,8 +44,8 @@ const NAV_LINKS = [
   ["Home", "/"],
   ["Strains", "/strains"],
   ["Find Us", "/find-us"],
+  ["Events", "/events"],
   ["Learn", "/learn"],
-  ["Merch", "/merch"],
 ] as const;
 
 function isCurrent(pathname: string, href: string) {

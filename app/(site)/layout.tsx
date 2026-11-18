@@ -11,7 +11,7 @@ import { SmoothScroll } from "@/components/smooth-scroll"
  * gets a clean page instead of inheriting the age gate and the preloader.
  *
  * `(site)` is a route group: it scopes this layout without appearing in
- * any URL. /, /strains, /learn and /merch are all exactly where they were.
+ * any URL. /, /strains and /learn are all exactly where they were.
  */
 export default function SiteLayout({
   children,

@@ -1,15 +1,7 @@
 import type { MetadataRoute } from "next";
-import { getBlogPosts, isPlaceholderPost } from "@/lib/blog";
 import { SITE_URL as BASE_URL } from "@/lib/site";
 
-// Rebuilt at most hourly so new posts and pages show up without a deploy.
-export const revalidate = 3600;
-
-// /merch is excluded on purpose — it's a thin placeholder page (see its
-// own noindex) with nothing unique for a search engine to index yet.
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const posts = (await getBlogPosts()).filter((p) => !isPlaceholderPost(p));
-
+export default function sitemap(): MetadataRoute.Sitemap {
   /*
    * lastModified is only asserted where a real date exists.
    *
@@ -18,43 +10,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
    * lastmod that's demonstrably wrong as noise and starts ignoring the
    * field, which costs the signal on the pages where it IS accurate.
    *
-   * Pages driven by content get their content's real timestamp. Editorial
-   * pages, whose copy only changes when someone edits the component, get
-   * no lastModified at all — the field is optional, and omitting it is
-   * honest where inventing one is not.
+   * These pages' copy only changes when someone edits a component, so
+   * none of them gets a lastModified — the field is optional, and
+   * omitting it is honest where inventing one is not.
    */
-  const newestPost = posts
-    .map((p) => p.updatedAt)
-    .sort()
-    .at(-1);
-
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE_URL, changeFrequency: "weekly", priority: 1 },
     { url: `${BASE_URL}/strains`, changeFrequency: "weekly", priority: 0.8 },
     // Stockists change as the sheet does, so weekly is honest.
     { url: `${BASE_URL}/find-us`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/events`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE_URL}/learn`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE_URL}/learn/the-leaf`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/learn/the-soil`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/learn/the-farm`, changeFrequency: "monthly", priority: 0.6 },
-    {
-      url: `${BASE_URL}/learn/the-knowledge`,
-      // The index genuinely changes whenever its newest post does.
-      ...(newestPost ? { lastModified: new Date(newestPost) } : {}),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
     { url: `${BASE_URL}/accessibility`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${BASE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${BASE_URL}/terms`, changeFrequency: "yearly", priority: 0.2 },
   ];
 
-  const postRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `${BASE_URL}/learn/the-knowledge/${post.slug}`,
-    lastModified: new Date(post.updatedAt),
-    changeFrequency: "monthly",
-    priority: 0.5,
-  }));
-
-  return [...staticRoutes, ...postRoutes];
+  return staticRoutes;
 }

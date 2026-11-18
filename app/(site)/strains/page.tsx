@@ -10,7 +10,7 @@ export const revalidate = 3600
 
 const TITLE = "Indoor Living Soil Cannabis Strains"
 const DESCRIPTION =
-  "Every indoor living soil strain Flora & Flame has grown in Oakland, California: what's in rotation now, with genetics and terpene profiles, plus the full archive of past batches."
+  "Every indoor living soil strain we've grown in Oakland, CA: what's in rotation now, with genetics and terpene profiles, plus the archive of past batches."
 
 export const metadata: Metadata = {
   title: TITLE,

@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /*
+   * The blog (Learn → The Knowledge) and the Merch page were removed: both
+   * were empty placeholders. Their old addresses may still be in Google's
+   * index or in someone's bookmarks, so they redirect permanently (308)
+   * to the closest live page instead of answering 404.
+   */
+  async redirects() {
+    return [
+      { source: "/learn/the-knowledge/:slug*", destination: "/learn", permanent: true },
+      { source: "/merch", destination: "/", permanent: true },
+      { source: "/admin/posts/:path*", destination: "/admin", permanent: false },
+    ];
+  },
   images: {
     remotePatterns: [
       // Placeholder images only — remove once real photography lands.
@@ -8,8 +21,8 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "picsum.photos",
       },
-      // Blog hero images — hosted on Cloudinary, referenced via URL in
-      // the "Hero Image" column of the blog's Google Sheet.
+      // Site photography — strains, Learn pages and the farm gallery —
+      // hosted on Cloudinary.
       {
         protocol: "https",
         hostname: "res.cloudinary.com",

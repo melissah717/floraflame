@@ -668,7 +668,15 @@ function Thumbnail({
         }
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Image src={batch.nugImage ?? batch.image} alt="" fill sizes="80px" className="object-contain" />
+        {/* The button's aria-label already names the strain, so this alt
+            only matters to image search, not to screen readers. */}
+        <Image
+          src={batch.nugImage ?? batch.image}
+          alt={`${batch.name} cannabis flower`}
+          fill
+          sizes="80px"
+          className="object-contain"
+        />
       </motion.div>
       {batch.isCurrent && (
         <span

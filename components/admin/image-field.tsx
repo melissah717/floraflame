@@ -83,12 +83,10 @@ export function ImageField({
   error?: string;
   defaultValue?: string | null;
   /**
-   * Pass value + onValueChange to let a parent own the URL.
-   *
-   * The paragraph repeater in post-form.tsx has to: reordering sections
-   * swaps entries in ITS state, so if the URL only lived in here, moving a
-   * section up would carry the old image with the new position and quietly
-   * lose the one you just uploaded.
+   * Pass value + onValueChange to let a parent own the URL. Needed by any
+   * form that can reorder a list of image fields: if the URL only lived in
+   * here, moving an entry would carry the old image with the new position
+   * and quietly lose the one you just uploaded.
    */
   value?: string;
   onValueChange?: (next: string) => void;

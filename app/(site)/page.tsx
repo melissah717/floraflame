@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  // Stable id so other pages' schema (blog posts, the Find Us list) can
+  // Stable id so other pages' schema (the Learn articles, the Find Us list) can
   // point at this one entity instead of describing the brand again.
   "@id": `${SITE_URL}/#organization`,
   name: SITE_NAME,

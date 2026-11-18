@@ -7,7 +7,7 @@ import { BreadcrumbJsonLd } from "@/lib/json-ld";
 
 const TITLE = "Learn About Indoor Living Soil Cannabis"
 const DESCRIPTION =
-  "Cannabinoids and terpenes, how no-till living soil works, a look inside our indoor Oakland grow, and notes from the garden, from a small-batch California cultivator."
+  "Cannabinoids and terpenes, how no-till living soil works, and a look inside our indoor Oakland grow, from a small-batch California cultivator."
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -18,9 +18,12 @@ export const metadata: Metadata = {
 const IMG = "https://res.cloudinary.com/g0mcdcfr/image/upload";
 
 /**
- * Four square cards, each a photo under a dark wash with the title on top.
+ * Three square cards, each a photo under a dark wash with the title on top.
  * No accent colours, numbers or kickers: the photo does the differentiating
- * and the type stays one voice across all four.
+ * and the type stays one voice across all three.
+ *
+ * Three across on large screens. Between phone and large, two columns would
+ * leave the third card alone in a row, so it spans both and goes wide.
  */
 const ENTRIES = [
   {
@@ -47,14 +50,6 @@ const ENTRIES = [
     image: `${IMG}/v1789669950/aisle-center-view.jpg`,
     alt: "Center aisle of the Oakland grow room",
   },
-  {
-    slug: "the-knowledge",
-    title: "The Knowledge",
-    excerpt:
-      "Everything else worth writing down, grouped by topic and added to as we go.",
-    image: `${IMG}/v1786498062/plant-pots.jpg`,
-    alt: "Plant pots in the grow room",
-  },
 ];
 
 /** Shared side padding — matches the other full-bleed sections
@@ -75,12 +70,19 @@ export default function LearnPage() {
         </p>
       </Reveal>
 
-      <div className="mt-16 grid gap-4 sm:mt-20 sm:grid-cols-2 sm:gap-5 lg:gap-6">
-        {ENTRIES.map((entry, index) => (
-          <Reveal key={entry.slug} delay={index * 0.06}>
-            <LearnCard entry={entry} priority={index < 2} />
-          </Reveal>
-        ))}
+      <div className="mt-16 grid gap-4 sm:mt-20 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
+        {ENTRIES.map((entry, index) => {
+          const wide = index === ENTRIES.length - 1;
+          return (
+            <Reveal
+              key={entry.slug}
+              delay={index * 0.06}
+              className={wide ? "sm:col-span-2 lg:col-span-1" : undefined}
+            >
+              <LearnCard entry={entry} priority={index < 2} wide={wide} />
+            </Reveal>
+          );
+        })}
       </div>
     </div>
   );
@@ -89,14 +91,18 @@ export default function LearnPage() {
 function LearnCard({
   entry,
   priority,
+  wide,
 }: {
   entry: (typeof ENTRIES)[number];
   priority: boolean;
+  wide: boolean;
 }) {
   return (
     <Link
       href={`/learn/${entry.slug}`}
-      className="group relative block aspect-square overflow-hidden rounded-md bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-50/70"
+      className={`group relative block overflow-hidden rounded-md bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-50/70 ${
+        wide ? "aspect-square sm:aspect-[2/1] lg:aspect-square" : "aspect-square"
+      }`}
     >
       {/* Photo — eases in a touch on hover, behind everything.
           will-change-transform is load-bearing, not a micro-optimisation:
@@ -109,7 +115,11 @@ function LearnCard({
         alt={entry.alt}
         fill
         priority={priority}
-        sizes="(max-width: 640px) 100vw, 50vw"
+        sizes={
+          wide
+            ? "(max-width: 1024px) 100vw, 33vw"
+            : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        }
         className="object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.04]"
       />
       {/* Black wash. Sits heavy at rest so the type reads, lifts slightly on

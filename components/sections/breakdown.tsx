@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react"
 import Image from "next/image"
 import {
   motion,
@@ -483,21 +483,21 @@ export function Breakdown() {
               }
               className="pointer-events-none absolute inset-0 text-neutral-50"
             >
-              {HEADLINE.split(" ").map((word) => (
-                <span
-                  key={`${word}-smoke`}
-                  className="inline-block whitespace-nowrap"
-                >
-                  {word}
-                  <span className="inline-block w-[0.24em]" />
-                </span>
+              {/* Real spaces between the words, not spacer spans: a
+                  search engine reads this heading's text, and spacers
+                  made it "Knowwhatyou'resmoking". */}
+              {HEADLINE.split(" ").map((word, index, words) => (
+                <Fragment key={`${word}-smoke`}>
+                  <span className="inline-block whitespace-nowrap">{word}</span>
+                  {index < words.length - 1 && " "}
+                </Fragment>
               ))}
             </motion.span>
-            {HEADLINE.split(" ").map((word) => (
-              <span key={word} className="inline-block whitespace-nowrap">
-                {word}
-                <span className="inline-block w-[0.24em]" />
-              </span>
+            {HEADLINE.split(" ").map((word, index, words) => (
+              <Fragment key={word}>
+                <span className="inline-block whitespace-nowrap">{word}</span>
+                {index < words.length - 1 && " "}
+              </Fragment>
             ))}
           </motion.h2>
         </div>

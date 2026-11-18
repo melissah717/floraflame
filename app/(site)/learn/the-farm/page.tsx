@@ -5,7 +5,7 @@ import { LearnMore } from "@/components/learn-more";
 
 const TITLE = "Inside Our Indoor Oakland Cannabis Farm"
 const DESCRIPTION =
-  "Photos and video from inside the Flora & Flame indoor living soil grow in Oakland, California: the rooms, the plants and the hands that grow and trim every small batch."
+  "Photos and video from inside our indoor living soil grow in Oakland, California: the rooms, the plants and the hands that grow and trim every batch."
 
 export const metadata: Metadata = {
   title: TITLE,

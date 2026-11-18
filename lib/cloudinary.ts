@@ -10,10 +10,10 @@
  * That delivers the full-size PNG. The same asset with `f_auto,q_auto` is
  * an eighth of the size, because Cloudinary picks AVIF/WebP per browser and
  * tunes quality per image. Every other Cloudinary asset on the site already
- * asks for that (see components/sections/about.tsx); the strain and blog
+ * asks for that (see components/sections/about.tsx); the strain
  * photos were the ones that didn't.
  *
- * Applied in the data layer — lib/strains.ts and lib/blog.ts — rather than
+ * Applied in the data layer — lib/strains.ts — rather than
  * at each <Image>, so every consumer gets it, including metadata, JSON-LD,
  * and anything added later. A URL pasted by hand into the admin picks it up
  * on read without anyone having to remember.

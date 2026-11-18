@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { Fragment, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import {
   motion,
@@ -469,24 +469,30 @@ function ChapterTitle({
       className="absolute inset-0 flex flex-wrap content-center items-center justify-center gap-x-[0.22em] px-5 text-center font-display uppercase leading-[0.9] tracking-[-0.03em] text-white [mix-blend-mode:difference] text-[clamp(2.75rem,9vw,8.5rem)]"
       style={{ perspective: 800 }}
     >
+      {/* The " " between words is collapsed by flex layout (the gap does
+          the spacing), but it stays in the heading's text, so search
+          engines read "The room", not "Theroom". */}
       {words.map((w, i) => (
-        <span key={`${w}-${i}`} className="inline-block overflow-hidden py-[0.06em]">
-          <motion.span
-            className="inline-block will-change-transform"
-            style={{ transformOrigin: "50% 100%" }}
-            initial={false}
-            animate={disabled ? { opacity: onStage ? 1 : 0 } : POSES[pose]}
-            transition={{
-              duration: disabled ? 0.2 : 0.55,
-              ease: WORD_EASE,
-              // Incoming words wait a beat so the outgoing ones clear first,
-              // then cascade in; outgoing words leave almost together.
-              delay: disabled ? 0 : onStage ? 0.14 + i * 0.07 : i * 0.03,
-            }}
-          >
-            {w}
-          </motion.span>
-        </span>
+        <Fragment key={`${w}-${i}`}>
+          {i > 0 && " "}
+          <span className="inline-block overflow-hidden py-[0.06em]">
+            <motion.span
+              className="inline-block will-change-transform"
+              style={{ transformOrigin: "50% 100%" }}
+              initial={false}
+              animate={disabled ? { opacity: onStage ? 1 : 0 } : POSES[pose]}
+              transition={{
+                duration: disabled ? 0.2 : 0.55,
+                ease: WORD_EASE,
+                // Incoming words wait a beat so the outgoing ones clear first,
+                // then cascade in; outgoing words leave almost together.
+                delay: disabled ? 0 : onStage ? 0.14 + i * 0.07 : i * 0.03,
+              }}
+            >
+              {w}
+            </motion.span>
+          </span>
+        </Fragment>
       ))}
     </motion.h2>
   )
