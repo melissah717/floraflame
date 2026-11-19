@@ -7,7 +7,10 @@ import {
   eventDateParts,
   formatEventDate,
   formatEventTime,
+  getEvents,
+  isOptimizableImage,
   splitEvents,
+  toPacificIso,
   type SiteEvent,
 } from "@/lib/events"
 import { SITE_URL } from "@/lib/site"
@@ -29,8 +32,8 @@ export const metadata: Metadata = {
 const GUTTER = "px-5 sm:px-8 lg:px-14"
 const INSTAGRAM = "https://www.instagram.com/floraandflameca/"
 
-export default function EventsPage() {
-  const { upcoming, past } = splitEvents()
+export default async function EventsPage() {
+  const { upcoming, past } = splitEvents(await getEvents())
 
   return (
     <div
@@ -147,8 +150,9 @@ function EventRow({
       <div className={`lg:col-span-7 ${flip ? "lg:order-1" : ""}`}>
         <p className="font-display text-2xl leading-none text-neutral-400 uppercase sm:text-3xl">
           {formatEventDate(event)}
+          {event.kind ? ` · ${event.kind}` : ""}
         </p>
-        <h2 className="mt-4 font-display text-[clamp(2.5rem,6vw,5.5rem)] leading-[0.88] tracking-[-0.03em] uppercase">
+        <h2 className="mt-4 font-display text-[clamp(2.25rem,5vw,5rem)] leading-[0.88] tracking-[-0.03em] [overflow-wrap:break-word] uppercase">
           {event.title}
         </h2>
 
@@ -158,7 +162,7 @@ function EventRow({
             <dd className="mt-1 text-lg leading-snug">
               {event.startsAt ? (
                 <>
-                  <time dateTime={event.startsAt}>
+                  <time dateTime={toPacificIso(event.startsAt)}>
                     {formatEventDate(event)}
                   </time>
                   {time && (
@@ -251,6 +255,9 @@ function Poster({
           fill
           sizes={sizes}
           preload={priority}
+          // A poster pasted from anywhere but our Cloudinary account is
+          // shown as-is; next/image would refuse to optimize that host.
+          unoptimized={!isOptimizableImage(event.poster)}
           className="object-cover"
         />
       ) : (
@@ -302,8 +309,8 @@ function eventJsonLd(event: SiteEvent) {
     "@context": "https://schema.org",
     "@type": "Event",
     name: event.title,
-    startDate: event.startsAt,
-    ...(event.endsAt ? { endDate: event.endsAt } : {}),
+    startDate: toPacificIso(event.startsAt),
+    ...(event.endsAt ? { endDate: toPacificIso(event.endsAt) } : {}),
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     location: {

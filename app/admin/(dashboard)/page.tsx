@@ -2,10 +2,20 @@ import Link from "next/link";
 
 import { listBatches } from "@/lib/admin/strains";
 import { listStockists } from "@/lib/admin/stockists";
+import { listEvents } from "@/lib/admin/events";
+import { isPast, rowToEvent } from "@/lib/events";
 import { strainIssues, worstSeverity } from "@/lib/admin/strain-issues";
 
 export default async function AdminOverviewPage() {
-  const [batches, stockists] = await Promise.all([listBatches(), listStockists()]);
+  const [batches, stockists, eventsResult] = await Promise.all([
+    listBatches(),
+    listStockists(),
+    listEvents(),
+  ]);
+  const upcomingEvents = eventsResult.events.filter(
+    (e) => e.published && !isPast(rowToEvent(e))
+  );
+  const draftEvents = eventsResult.events.filter((e) => !e.published);
 
   const current = batches.filter((b) => b.is_current);
   // Same check the strains list and the edit form use, so the three can't
@@ -34,6 +44,21 @@ export default async function AdminOverviewPage() {
       warn: current.length === 0 || needsAttention.length > 0,
     },
     {
+      href: "/admin/events",
+      title: "Events",
+      stat: eventsResult.error
+        ? "Not set up"
+        : `${upcomingEvents.length} upcoming`,
+      detail: eventsResult.error
+        ? "Run supabase/events.sql to create the table."
+        : draftEvents.length > 0
+          ? `${draftEvents.length} draft${draftEvents.length === 1 ? "" : "s"} hidden from the site`
+          : upcomingEvents.length > 0
+            ? upcomingEvents.map((e) => e.title).join(", ")
+            : "Nothing coming up — /events says so.",
+      warn: Boolean(eventsResult.error),
+    },
+    {
       href: "/admin/stockists",
       title: "Stockists",
       stat: `${stockists.length} location${stockists.length === 1 ? "" : "s"}`,
@@ -55,7 +80,7 @@ export default async function AdminOverviewPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
           <Link
             key={card.href}

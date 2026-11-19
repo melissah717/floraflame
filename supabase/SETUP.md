@@ -12,6 +12,11 @@ It's idempotent, so re-running after an edit is safe. It creates
 `admin_users`, `blog_posts` and `stockists`, and adds admin-only write
 policies to those plus the existing `drop_batches`.
 
+Then do the same with **`supabase/events.sql`**. It creates the `events`
+table behind `/events` and `/admin/events`, and adds the first event. Until
+it has run, `/events` shows the fallback list in `lib/events.ts` and the
+admin Events page says the table is missing.
+
 ## 2. Create your login
 
 Supabase → Authentication → Users → **Add user**.
