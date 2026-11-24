@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Map as MapboxMap, Marker } from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
 import { directionsUrl, stockistKey, type Stockist } from "@/lib/stockists";
 
 type Pin = Stockist & { miles?: number };
@@ -68,7 +67,13 @@ export function StockistMap({
     let cancelled = false;
 
     (async () => {
-      const mapboxgl = (await import("mapbox-gl")).default;
+      // The stylesheet loads here, with the library, rather than as a
+      // top-of-file import: imported up there it was a render-blocking
+      // download on every page that has a map, before anything could paint.
+      const [{ default: mapboxgl }] = await Promise.all([
+        import("mapbox-gl"),
+        import("mapbox-gl/dist/mapbox-gl.css"),
+      ]);
       if (cancelled || !container.current || map.current) return;
 
       if (!hasWebGL()) {

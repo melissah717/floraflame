@@ -332,7 +332,7 @@ export function About() {
             playsInline
             preload="none"
             aria-hidden="true"
-            poster="https://res.cloudinary.com/g0mcdcfr/video/upload/so_0,q_auto,w_1200/v1786661231/About_drone_i8aaia.jpg"
+            poster="https://res.cloudinary.com/g0mcdcfr/video/upload/so_0,f_auto,q_auto,w_1000/v1786661231/About_drone_i8aaia.jpg"
           >
             <source
               src="https://res.cloudinary.com/g0mcdcfr/video/upload/vc_h264,f_mp4,q_auto,w_1600/v1786661231/About_drone_i8aaia.mp4"

@@ -1,12 +1,17 @@
 /**
- * Stockist data + location helpers.
+ * Stockist types + location helpers. Safe to import from browser code.
+ *
+ * The database read lives in lib/stockists-data.ts on purpose. It used to
+ * sit in this file, and because the store finder (a browser component)
+ * imports its helpers from here, the whole Supabase client library came
+ * along into every visitor's download: ~63 KB compressed that the public
+ * pages never run. Keep anything that touches the database out of here.
  *
  * Rows live in Supabase `stockists` and are edited at /admin/stockists.
  * lat/lng are geocoded from the address when the row is saved, so nothing
  * fills them in by hand.
  */
 
-import { supabase } from "@/lib/supabase";
 
 export type Stockist = {
   name: string;
@@ -237,83 +242,4 @@ export function directionsUrl(s: Stockist): string {
     `${s.name}, ${s.address}, ${s.city}, ${s.state} ${s.zip}`
   );
   return `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
-}
-
-/* ------------------------------------------------------------------ */
-/* Supabase                                                            */
-/* ------------------------------------------------------------------ */
-
-const LOG = "[stockists]";
-
-/**
- * Pull stockists from Supabase `stockists`, written from /admin/stockists.
- *
- * This used to read a published-to-web Google Sheet as CSV, with an Apps
- * Script bolted to the sheet to fill lat/lng. Both are gone: the admin
- * geocodes on save (see lib/admin/geocode.ts), and coordinates arrive in
- * the row already. The old path also had a failure mode worth not missing
- * — revoking publish-to-web made Google answer 200 with an HTML sign-in
- * page, which parsed into garbage rather than an error.
- *
- * EVERY PATH LOGS, INCLUDING SUCCESS. A fallback that hides why it fired
- * is worse than a crash, and these run at BUILD time (the page is
- * prerendered with revalidate), so look in Vercel's Build Logs.
- */
-export async function fetchStockists(): Promise<Stockist[]> {
-  const { data, error } = await supabase
-    .from("stockists")
-    .select("name, address, city, state, zip, lat, lng, status, phone, notes")
-    .order("sort_order", { ascending: true })
-    .order("name", { ascending: true });
-
-  if (error) {
-    console.error(`${LOG} fetchStockists failed:`, error.message);
-    return STOCKISTS;
-  }
-
-  const parsed: Stockist[] = (data ?? []).map((row) => ({
-    name: row.name,
-    address: row.address,
-    city: row.city,
-    state: row.state || "CA",
-    zip: row.zip,
-    lat: Number(row.lat),
-    lng: Number(row.lng),
-    status: (["carrying", "restocking", "paused"].includes(row.status)
-      ? row.status
-      : "carrying") as Stockist["status"],
-    phone: row.phone || undefined,
-    notes: row.notes || undefined,
-  }));
-
-  // Rows without usable coordinates can't be sorted or pinned, so they're
-  // dropped rather than rendered. Geocoding is allowed to fail on save
-  // (a typo'd address shouldn't block the write), so this stays.
-  const usable = parsed.filter(
-    (s) =>
-      s.name &&
-      Number.isFinite(s.lat) &&
-      Number.isFinite(s.lng) &&
-      s.lat !== 0 &&
-      s.lng !== 0
-  );
-
-  if (parsed.length && !usable.length) {
-    console.error(
-      `${LOG} ${parsed.length} row(s), none usable — every row is missing ` +
-        `coordinates. Re-save them in /admin/stockists to geocode.`
-    );
-    return STOCKISTS;
-  }
-
-  const dropped = parsed.length - usable.length;
-  if (dropped) {
-    console.warn(
-      `${LOG} ${dropped} row(s) skipped — no coordinates. Re-save them in ` +
-        `/admin/stockists to geocode.`
-    );
-  }
-
-  console.log(`${LOG} Loaded ${usable.length} stockist(s).`);
-  return usable;
 }

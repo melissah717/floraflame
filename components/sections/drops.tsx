@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
-import { type Strain } from "@/lib/strains";
+// `import type`, not `import { type … }`: the second form leaves a bare
+// import of lib/strains behind in the browser bundle, and that file pulls
+// in the Supabase client (~63 KB compressed) that only the server uses.
+import type { Strain } from "@/lib/strains";
 import { RGB, anchorForSpectrum, colorForHybrid } from "@/lib/spectrum";
 import { RippleBackdrop, SpectrumBackdrop } from "@/components/spectrum-backdrop";
 import { NugZoom } from "@/components/nug-zoom";

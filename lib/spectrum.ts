@@ -1,4 +1,24 @@
-import { SPECTRUM_POSITIONS, type SpectrumPosition } from "@/lib/strains";
+/*
+ * Browser-safe: nothing here may import lib/strains or anything else that
+ * touches the database. This file used to take SPECTRUM_POSITIONS from
+ * lib/strains, and since the Drops carousel and the strain archive (both
+ * browser components) import their colours from here, that one import
+ * dragged the whole Supabase client into every visitor's download.
+ */
+
+/**
+ * Where a strain sits on the indica → sativa spectrum, relative to the
+ * others — not a lab-measured ratio, just a qualitative bucket.
+ */
+export const SPECTRUM_POSITIONS = [
+  "Indica",
+  "Indica-Leaning Hybrid",
+  "Balanced Hybrid",
+  "Sativa-Leaning Hybrid",
+  "Sativa",
+] as const;
+
+export type SpectrumPosition = (typeof SPECTRUM_POSITIONS)[number];
 
 /**
  * Indica -> Hybrid -> Sativa color ramp, shared by the Drops rail/glow and

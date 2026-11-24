@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { FindUs } from "@/components/sections/find-us";
-import { fetchStockists } from "@/lib/stockists";
+import { fetchStockists } from "@/lib/stockists-data";
 import { BreadcrumbJsonLd } from "@/lib/json-ld";
 import { StockistDirectory } from "@/components/stockist-directory";
 
