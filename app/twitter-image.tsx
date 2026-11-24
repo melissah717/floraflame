@@ -60,7 +60,10 @@ export default async function Image() {
             color: "#a29886",
           }}
         >
-          LICENSE #{LICENSE_NUMBER} · 21+ ONLY
+          {/* One string, not text + variable + text: the image renderer
+              treats those as three children and refuses a <div> with
+              several children unless it's display:flex. */}
+          {`LICENSE #${LICENSE_NUMBER} · 21+ ONLY`}
         </div>
       </div>
     ),
