@@ -62,7 +62,7 @@ const CHAPTERS: Chapter[] = [
   },
   {
     title: "The plants",
-    caption: "Living soil beds. No-till, no synthetics.",
+    caption: "Living soil beds. Indoor, no synthetics.",
     frames: [
       { src: `${IMG}/v1789669981/FF-2_1_ddbrr3.jpg`, alt: "Plants in the living soil beds, Oakland facility" },
       { src: `${IMG}/v1786484377/bottom-shelf-view.jpg`, alt: "Bottom shelf, Oakland facility" },

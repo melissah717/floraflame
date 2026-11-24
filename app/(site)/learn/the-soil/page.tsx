@@ -4,9 +4,9 @@ import { LearnMore } from "@/components/learn-more";
 import { ArticleJsonLd } from "@/lib/json-ld";
 import { SOIL_SOURCES } from "@/lib/soil-sources";
 
-const TITLE = "Indoor No-Till Living Soil, Explained"
+const TITLE = "Indoor Living Soil, Explained"
 const DESCRIPTION =
-  "How our indoor no-till living soil works: compost, worms and fungi, a living cover crop and a mulch layer, in beds reused harvest after harvest."
+  "How our indoor living soil works: compost, worms and fungi, a living cover crop and a mulch layer, in beds reused harvest after harvest."
 
 export const metadata: Metadata = {
   title: TITLE,

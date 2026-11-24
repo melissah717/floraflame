@@ -4,7 +4,7 @@ import { BreadcrumbJsonLd } from "@/lib/json-ld"
 
 const PAGES = [
   { href: "/learn/the-leaf", title: "The Leaf", blurb: "Cannabinoids, terpenes and plant anatomy" },
-  { href: "/learn/the-soil", title: "The Soil", blurb: "How no-till living soil works" },
+  { href: "/learn/the-soil", title: "The Soil", blurb: "How indoor living soil works" },
   { href: "/learn/the-farm", title: "The Farm", blurb: "Inside the Oakland grow" },
 ] as const
 

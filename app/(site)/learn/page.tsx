@@ -38,7 +38,7 @@ const ENTRIES = [
     slug: "the-soil",
     title: "The Soil",
     excerpt:
-      "No-till. No synthetics. No pesticides. The whole method comes down to one idea, and it isn't a shortcut.",
+      "Indoor, in living soil, with no synthetics. The whole method comes down to one idea, and it isn't a shortcut.",
     image: `${IMG}/v1789683610/FF_1_t0sthh.jpg`,
     alt: "Living soil bed",
   },
