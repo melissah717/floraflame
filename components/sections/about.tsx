@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -8,10 +8,10 @@ import {
   useInView,
   useScroll,
   useTransform,
-  useReducedMotion,
   useMotionValueEvent,
   type MotionValue,
 } from "motion/react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { Reveal } from "@/components/scroll-primitives";
 import { PauseButton } from "@/components/pause-button";
 
@@ -365,8 +365,12 @@ export function About() {
             {WORDS.map((word, i) => (
               // No overflow-hidden wrapper any more: it existed only to clip
               // the old slide, and it would now crop the punch's overshoot.
+              <Fragment key={word}>
+              {/* A real space so the heading's text is "Living Soil", not
+                  "LivingSoil". Whitespace between flex items isn't drawn,
+                  so the layout (spaced by the gap) doesn't change. */}
+              {i > 0 && " "}
               <motion.span
-                key={word}
                 // Opacity is a plain value, not animated: that IS the cut.
                 // Only the scale recoil is animated, and initial={false}
                 // keeps it from playing once on mount.
@@ -378,6 +382,7 @@ export function About() {
               >
                 {word}
               </motion.span>
+              </Fragment>
             ))}
           </motion.h2>
 

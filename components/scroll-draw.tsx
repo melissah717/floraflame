@@ -5,9 +5,9 @@ import {
   motion,
   useScroll,
   useTransform,
-  useReducedMotion,
   type MotionValue,
 } from "motion/react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
  * Scroll-drawn SVG linework.

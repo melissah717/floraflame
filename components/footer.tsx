@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { NewsletterSignup } from "@/components/newsletter-signup";
 import { MarqueeReel } from "@/components/sections/marquee-reel";
+import { LEGAL_NAME, LICENSE_NUMBER } from "@/lib/site";
 
 export function SiteFooter() {
   return (
@@ -35,6 +36,7 @@ export function SiteFooter() {
                 ["Strains", "/strains"],
                 ["Events", "/events"],
                 ["Learn", "/learn"],
+                ["FAQ", "/faq"],
               ].map(([label, href]) => (
                 <li key={label}>
                   <Link
@@ -116,6 +118,14 @@ export function SiteFooter() {
             cannabis online.
           </p>
 
+          {/* Says outright which site is the real one. An older domain
+              still carries the brand name, so this is for people and for
+              search engines alike. */}
+          <p className="mt-4 max-w-3xl text-xs leading-relaxed text-neutral-400">
+            floraandflame.co is the official website of {LEGAL_NAME}, Oakland,
+            California.
+          </p>
+
           <div className="mt-6 flex flex-col gap-4 text-[13px] uppercase tracking-[0.18em] text-neutral-400 lg:flex-row lg:items-center lg:justify-between">
             <span>© {new Date().getFullYear()} Flora &amp; Flame</span>
             <nav aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-2">
@@ -133,7 +143,7 @@ export function SiteFooter() {
                 </Link>
               ))}
             </nav>
-            <span>License #C120000449-LIC · 21+ only</span>
+            <span>License #{LICENSE_NUMBER} · 21+ only</span>
           </div>
         </div>
       </div>

@@ -5,11 +5,11 @@ import Image from "next/image"
 import { SOIL_SOURCES } from "@/lib/soil-sources"
 import {
   motion,
-  useReducedMotion,
   useScroll,
   useTransform,
   type MotionValue,
 } from "motion/react"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 
 /* ------------------------------------------------------------------ */
 /* Content. This is DRAFT copy, written from the photos and from what   */

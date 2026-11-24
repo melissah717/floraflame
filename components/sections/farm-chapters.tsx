@@ -5,10 +5,10 @@ import Image from "next/image"
 import {
   motion,
   useMotionValueEvent,
-  useReducedMotion,
   useScroll,
   useTransform,
 } from "motion/react"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 import { cn } from "@/lib/utils"
 import { useLenis } from "@/components/smooth-scroll"
 import { PauseButton } from "@/components/pause-button"

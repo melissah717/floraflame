@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // AVIF first, WebP for browsers without it. AVIF files are markedly
+    // smaller for photos, and the home page's photos were its heaviest
+    // downloads (one alone was ~490 KB on a phone).
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       // Placeholder images only — remove once real photography lands.
       {

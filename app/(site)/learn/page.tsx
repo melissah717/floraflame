@@ -7,7 +7,7 @@ import { BreadcrumbJsonLd } from "@/lib/json-ld";
 
 const TITLE = "Learn About Indoor Living Soil Cannabis"
 const DESCRIPTION =
-  "Cannabinoids and terpenes, how no-till living soil works, and a look inside our indoor Oakland grow, from a small-batch California cultivator."
+  "Cannabinoids and terpenes, how living soil works, and a look inside our indoor Oakland grow, from a small-batch California cultivator."
 
 export const metadata: Metadata = {
   title: TITLE,

@@ -8,3 +8,12 @@
 // the address that answers with a 200, or Google sees every one redirect.
 export const SITE_URL = "https://www.floraandflame.co";
 export const SITE_NAME = "Flora & Flame";
+/** Registered business name, as it appears on the state license. */
+export const LEGAL_NAME = "Flora & Flame, LLC";
+/**
+ * California Department of Cannabis Control license, written exactly as the
+ * state's public record shows it (real.cannabis.ca.gov). State advertising
+ * rules require it on marketing, and matching the record character for
+ * character is also how a search engine ties this site to the licensee.
+ */
+export const LICENSE_NUMBER = "C12-0000449-LIC";

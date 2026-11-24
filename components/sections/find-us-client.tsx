@@ -4,12 +4,12 @@ import { useMemo, useRef, useState } from "react";
 import {
   motion,
   useMotionValueEvent,
-  useReducedMotion,
   useScroll,
   useSpring,
   useTransform,
   type MotionValue,
 } from "motion/react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { Reveal } from "@/components/scroll-primitives";
 import { StockistMap } from "@/components/stockist-map";
 import {

@@ -9,9 +9,9 @@ import {
   useTransform,
   useMotionValue,
   useMotionTemplate,
-  useReducedMotion,
   type MotionValue,
 } from "motion/react"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 import {
   Brain,
   Citrus,
@@ -448,7 +448,9 @@ export function Breakdown() {
             </p>
           </div>
 
-          <motion.h2
+          {/* A <p>, not a heading: as an <h2> it came before the page's <h1>
+              (the lead line below), which put the outline out of order. */}
+          <motion.p
             className={[
               "relative order-1 font-display leading-[0.86] tracking-[-0.04em] text-neutral-50 uppercase lg:order-2",
               // min-w-0 so this can actually shrink inside the flex row —
@@ -499,7 +501,7 @@ export function Breakdown() {
                 {index < words.length - 1 && " "}
               </Fragment>
             ))}
-          </motion.h2>
+          </motion.p>
         </div>
       </div>
 
@@ -1171,9 +1173,9 @@ function ChapterMark({
 
   const label = (
     <div>
-      <h3 className="font-display text-3xl leading-tight tracking-[-0.01em] sm:text-4xl">
+      <h2 className="font-display text-3xl leading-tight tracking-[-0.01em] sm:text-4xl">
         {title}
-      </h3>
+      </h2>
     </div>
   )
 
@@ -1341,9 +1343,9 @@ function ItemRow({
           }
         >
           <div className="lg:col-span-1">{markerNode}</div>
-          <h4 className="font-display text-xl sm:text-2xl lg:col-span-4">
+          <h3 className="font-display text-xl sm:text-2xl lg:col-span-4">
             {item.title}
-          </h4>
+          </h3>
           <p className="text-base leading-relaxed text-neutral-400 lg:col-span-7">
             {item.body}
           </p>
@@ -1381,12 +1383,12 @@ function ItemRow({
               <motion.div style={{ y: iconY }}>{iconNode}</motion.div>
               <motion.div style={{ y: numY }}>{numberNode}</motion.div>
             </div>
-            <motion.h4
+            <motion.h3
               style={{ y: titleY }}
               className="font-display text-xl leading-tight sm:text-2xl lg:col-span-4"
             >
               {item.title}
-            </motion.h4>
+            </motion.h3>
             <motion.p
               style={{ y: bodyY }}
               className="text-base leading-relaxed text-neutral-400 lg:col-span-7"

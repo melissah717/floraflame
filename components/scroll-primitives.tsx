@@ -5,12 +5,12 @@ import {
   motion,
   useScroll,
   useTransform,
-  useReducedMotion,
   useVelocity,
   useSpring,
   useMotionValue,
   useAnimationFrame,
 } from "motion/react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
@@ -40,7 +40,9 @@ export function Parallax({
     [`${speed * 100}%`, `${speed * -100}%`]
   );
 
-  if (reduce) return <div className={className}>{children}</div>;
+  // The ref stays attached here too: useScroll() above tracks it, and
+  // throws ("Target ref is defined but not hydrated") if it points at nothing.
+  if (reduce) return <div ref={ref} className={className}>{children}</div>;
 
   return (
     <div ref={ref} className={cn("overflow-hidden", className)}>
@@ -78,7 +80,9 @@ export function ParallaxText({
 
   const y = useTransform(scrollYProgress, [0, 1], [speed, -speed]);
 
-  if (reduce) return <div className={className}>{children}</div>;
+  // The ref stays attached here too: useScroll() above tracks it, and
+  // throws ("Target ref is defined but not hydrated") if it points at nothing.
+  if (reduce) return <div ref={ref} className={className}>{children}</div>;
 
   return (
     <motion.div ref={ref} style={{ y }} className={cn("will-change-transform", className)}>

@@ -2,7 +2,8 @@
 
 import { type ReactNode } from "react";
 import Image from "next/image";
-import { motion, useReducedMotion, type Variants } from "motion/react";
+import { motion, type Variants } from "motion/react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
  * Contact — the inquiry card with the flame/flower artwork around it.

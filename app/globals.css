@@ -254,3 +254,27 @@ html {
   .pin-dot.is-selected::before,
   .pin-dot.is-selected::after { animation: none; opacity: 0; }
 }
+/* ── Age gate ──────────────────────────────────────────────────────────
+   The gate is server-rendered (see components/age-gate.tsx), so both of
+   these have to work before any JavaScript has run. */
+
+/* Returning visitors: an inline script in app/(site)/layout.tsx sets this
+   attribute before first paint, so they never see the gate flash. */
+html[data-age-verified="true"] [data-age-gate] {
+  display: none;
+}
+
+/* Entrance: a short rise, no fade (see the note in age-gate.tsx). */
+@keyframes age-gate-rise {
+  from {
+    transform: translateY(14px);
+  }
+  to {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .age-gate-rise {
+    animation: age-gate-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
