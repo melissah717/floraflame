@@ -23,7 +23,7 @@ const HERO = {
   lead: "A real ecosystem under every plant. We feed the soil, and the soil feeds the flower.",
   image: {
     src: "/soil/bed.jpg",
-    alt: "Cannabis stems rising from fabric pots filled with dark living soil, each marked with a small plant tag",
+    alt: "Cannabis stems rising from fabric pots of dark living soil at Flora & Flame, each marked with a small plant tag",
   },
 }
 

@@ -5,7 +5,7 @@ import { ArticleJsonLd } from "@/lib/json-ld";
 
 const TITLE = "Cannabinoids & Terpenes Explained"
 const DESCRIPTION =
-  "THC, CBD, myrcene, limonene and more: a guide to cannabinoids, terpenes and cannabis plant anatomy, and why they matter more than the THC number."
+  "THC, CBD, myrcene, limonene and more: Flora & Flame's guide to cannabinoids, terpenes and plant anatomy, and why they matter more than the THC number."
 
 export const metadata: Metadata = {
   title: TITLE,

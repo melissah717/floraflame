@@ -56,7 +56,7 @@ export default async function EventsPage() {
           Events
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-neutral-400 sm:text-xl">
-          Lounge seshes, pop-ups and nights out where you can find us. 21+ only.
+          Lounge seshes, pop-ups and nights out where you can find Flora &amp; Flame. 21+ only.
         </p>
       </Reveal>
 

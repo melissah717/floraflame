@@ -52,8 +52,8 @@ const CHAPTERS: Chapter[] = [
     title: "The room",
     caption: "The Oakland facility, floor to ceiling",
     frames: [
-      { src: `${IMG}/v1786484376/top-aisle-view.jpg`, alt: "Top of the aisle, Oakland facility" },
-      { src: `${IMG}/v1786484376/aisle-center-view.jpg`, alt: "Center aisle, Oakland facility" },
+      { src: `${IMG}/v1786484376/top-aisle-view.jpg`, alt: "Top of the aisle, Flora & Flame Oakland facility" },
+      { src: `${IMG}/v1786484376/aisle-center-view.jpg`, alt: "Center aisle, Flora & Flame Oakland facility" },
     ],
     feature: {
       type: "video",

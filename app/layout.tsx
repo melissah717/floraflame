@@ -27,7 +27,7 @@ const karla = Karla({
 
 const SITE_TITLE = "Flora & Flame · Indoor Living Soil Cannabis, Oakland CA";
 const SITE_DESCRIPTION =
-  "Small-batch, no-till indoor living soil cannabis grown by hand in Oakland, California. Pesticide-free, hand-trimmed flower for licensed retailers statewide.";
+  "Flora & Flame grows small-batch, no-till indoor living soil cannabis in Oakland, CA. Pesticide-free, hand-trimmed flower for licensed retailers statewide.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

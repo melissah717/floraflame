@@ -35,6 +35,9 @@ const ORGANIZATION_JSON_LD = {
   // point at this one entity instead of describing the brand again.
   "@id": `${SITE_URL}/#organization`,
   name: SITE_NAME,
+  // The ways people actually type the brand, so a search for "flora and
+  // flame" resolves to this entity. Mirrors the WebSite block below.
+  alternateName: ["Flora and Flame", "Flora & Flame Cannabis"],
   url: SITE_URL,
   logo: `${SITE_URL}/icon-512.png`,
   description:

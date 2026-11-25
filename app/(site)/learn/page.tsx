@@ -7,7 +7,7 @@ import { BreadcrumbJsonLd } from "@/lib/json-ld";
 
 const TITLE = "Learn About Indoor Living Soil Cannabis"
 const DESCRIPTION =
-  "Cannabinoids and terpenes, how no-till living soil works, and a look inside our indoor Oakland grow, from a small-batch California cultivator."
+  "Cannabinoids and terpenes, how no-till living soil works, and a look inside Flora & Flame's indoor Oakland grow, from a small-batch California cultivator."
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -46,7 +46,7 @@ const ENTRIES = [
     slug: "the-farm",
     title: "The Farm",
     excerpt:
-      "Photos and video from the Oakland facility. The plants, the room, the hands actually doing the work.",
+      "Photos and video from Flora & Flame's Oakland facility. The plants, the room, the hands actually doing the work.",
     image: `${IMG}/v1789669950/aisle-center-view.jpg`,
     alt: "Center aisle of the Oakland grow room",
   },

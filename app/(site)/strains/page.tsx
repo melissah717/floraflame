@@ -10,7 +10,7 @@ export const revalidate = 3600
 
 const TITLE = "Indoor Living Soil Cannabis Strains"
 const DESCRIPTION =
-  "Every indoor living soil strain we've grown in Oakland, CA: what's in rotation now, with genetics and terpene profiles, plus the archive of past batches."
+  "Every indoor living soil strain Flora & Flame has grown in Oakland, CA: what's in rotation now, with genetics and terpenes, plus the archive of past batches."
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -91,6 +91,10 @@ export default async function StrainsPage() {
           <h1 className="max-w-[16ch] font-display text-4xl leading-[1.05] tracking-[-0.01em] sm:text-5xl lg:text-6xl">
             Every batch we&apos;ve tested.
           </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-neutral-400 sm:text-xl">
+            Flora &amp; Flame&apos;s indoor living soil strains from Oakland:
+            what&apos;s in rotation now, and every past batch.
+          </p>
         </Reveal>
 
         <Reveal delay={0.05} className="mt-12 sm:mt-16">

@@ -362,7 +362,7 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
                 <NugZoom className="absolute inset-0">
                   <Image
                     src={active.nugImage ?? active.image}
-                    alt={active.name}
+                    alt={`Flora & Flame ${active.name} cannabis flower`}
                     fill
                     sizes="(max-width: 1024px) 100vw, 440px"
                     className="object-contain"
@@ -455,7 +455,7 @@ export function ArchiveClient({ batches: batchesProp }: { batches: Strain[] }) {
                 </motion.div>
                 <Image
                   src={introBatch.nugImage ?? introBatch.image}
-                  alt={introBatch.name}
+                  alt={`Flora & Flame ${introBatch.name} cannabis flower`}
                   fill
                   sizes="224px"
                   className="object-contain"

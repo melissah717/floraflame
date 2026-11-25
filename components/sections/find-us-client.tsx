@@ -281,8 +281,8 @@ export function FindUsClient({
 
         {!hasOrigin ? (
           <p className="mt-6 text-base text-neutral-400 sm:text-lg">
-            Search a city or
-            use your location to find the closest ones.
+            Search a city or use your location to find Flora &amp; Flame
+            near you.
           </p>
         ) : (
           <>

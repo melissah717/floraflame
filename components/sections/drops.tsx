@@ -330,7 +330,7 @@ export function Drops({ strains }: { strains: Strain[] }) {
                 <NugZoom className="h-full w-full">
                   <Image
                     src={active.image}
-                    alt={`${active.name} cannabis flower`}
+                    alt={`Flora & Flame ${active.name} cannabis flower`}
                     fill
                     // NugZoom scales this image up 1.5x on hover via a CSS
                     // transform — the fetched source needs headroom above
