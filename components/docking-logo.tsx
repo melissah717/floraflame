@@ -6,9 +6,9 @@ import {
   motion,
   useScroll,
   useTransform,
-  useReducedMotion,
   useMotionValueEvent,
 } from "motion/react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { Wordmark } from "@/components/wordmark";
 
 /**

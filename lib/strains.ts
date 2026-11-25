@@ -1,19 +1,16 @@
 import { supabase } from "@/lib/supabase";
 import { optimizedImage } from "@/lib/cloudinary";
 
-/**
- * Where a strain sits on the indica → sativa spectrum, relative to the
- * others — not a lab-measured ratio, just a qualitative bucket.
- */
-export const SPECTRUM_POSITIONS = [
-  "Indica",
-  "Indica-Leaning Hybrid",
-  "Balanced Hybrid",
-  "Sativa-Leaning Hybrid",
-  "Sativa",
-] as const;
+import { SPECTRUM_POSITIONS, type SpectrumPosition } from "@/lib/spectrum";
 
-export type SpectrumPosition = (typeof SPECTRUM_POSITIONS)[number];
+/*
+ * This file reads the database, so it must only be imported by server code
+ * (or with `import type`). The spectrum list lives in lib/spectrum.ts, which
+ * browser components can import freely; it's re-exported here so existing
+ * server-side imports keep working.
+ */
+export { SPECTRUM_POSITIONS };
+export type { SpectrumPosition };
 
 function normalizeSpectrumPosition(value: string): SpectrumPosition | null {
   const trimmed = value.trim();

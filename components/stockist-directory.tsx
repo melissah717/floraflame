@@ -1,4 +1,5 @@
-import { directionsUrl, fetchStockists, stockistKey } from "@/lib/stockists"
+import { directionsUrl, stockistKey } from "@/lib/stockists"
+import { fetchStockists } from "@/lib/stockists-data"
 
 /**
  * Every shop, grouped by city, as plain server-rendered HTML.

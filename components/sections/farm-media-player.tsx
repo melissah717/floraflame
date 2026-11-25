@@ -12,9 +12,9 @@ import {
   useMotionValue,
   useMotionValueEvent,
   useMotionTemplate,
-  useReducedMotion,
   type MotionValue,
 } from "motion/react"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 
 // Next's <Image> is a plain component — a MotionValue passed into its
 // style prop directly wouldn't update reactively, only re-stringify once.

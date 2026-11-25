@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
-import { type Strain } from "@/lib/strains";
+// `import type`, not `import { type … }`: the second form leaves a bare
+// import of lib/strains behind in the browser bundle, and that file pulls
+// in the Supabase client (~63 KB compressed) that only the server uses.
+import type { Strain } from "@/lib/strains";
 import { RGB, anchorForSpectrum, colorForHybrid } from "@/lib/spectrum";
 import { RippleBackdrop, SpectrumBackdrop } from "@/components/spectrum-backdrop";
 import { NugZoom } from "@/components/nug-zoom";
@@ -590,7 +593,10 @@ export function Drops({ strains }: { strains: Strain[] }) {
                         // own scale/rotateY transforms) has real pixel
                         // detail to sample from instead of stretching an
                         // exact-fit image and going soft mid-animation.
-                        sizes="240px"
+                        // Phones show these at ~70px, so they ask for half
+                        // as much: PageSpeed found each one arriving at
+                        // 640px to fill a 91px circle.
+                        sizes="(max-width: 640px) 120px, 240px"
                         draggable={false}
                         className="pointer-events-none object-cover"
                       />

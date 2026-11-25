@@ -1,4 +1,4 @@
-import { fetchStockists } from "@/lib/stockists";
+import { fetchStockists } from "@/lib/stockists-data";
 import { FindUsClient } from "@/components/sections/find-us-client";
 
 /**

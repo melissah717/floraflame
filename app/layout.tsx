@@ -25,9 +25,13 @@ const karla = Karla({
   variable: "--font-karla",
 });
 
-const SITE_TITLE = "Flora & Flame · Indoor Living Soil Cannabis, Oakland CA";
+// "Official Website" is deliberate: an older domain still presents itself
+// as the brand's site, and this phrase (with the matching WebSite and
+// Organization schema on the home page) is how searchers and search engines
+// tell which one is current.
+const SITE_TITLE = "Flora & Flame | Official Website – Indoor Living Soil Cannabis";
 const SITE_DESCRIPTION =
-  "Flora & Flame grows small-batch, no-till indoor living soil cannabis in Oakland, CA. Pesticide-free, hand-trimmed flower for licensed retailers statewide.";
+  "The official website of Flora & Flame: small-batch indoor living soil cannabis, grown by hand in Oakland, California. See strains, events and where to buy.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -40,7 +44,8 @@ export const metadata: Metadata = {
     "indoor living soil cannabis",
     "living soil cannabis",
     "Oakland cannabis cultivator",
-    "no-till cannabis",
+    "Flora and Flame",
+    "Flora & Flame official website",
     "craft cannabis California",
     "small batch cannabis flower",
     "California cannabis wholesale",
@@ -68,6 +73,9 @@ export const metadata: Metadata = {
   // The share image comes from app/opengraph-image.tsx.
   openGraph: {
     type: "website",
+    // "./" resolves against each page's own path, so every page gets its
+    // own og:url instead of none.
+    url: "./",
     siteName: SITE_NAME,
     locale: "en_US",
   },
@@ -102,7 +110,13 @@ export default function RootLayout({
    * Route groups don't appear in URLs, so nothing the site serves moved.
    */
   return (
-    <html lang="en" className={`${archivo.variable} ${karla.variable} bg-neutral-900`}>
+    <html
+      lang="en"
+      className={`${archivo.variable} ${karla.variable} bg-neutral-900`}
+      // The public site's age-gate script adds data-age-verified to this
+      // element before React loads; this tells React that's expected.
+      suppressHydrationWarning
+    >
       <body className="bg-neutral-900 font-sans text-neutral-50 antialiased">
         {children}
         <Analytics />

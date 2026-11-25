@@ -5,11 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import {
   motion,
   useMotionValue,
-  useReducedMotion,
   useScroll,
   useSpring,
   useTransform,
 } from "motion/react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
  * Hero — three-phase entrance:
@@ -125,7 +125,12 @@ export function Hero() {
                 fill
                 sizes="(max-width: 640px) 84vw, 42vw"
                 className="object-contain"
-                priority
+                // Eager, but not `priority`: it doesn't slide in until 3.4s
+                // (and a first-time visitor sees the age gate first), so it
+                // shouldn't be preloaded ahead of the styles and fonts.
+                // Not left lazy either, since it starts off-screen and
+                // would only begin loading once the slide brought it in.
+                loading="eager"
               />
             </motion.div>
           </motion.div>

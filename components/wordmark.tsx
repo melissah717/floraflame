@@ -23,11 +23,12 @@
  * lettering is an embedded bitmap cut out by SVG <mask>/<filter> elements.
  * Chrome resolves that when the file is used as a CSS mask; iOS Safari
  * doesn't, so it ignored the mask and painted the whole box solid white.
- * A plain PNG alpha channel works as a mask everywhere. 1200px wide covers
- * the largest use (≈240px) at 3× retina with room to spare.
+ * A plain PNG alpha channel works as a mask everywhere. 720px wide is
+ * exactly the largest use (240px) at 3× retina; at 1200px the file was
+ * 188 KB against 81 KB, on every page.
  */
 const WORDMARK_URL =
-  "https://res.cloudinary.com/g0mcdcfr/image/upload/f_png,w_1200/v1785517828/text-logo.svg";
+  "https://res.cloudinary.com/g0mcdcfr/image/upload/f_png,w_720/v1785517828/text-logo.svg";
 
 export function Wordmark({
   className = "",

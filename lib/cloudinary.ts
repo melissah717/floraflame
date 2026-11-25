@@ -46,6 +46,14 @@ export function optimizedImage(
   const index = url.indexOf(UPLOAD_SEGMENT);
   if (index === -1) return url;
 
+  // Some strain photos were uploaded as .svg files (a photo wrapped in an
+  // SVG). Cloudinary already sends those as a normal picture, but Next's
+  // image component sees ".svg" in the address and passes it through
+  // untouched, so a 1200px, ~230 KB file was arriving to fill a 91px
+  // thumbnail. Asking for the same asset as .png is the identical picture
+  // from Cloudinary, and one Next will resize.
+  url = url.replace(/\.svg(?=$|\?)/i, ".png");
+
   const start = index + UPLOAD_SEGMENT.length;
   const rest = url.slice(start);
 

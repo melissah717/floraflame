@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 
 import { saveBatch, deleteBatch, type AdminBatch } from "@/lib/admin/strains";
-import { SPECTRUM_POSITIONS } from "@/lib/strains";
+import { SPECTRUM_POSITIONS } from "@/lib/spectrum";
 import type { ActionState } from "@/lib/admin/form";
 import { ImageField } from "@/components/admin/image-field";
 import { strainIssues } from "@/lib/admin/strain-issues";

@@ -7,7 +7,7 @@ import { BreadcrumbJsonLd } from "@/lib/json-ld";
 
 const TITLE = "Learn About Indoor Living Soil Cannabis"
 const DESCRIPTION =
-  "Cannabinoids and terpenes, how no-till living soil works, and a look inside Flora & Flame's indoor Oakland grow, from a small-batch California cultivator."
+  "Cannabinoids and terpenes, how living soil works, and a look inside Flora & Flame's indoor Oakland grow, from a small-batch California cultivator."
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -38,7 +38,7 @@ const ENTRIES = [
     slug: "the-soil",
     title: "The Soil",
     excerpt:
-      "No-till. No synthetics. No pesticides. The whole method comes down to one idea, and it isn't a shortcut.",
+      "Indoor, in living soil, with no synthetics. The whole method comes down to one idea, and it isn't a shortcut.",
     image: `${IMG}/v1789683610/FF_1_t0sthh.jpg`,
     alt: "Living soil bed",
   },

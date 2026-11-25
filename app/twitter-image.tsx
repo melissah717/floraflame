@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { LICENSE_NUMBER } from "@/lib/site";
 
 // nodejs, not edge — see opengraph-image.tsx for why.
 export const runtime = "nodejs";
@@ -59,7 +60,10 @@ export default async function Image() {
             color: "#a29886",
           }}
         >
-          LICENSE #C120000449-LIC · 21+ ONLY
+          {/* One string, not text + variable + text: the image renderer
+              treats those as three children and refuses a <div> with
+              several children unless it's display:flex. */}
+          {`LICENSE #${LICENSE_NUMBER} · 21+ ONLY`}
         </div>
       </div>
     ),
